@@ -1,5 +1,5 @@
 [package]
-name = "server"
+name = "bramletts-games-server"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,8 +7,7 @@ edition = "2021"
 
 [dependencies]
 axum = "0.6.20"
+shuttle-axum = "0.29.0"
+shuttle-runtime = "0.29.0"
 common = { version = "0.1.0", path = "../common" }
-serde = "1.0.188"
 tokio = { version = "1.33.0", features = ["rt-multi-thread", "macros"] }
-tracing = "0.1.37"
-tracing-subscriber = "0.3.17"
