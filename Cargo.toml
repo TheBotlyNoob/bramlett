@@ -1,0 +1,10 @@
+[profile.release]
+opt-level = 3
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[workspace]
+members = ["crates/client", "crates/server", "crates/common"]
+
+resolver = "2"
