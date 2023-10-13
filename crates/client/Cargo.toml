@@ -5,6 +5,9 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+prod_in_debug = []
+
 [dependencies]
 anyhow = "1.0.75"
 eframe = { version = "0.23.0", default-features = false, features = [
@@ -20,9 +23,10 @@ manic = { version = "0.8.1", default-features = false, features = [
     "async",
     "rustls",
 ] }
-poll-promise = "0.3.0"
+poll-promise = { version = "0.3.0", features = ["tokio"] }
 reqwest = { version = "0.11.22", features = ["json"] }
 serde = { version = "1.0.188", features = ["derive"] }
 tl = "0.7.7"
 tokio = { version = "1.33.0", features = ["rt-multi-thread", "macros"] }
 common = { path = "../common" }
+bytes = "1.5.0"

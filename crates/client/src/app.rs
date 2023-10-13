@@ -2,17 +2,20 @@ use anyhow::Result;
 use common::GameInfo;
 use egui::RichText;
 use std::path::PathBuf;
+use bytes::Bytes;
 
-#[cfg(debug_assertions)]
+#[cfg(all(debug_assertions, not(feature = "prod_in_debug")))]
 const SERVER_URL: &str = "http://127.0.0.1:8000";
-#[cfg(not(debug_assertions))]
-const SERVER_URL: &str = "https://bramlett-games.railway.app";
+#[cfg(any(not(debug_assertions), feature = "prod_in_debug"))]
+const SERVER_URL: &str = "https://bramletts-games.shuttleapp.rs";
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct Game {
     info: GameInfo,
     progress: f32,
     path: Option<PathBuf>,
+    #[serde(skip)]
+    promise: Option<poll_promise::Promise<Bytes>>
 }
 
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
@@ -40,6 +43,7 @@ impl App {
                     info,
                     progress: 0.0,
                     path: None,
+                    promise: None,
                 })
                 .collect(),
         })
@@ -62,14 +66,34 @@ impl eframe::App for App {
             ui.label("I recommend trying Geometry Dash, Papers Please, or FNAF for the time being.");
             ui.separator();
 
-            for game in &mut self.games {
-                ui.hyperlink_to(
-                    &game.info.name,
-                    format!(
-                        "https://drive.google.com/uc?export=download&id={}",
-                        game.info.gdrive_id
-                    ),
-                );
+            for game in &self.games {
+                ui.group(|ui| {
+                    ui.label(&game.info.name);
+                    // if game.promise.and_then(|p| p.ready()).is_none() {
+                    //     ui.add(egui::ProgressBar::new(game.progress).desired_width(100.0));
+                    // } else if game.progress != 1.0 {
+                    //     if ui.button("Download").clicked() {
+                    //         // let url = format!("{}/{}", SERVER_URL, game.info.path);
+                    //         let promise = poll_promise::Promise::spawn_async(async move {
+                    //         //     let mut response = reqwest::get(&url).await?;
+                    //         //     let mut bytes = Bytes::new();
+                    //         //     while let Some(chunk) = response.chunk().await? {
+                    //         //         bytes.extend_from_slice(&chunk);
+                    //         //     }
+                    //         //     Ok(bytes)
+                    //         });
+                    //         // game.promise = Some(promise);
+                    //     }
+                    // } else {
+                    //     ui.add(egui::Button::new("Run"));
+                    // }
+                    
+                    // if let Some(path) = &game.path {
+                    //     ui.hyperlink_to(path.to_string_lossy(), path);
+                    // } else {
+                    //     ui.add(egui::Button::new("Download").enabled(game.path.is_none()));
+                    // }
+                });
             }
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
