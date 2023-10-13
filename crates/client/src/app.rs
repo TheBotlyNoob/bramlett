@@ -1,5 +1,6 @@
 use anyhow::Result;
 use common::GameInfo;
+use egui::RichText;
 use std::path::PathBuf;
 
 #[cfg(debug_assertions)]
@@ -49,6 +50,28 @@ impl eframe::App for App {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            ui.heading("Bramlett's Totally Reliable Game Downloader");
+            ui.label("Click a game to download it. Open the downloaded file.");
+            ui.label(
+                RichText::new("The password for all files is \"game\" (without the quotes).")
+                    .strong(),
+            );
+
+            ui.separator();
+            ui.label("Due to time restraints, this app is not very polished. OMORI and Bloons will take a while to download.");
+            ui.label("I recommend trying Geometry Dash, Papers Please, or FNAF for the time being.");
+            ui.separator();
+
+            for game in &mut self.games {
+                ui.hyperlink_to(
+                    &game.info.name,
+                    format!(
+                        "https://drive.google.com/uc?export=download&id={}",
+                        game.info.gdrive_id
+                    ),
+                );
+            }
+
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 egui::warn_if_debug_build(ui)
             });

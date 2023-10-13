@@ -16,10 +16,10 @@ fn games() -> Vec<GameInfo> {
             name: "Bloons TD 6".into(),
             gdrive_id: "16paRX1A9qxvFyWzgGGremMviKWvT0fuN".into(),
         },
-        // GameInfo {
-        //     name: "OMORI".into(),
-        //     gdrive_id: todo!(),
-        // },
+        GameInfo {
+            name: "OMORI".into(),
+            gdrive_id: "1liGmClrNJu2yPmX3HdyMoO_QXI64gJKy".into(),
+        },
         GameInfo {
             name: "Five Nights at Freddy's".into(),
             gdrive_id: "1gnn4X4OtIVuB-t6ZblBN_UUD4NawbzJf".into(),
