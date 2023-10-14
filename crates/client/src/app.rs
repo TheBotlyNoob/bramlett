@@ -1,10 +1,10 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use bytes::Bytes;
 use common::GameInfo;
-use egui::RichText;
+use egui::{RichText, Ui};
 use poll_promise::Promise;
 use reqwest::{cookie::Jar, Client, ClientBuilder};
-use std::{fmt::Debug, fs, io::Cursor, path::PathBuf, sync::Arc};
+use std::{cell::RefCell, fmt::Debug, fs, io::Cursor, path::PathBuf, rc::Rc, sync::Arc};
 use tl::ParserOptions;
 use zip::ZipArchive;
 
@@ -15,8 +15,10 @@ const SERVER_URL: &str = "https://bramletts-games.shuttleapp.rs";
 
 enum GameState {
     NotDownloaded,
-    Downloading(Promise<Result<Bytes, reqwest::Error>>),
-    Downloaded { dir: PathBuf },
+    Downloading(Promise<Result<Bytes>>),
+    Downloaded(Bytes, PathBuf),
+    Installing(PathBuf, Promise<Result<()>>),
+    Installed(PathBuf),
 }
 
 impl Debug for GameState {
@@ -24,9 +26,13 @@ impl Debug for GameState {
         match self {
             GameState::NotDownloaded => f.debug_tuple("NotDownloaded").finish(),
             GameState::Downloading(..) => f.debug_tuple("Downloading").field(&"..").finish(),
-            GameState::Downloaded { dir } => {
-                f.debug_struct("Downloaded").field("dir", &dir).finish()
-            }
+            GameState::Downloaded(bytes, dir) => f
+                .debug_tuple("Downloaded")
+                .field(&bytes)
+                .field(&dir)
+                .finish(),
+            GameState::Installing(dir, ..) => f.debug_tuple("Installing").field(&dir).finish(),
+            GameState::Installed(dir) => f.debug_tuple("Installing").field(&dir).finish(),
         }
     }
 }
@@ -39,6 +45,7 @@ pub struct Game {
 pub struct App {
     games: Vec<Game>,
     client: Client,
+    error: Rc<RefCell<Option<String>>>,
 }
 
 impl App {
@@ -69,6 +76,7 @@ impl App {
                 })
                 .collect(),
             client,
+            error: Rc::new(RefCell::new(None)),
         })
     }
 }
@@ -76,13 +84,23 @@ impl App {
 impl eframe::App for App {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if let Some(err) = &*self.error.borrow() {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                ui.heading("Error (ask me about it, I'll try to help over PH):");
+                ui.separator();
+                ui.label(RichText::new(err).strong());
+            });
+            return;
+        }
+
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Bramlett's Totally Reliable Game Downloader");
             ui.label("Click a game to download it. Wait for it to download, then hit \"Run\".");
             ui.label("Some games may take a while to download. Please be patient.");
 
+            let err = self.error.clone();
             for game in &mut self.games {
-                ui.group(|ui| {
+                ui.group(err_wrapper(err.clone(), |ui| {
                     ui.label(&game.info.name);
                     match game.state {
                         GameState::NotDownloaded => {
@@ -100,88 +118,132 @@ impl eframe::App for App {
 
                                         let real_url = {
                                             let dom =
-                                                tl::parse(&response, ParserOptions::default())
-                                                    .unwrap();
+                                                tl::parse(&response, ParserOptions::default())?;
                                             let parser = dom.parser();
+                                            let bad_drive_ctx = "This really shouldn't happen. Google Drive did something weird with their downloading system.";
                                             dom.get_element_by_id("download-form")
-                                                .unwrap()
+                                                .context(bad_drive_ctx)?
                                                 .get(parser)
-                                                .unwrap()
+                                                .context("shouldn't happen; .get(parser)")?
                                                 .as_tag()
-                                                .unwrap()
+                                                .context("shouldn't happen; .as_tag()")?
                                                 .attributes()
                                                 .get("action")
-                                                .unwrap()
-                                                .unwrap()
+                                                .context(bad_drive_ctx)?
+                                                .context(bad_drive_ctx)?
                                                 .as_utf8_str()
                                                 .replace("&amp;", "&")
                                         };
 
-                                        println!("real_url: {}", real_url);
-
-                                        client.get(real_url).send().await?.bytes().await
+                                        client
+                                            .get(real_url)
+                                            .send()
+                                            .await?
+                                            .bytes()
+                                            .await
+                                            .map_err(Into::into)
                                     }
                                 });
                                 game.state = GameState::Downloading(promise);
                             }
                         }
                         GameState::Downloading(ref promise) => {
-                            ui.label("Downloading... (this may take a while)");
                             if let Some(res) = promise.ready() {
-                                match res {
-                                    Ok(bytes) => {
-                                        let dir = std::env::temp_dir().join(&game.info.name);
-                                        std::fs::create_dir_all(&dir).unwrap();
-                                        let mut archive =
-                                            ZipArchive::new(Cursor::new(&bytes)).unwrap();
+                                let bytes =
+                                    res.as_ref().map_err(|e| anyhow::anyhow!("{e:#?}"))?.clone();
 
-                                        for i in 0..archive.len() {
-                                            let mut file = archive
-                                                .by_index_decrypt(i, b"game")
-                                                .unwrap()
-                                                .unwrap();
-                                            let mut filepath_components =
-                                                file.enclosed_name().unwrap().components();
-                                            filepath_components.next();
-
-                                            let outpath = dir.join(filepath_components.as_path());
-
-                                            if file.name().ends_with('/') {
-                                                fs::create_dir_all(&outpath).unwrap();
-                                            } else {
-                                                if let Some(p) = outpath.parent() {
-                                                    if !p.exists() {
-                                                        fs::create_dir_all(p).unwrap();
-                                                    }
-                                                }
-                                                let mut outfile =
-                                                    fs::File::create(&outpath).unwrap();
-                                                std::io::copy(&mut file, &mut outfile).unwrap();
-                                            }
-                                        }
-                                        game.state = GameState::Downloaded { dir };
-                                    }
-                                    Err(err) => {
-                                        ui.label(format!("Error: {}", err));
-                                    }
-                                }
+                                game.state = GameState::Downloaded(
+                                    bytes,
+                                    std::env::temp_dir().join(&game.info.name),
+                                );
+                            } else {
+                                ui.label("Downloading... (this may take a while)");
                             };
                         }
-                        GameState::Downloaded { ref dir } => {
+                        GameState::Downloaded(ref bytes, ref dir) => {
+                            let dir = dir.clone();
+
+                            let promise = Promise::<Result<()>>::spawn_blocking({
+                                let dir = dir.clone();
+                                let bytes = bytes.clone();
+
+                                move || {
+                                std::fs::create_dir_all(&dir)?;
+                                let mut archive = ZipArchive::new(Cursor::new(&bytes))?;
+
+                                for i in 0..archive.len() {
+                                    let mut file = archive.by_index_decrypt(i, b"game")??;
+                                    let mut filepath_components =
+                                        file.enclosed_name().unwrap().components();
+                                    filepath_components.next();
+
+                                    let outpath = dir.join(filepath_components.as_path());
+
+                                    if file.name().ends_with('/') {
+                                        fs::create_dir_all(&outpath)?
+                                    } else {
+                                        if let Some(p) = outpath.parent() {
+                                            if !p.exists() {
+                                                fs::create_dir_all(p)?;
+                                            }
+                                        }
+                                        let mut outfile = fs::File::create(&outpath)?;
+                                        std::io::copy(&mut file, &mut outfile)?;
+                                    }
+                                    // make sure executable is executable on unix for wine users
+                                    #[cfg(unix)]
+                                    if let Some(ext) = outpath.extension() {
+                                        if ext == "exe" {
+                                            use std::os::unix::fs::PermissionsExt;
+                                            let mut perms =
+                                                fs::metadata(&outpath)?.permissions();
+                                            perms.set_mode(0o755);
+                                            fs::set_permissions(&outpath, perms)?;
+                                        }
+                                    }
+                                }
+
+                                Ok(())
+                            }});
+
+                            game.state = GameState::Installing(dir.clone(), promise);
+                        }
+                        GameState::Installing(ref dir, ref promise) => {
+                            if let Some(res) = promise.ready() {
+                                res.as_ref().map_err(|e| anyhow::anyhow!("{e:#?}"))?;
+
+                                game.state = GameState::Installed(dir.clone());
+                            } else {
+                                ui.label("Installing... (this may also take a while)");
+                            };
+                        }
+                        GameState::Installed(ref dir) => {
                             if ui.button("Run").clicked() {
                                 std::process::Command::new(dir.join(&game.info.exe))
                                     .current_dir(dir)
-                                    .spawn()
-                                    .unwrap();
+                                    .spawn()?;
                             }
                         }
-                    }
-                });
+                    };
+
+                    Ok(())
+                }));
             }
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 egui::warn_if_debug_build(ui)
             });
         });
+    }
+}
+
+fn err_wrapper(
+    err: Rc<RefCell<Option<String>>>,
+    mut f: impl FnMut(&mut Ui) -> Result<()>,
+) -> impl FnMut(&mut Ui) {
+    move |ui| {
+        if let Err(e) = f(ui) {
+            err.borrow_mut().replace(format!("{e:#?}"));
+        }
     }
 }

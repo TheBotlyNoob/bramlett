@@ -13,7 +13,7 @@ async fn main() -> eframe::Result<()> {
         ..Default::default()
     };
     eframe::run_native(
-        "Bramlett's Totally Awesome Game Downloader",
+        "Bramlett's Totally Reliable Game Downloader",
         native_options,
         Box::new(|cc| Box::new(futures::executor::block_on(app::App::new(cc)).unwrap())),
     )

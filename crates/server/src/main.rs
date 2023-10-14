@@ -13,12 +13,12 @@ async fn main() -> shuttle_axum::ShuttleAxum {
                     GameInfo {
                         name: "Papers Please".into(),
                         gdrive_id: "1HzLYxrQQ1a8wj89KwTXMQ_hwdE4lCLvr".into(),
-                        exe: PathBuf::from("Papers Please/PapersPlease.exe"),
+                        exe: PathBuf::from("PapersPlease.exe"),
                     },
                     GameInfo {
                         name: "Geometry Dash".into(),
                         gdrive_id: "1vUtZqg6eDpRlKWNzDkjwq9_REN2LfYHt".into(),
-                        exe: PathBuf::from("Geometry Dash/GeometryDash.exe"),
+                        exe: PathBuf::from("GeometryDash.exe"),
                     },
                     GameInfo {
                         name: "Bloons TD 6".into(),
