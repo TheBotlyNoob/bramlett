@@ -1,5 +1,5 @@
 [package]
-name = "bramletts-games-server"
+name = "server"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,3 +11,4 @@ shuttle-axum = "0.29.0"
 shuttle-runtime = "0.29.0"
 common = { version = "0.1.0", path = "../common" }
 tokio = { version = "1.33.0", features = ["rt-multi-thread", "macros"] }
+tracing = "0.1.39"

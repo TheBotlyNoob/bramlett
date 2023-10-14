@@ -1,5 +1,5 @@
 [package]
-name = "bramletts-games"
+name = "client"
 version = "0.1.0"
 edition = "2021"
 
@@ -19,14 +19,12 @@ egui = "0.23.0"
 env_logger = "0.10.0"
 futures = "0.3.28"
 log = "0.4.20"
-manic = { version = "0.8.1", default-features = false, features = [
-    "async",
-    "rustls",
-] }
 poll-promise = { version = "0.3.0", features = ["tokio"] }
-reqwest = { version = "0.11.22", features = ["json"] }
+reqwest = { version = "0.11.22", features = ["json", "cookies"] }
 serde = { version = "1.0.188", features = ["derive"] }
 tl = "0.7.7"
 tokio = { version = "1.33.0", features = ["rt-multi-thread", "macros"] }
 common = { path = "../common" }
 bytes = "1.5.0"
+async-scoped = { version = "0.7.1", features = ["use-tokio"] }
+zip = "0.6.6"
