@@ -3,7 +3,7 @@ use common::GameInfo;
 use std::path::PathBuf;
 
 macro_rules! script {
-    ($name:literal) => {
+    ($name: literal) => {
         include_str!(concat!("../scripts/", $name, ".rhai")).into()
     };
 }

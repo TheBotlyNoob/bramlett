@@ -1,30 +1,42 @@
 use anyhow::{anyhow, Context, Result};
-use bytes::Bytes;
+use bytes::{Bytes, BytesMut};
 use common::GameInfo;
-use egui::{RichText, Ui};
+use egui::{ProgressBar, RichText, Ui};
+use futures::future::try_join_all;
 use poll_promise::Promise;
 use reqwest::{cookie::Jar, Client, ClientBuilder};
-use rhai::{Engine, Scope, AST, packages::Package};
-use std::{cell::RefCell, fmt::Debug, fs, io::Cursor, path::PathBuf, rc::Rc, sync::Arc};
+use rhai::{packages::Package, Engine, Scope, AST};
+use std::{
+    cell::RefCell,
+    fmt::Debug,
+    fs,
+    io::{Cursor, Write},
+    path::PathBuf,
+    rc::Rc,
+    sync::Arc,
+};
 use sysinfo::{
     Pid, PidExt, ProcessExt, ProcessRefreshKind, ProcessStatus, RefreshKind, System, SystemExt,
 };
 use tl::ParserOptions;
+use tokio::sync::mpsc;
 use zip::ZipArchive;
 
 #[cfg(all(debug_assertions, not(feature = "prod_in_debug")))]
 const SERVER_URL: &str = "http://127.0.0.1:8000";
 #[cfg(any(not(debug_assertions), feature = "prod_in_debug"))]
 const SERVER_URL: &str = "https://bramletts-games.shuttleapp.rs";
+const N_DOWNLOAD_CHUNKS: usize = 4;
 
 enum GameState {
     NotDownloaded,
-    Downloading(Promise<Result<Bytes>>),
+    Downloading(Promise<Result<Bytes>>, (usize, mpsc::Receiver<()>)),
     Downloaded(Bytes),
     Installing(Promise<Result<()>>),
     Installed,
     Running(Pid),
-    Stopped, // runs once; goes back to installed
+    // runs once; goes back to installed
+    Stopped,
 }
 
 impl Debug for GameState {
@@ -62,26 +74,20 @@ impl App {
     pub async fn new(_: &eframe::CreationContext<'_>) -> Result<Self> {
         // This is also where you can customize the look and feel of egui using
         // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
-
         let client = ClientBuilder::new()
             .cookie_store(true)
             .cookie_provider(Arc::new(Jar::default()))
             .build()
             .unwrap();
-
         let games = client
             .get(SERVER_URL)
             .send()
             .await?
             .json::<Vec<GameInfo>>()
             .await?;
-
         let mut rhai_engine = Engine::new();
-
         rhai_fs::FilesystemPackage::new().register_into_engine(&mut rhai_engine);
-
         let error = Rc::new(RefCell::new(None));
-
         Ok(Self {
             games: match games
                 .into_iter()
@@ -94,13 +100,10 @@ impl App {
                         .join("Saves")
                         .join(&info.name);
                     std::fs::create_dir_all(&save_dir)?;
-
                     let mut scope = Scope::new();
                     scope.push_constant("game_dir", dir.clone());
                     scope.push_constant("save_dir", save_dir.clone());
-
                     let hooks_ast = rhai_engine.compile(info.hooks.clone())?;
-
                     Ok(Game {
                         dir,
                         save_dir,
@@ -114,7 +117,7 @@ impl App {
             {
                 Ok(games) => games,
                 Err(e) => {
-                    error.borrow_mut().replace(format!("{e:#?}"));
+                    error.borrow_mut().replace(e.to_string());
                     vec![]
                 }
             },
@@ -136,118 +139,120 @@ impl eframe::App for App {
             });
             return;
         }
-
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Bramlett's Totally Reliable Game Downloader");
             ui.label("Click a game to download it. Wait for it to download, then hit \"Run\".");
             ui.label("Some games may take a while to download. Please be patient.");
 
+
             let err = self.error.clone();
             for game in &mut self.games {
                 ui.group(err_wrapper(err.clone(), |ui| {
                     ui.label(&game.info.name);
-                    match &game.state {
+                    match &mut game.state {
                         GameState::NotDownloaded => {
                             if ui.button("Download").clicked() {
+                                let (progress_tx, progress_rx) = mpsc::channel(N_DOWNLOAD_CHUNKS);
                                 let promise = Promise::spawn_async({
                                     let client = self.client.clone();
                                     let gdrive_id = game.info.gdrive_id.clone();
-
-                                    download_gdrive(gdrive_id, client)
+                                    download_gdrive(gdrive_id, client, progress_tx)
                                 });
-
-                                game.state = GameState::Downloading(promise);
+                                game.state = GameState::Downloading(promise, (0, progress_rx));
                             }
-                        }
-
-                        GameState::Downloading(promise) => {
+                        },
+                        GameState::Downloading(promise, (progress, progress_rx)) => {
                             if let Some(res) = promise.ready() {
-                                let bytes =
-                                    res.as_ref().map_err(|e| anyhow!("{e:#?}"))?.clone();
-
-                                game.state = GameState::Downloaded(
-                                    bytes,
-                                );
+                                let bytes = res.as_ref().map_err(|e| anyhow!("{e}"))?.clone();
+                                game.state = GameState::Downloaded(bytes);
                             } else {
-                                ui.label("Downloading... (this may take a while)");
+                                while progress_rx.try_recv().is_ok() {
+                                    *progress += 1;
+                                }
+                                ui
+                                    .add(
+                                        ProgressBar::new(
+                                            *progress as f32 / N_DOWNLOAD_CHUNKS as f32,
+                                        ).text("Downloading..."),
+                                    )
+                                    .on_hover_ui(|ui| {
+                                        ui.label(format!("{progress} out of {N_DOWNLOAD_CHUNKS} chunks downloaded"));
+                                    });
                             };
-                        }
-
+                        },
                         GameState::Downloaded(bytes) => {
                             let promise = Promise::<Result<()>>::spawn_blocking({
                                 let dir = game.dir.clone();
                                 let bytes = bytes.clone();
-
                                 move || extract_zip_with_password(bytes, dir, b"game")
                             });
-
                             game.state = GameState::Installing(promise);
-                        }
-
+                        },
                         GameState::Installing(promise) => {
                             if let Some(res) = promise.ready() {
-                                res.as_ref().map_err(|e| anyhow!("{e:#?}"))?;
+                                res.as_ref().map_err(|e| anyhow!("{e}"))?;
 
-                                // we run the post-install script here because the `Installed` state may be used after running a game.
-                                self.rhai_engine.call_fn::<()>(&mut game.rhai_scope, &game.hooks_ast, "post_install", ()).map_err(|e| anyhow!("{e:#?}"))?;
-
+                                // we run the post-install script here because the `Installed` state may be used
+                                // after running a game.
+                                self
+                                    .rhai_engine
+                                    .call_fn::<()>(&mut game.rhai_scope, &game.hooks_ast, "post_install", ())
+                                    .map_err(|e| anyhow!("{e}"))?;
                                 game.state = GameState::Installed;
                             } else {
-                                ui.label("Installing... (this will probably take less time than downloading, but still a while)");
+                                ui.label(
+                                    "Installing... (this will probably take less time than downloading, but still a while)",
+                                );
                             };
-                        }
-
+                        },
                         GameState::Installed => {
                             if ui.button("Run").clicked() {
-                                self.rhai_engine.call_fn::<()>(&mut game.rhai_scope, &game.hooks_ast, "pre_run", ()).map_err(|e| anyhow!("{e:#?}"))?;
-
-                                let pid = std::process::Command::new(game.dir.join(&game.info.exe))
-                                    .current_dir(game.dir.clone())
-                                    .spawn()?
-                                    .id();
-
+                                self
+                                    .rhai_engine
+                                    .call_fn::<()>(&mut game.rhai_scope, &game.hooks_ast, "pre_run", ())
+                                    .map_err(|e| anyhow!("{e}"))?;
+                                let pid =
+                                    std::process::Command::new(game.dir.join(&game.info.exe))
+                                        .current_dir(game.dir.clone())
+                                        .spawn()?
+                                        .id();
                                 game.state = GameState::Running(Pid::from_u32(pid));
                             }
-                        }
-
+                        },
                         GameState::Running(pid) => {
                             ui.label("Running...");
-
-                            let mut system = System::new_with_specifics(
-                                RefreshKind::new().with_processes(ProcessRefreshKind::new()),
-                            );
+                            let mut system =
+                                System::new_with_specifics(
+                                    RefreshKind::new().with_processes(ProcessRefreshKind::new()),
+                                );
                             system.refresh_processes();
-
-                            if ![ProcessStatus::Run, ProcessStatus::Sleep]
-                                    .contains(&system.process(*pid).map(|p| p.status())
-                                    .unwrap_or(
-                                        // What's here doesn't actually matter so long as it's not `Run` or `Sleep`
-                                        sysinfo::ProcessStatus::Zombie 
-                                        )
-                                    ) {
+                            if ![
+                                ProcessStatus::Run,
+                                ProcessStatus::Sleep,
+                            ].contains(&system.process(*pid).map(|p| p.status()).unwrap_or(
+                                // What's here doesn't actually matter so long as it's not `Run` or `Sleep`
+                                sysinfo::ProcessStatus::Zombie,
+                            )) {
                                 game.state = GameState::Stopped;
                             }
-                        }
-
+                        },
                         GameState::Stopped => {
-                            self.rhai_engine.call_fn::<()>(&mut game.rhai_scope, &game.hooks_ast, "post_run", ()).map_err(|e| anyhow!("{e:#?}"))?;
+                            self
+                                .rhai_engine
+                                .call_fn::<()>(&mut game.rhai_scope, &game.hooks_ast, "post_run", ())
+                                .map_err(|e| anyhow!("{e}"))?;
                             game.state = GameState::Installed;
-                        }
+                        },
                     };
-
                     Ok(())
                 }));
             }
-
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 egui::warn_if_debug_build(ui);
                 if !cfg!(windows) {
-                    ui.label(
-                        RichText::new("⚠ Not on Windows ⚠")
-                            .small()
-                            .color(ui.visuals().warn_fg_color),
-                    )
-                    .on_hover_text("Saving and some games may not work on non-Windows platforms.");
+                    ui
+                        .label(RichText::new("⚠ Not on Windows ⚠").small().color(ui.visuals().warn_fg_color))
+                        .on_hover_text("Saving and some games may not work on non-Windows platforms.");
                 };
             });
         });
@@ -260,7 +265,7 @@ fn err_wrapper(
 ) -> impl FnMut(&mut Ui) {
     move |ui| {
         if let Err(e) = f(ui) {
-            err.borrow_mut().replace(format!("{e:#?}"));
+            err.borrow_mut().replace(e.to_string());
         }
     }
 }
@@ -268,14 +273,11 @@ fn err_wrapper(
 fn extract_zip_with_password(bytes: Bytes, dir: PathBuf, password: &[u8]) -> Result<()> {
     std::fs::create_dir_all(&dir)?;
     let mut archive = ZipArchive::new(Cursor::new(&bytes))?;
-
     for i in 0..archive.len() {
         let mut file = archive.by_index_decrypt(i, password)??;
         let mut filepath_components = file.enclosed_name().unwrap().components();
         filepath_components.next();
-
         let outpath = dir.join(filepath_components.as_path());
-
         if file.name().ends_with('/') {
             fs::create_dir_all(&outpath)?
         } else {
@@ -287,22 +289,27 @@ fn extract_zip_with_password(bytes: Bytes, dir: PathBuf, password: &[u8]) -> Res
             let mut outfile = fs::File::create(&outpath)?;
             std::io::copy(&mut file, &mut outfile)?;
         }
+
         // make sure executable is executable on unix for wine users
         #[cfg(unix)]
         if let Some(ext) = outpath.extension() {
             if ext == "exe" {
                 use std::os::unix::fs::PermissionsExt;
+
                 let mut perms = fs::metadata(&outpath)?.permissions();
                 perms.set_mode(0o755);
                 fs::set_permissions(&outpath, perms)?;
             }
         }
     }
-
     Ok(())
 }
 
-async fn download_gdrive(gdrive_id: String, client: Client) -> Result<Bytes> {
+async fn download_gdrive(
+    gdrive_id: String,
+    client: Client,
+    progress: mpsc::Sender<()>,
+) -> Result<Bytes> {
     let gdrive_url = format!(
         "https://drive.google.com/uc?export=download&id={}",
         gdrive_id
@@ -310,11 +317,11 @@ async fn download_gdrive(gdrive_id: String, client: Client) -> Result<Bytes> {
 
     // TODO: multithreaded download
     let response = client.get(&gdrive_url).send().await?.text().await?;
-
+    let bad_drive_ctx =
+        "This really shouldn't happen. Google Drive did something weird with their downloading system.";
     let real_url = {
         let dom = tl::parse(&response, ParserOptions::default())?;
         let parser = dom.parser();
-        let bad_drive_ctx = "This really shouldn't happen. Google Drive did something weird with their downloading system.";
         dom.get_element_by_id("download-form")
             .context(bad_drive_ctx)?
             .get(parser)
@@ -331,11 +338,52 @@ async fn download_gdrive(gdrive_id: String, client: Client) -> Result<Bytes> {
 
     log::info!("real google drive download URL: {}", real_url);
 
-    client
-        .get(real_url)
+    let content_length: usize = client
+        .head(&real_url)
         .send()
         .await?
-        .bytes()
-        .await
-        .map_err(Into::into)
+        .headers()
+        .get("Content-Length")
+        .context(bad_drive_ctx)?
+        .to_str()?
+        .parse()
+        .unwrap_or(0);
+
+    let chunk_size = content_length / 8;
+
+    let joined = try_join_all((0..N_DOWNLOAD_CHUNKS).map(|i| {
+        let client = client.clone();
+        let real_url = real_url.clone();
+        let progress = progress.clone();
+        async move {
+            let start = i * chunk_size;
+            let end = if i == N_DOWNLOAD_CHUNKS - 1 {
+                content_length
+            } else {
+                (i + 1) * chunk_size
+            };
+            let response = client
+                .get(&real_url)
+                .header("Range", format!("bytes={}-{}", start, end))
+                .send()
+                .await?
+                .bytes()
+                .await?;
+            log::info!("downloaded chunk {i} of {N_DOWNLOAD_CHUNKS}");
+            progress.send(()).await?;
+            Ok::<_, anyhow::Error>(response)
+        }
+    }))
+    .await?;
+    let mut bytes = BytesMut::with_capacity(content_length as usize);
+    let mut f = std::fs::OpenOptions::new()
+        .create(true)
+        .truncate(true)
+        .write(true)
+        .open("test.zip")?;
+    for chunk in joined {
+        f.write_all(&chunk)?;
+        bytes.extend_from_slice(&chunk);
+    }
+    Ok(bytes.freeze())
 }
