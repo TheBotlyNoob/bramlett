@@ -28,3 +28,7 @@ common = { path = "../common" }
 bytes = "1.5.0"
 async-scoped = { version = "0.7.1", features = ["use-tokio"] }
 zip = "0.6.6"
+sysinfo = "0.29.10"
+rhai = "1.16.2"
+dirs = "5.0.1"
+rhai-fs = "0.1.2"
