@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context, Result};
 use bytes::{Bytes, BytesMut};
 use common::GameInfo;
 use egui::{ProgressBar, RichText, Ui};
-use futures::future::try_join_all;
+use futures::StreamExt;
 use poll_promise::Promise;
 use reqwest::{cookie::Jar, Client, ClientBuilder};
 use rhai::{packages::Package, Engine, Scope, AST};
@@ -10,27 +10,25 @@ use std::{
     cell::RefCell,
     fmt::Debug,
     fs,
-    io::{Cursor, Write},
+    io::Cursor,
     path::PathBuf,
     rc::Rc,
-    sync::Arc,
+    sync::{atomic::AtomicU64, atomic::Ordering::Relaxed, Arc},
 };
 use sysinfo::{
     Pid, PidExt, ProcessExt, ProcessRefreshKind, ProcessStatus, RefreshKind, System, SystemExt,
 };
 use tl::ParserOptions;
-use tokio::sync::mpsc;
 use zip::ZipArchive;
 
 #[cfg(all(debug_assertions, not(feature = "prod_in_debug")))]
 const SERVER_URL: &str = "http://127.0.0.1:8000";
 #[cfg(any(not(debug_assertions), feature = "prod_in_debug"))]
 const SERVER_URL: &str = "https://bramletts-games.shuttleapp.rs";
-const N_DOWNLOAD_CHUNKS: usize = 4;
 
 enum GameState {
     NotDownloaded,
-    Downloading(Promise<Result<Bytes>>, (usize, mpsc::Receiver<()>)),
+    Downloading(Promise<Result<Bytes>>, Arc<(AtomicU64, AtomicU64)>),
     Downloaded(Bytes),
     Installing(Promise<Result<()>>),
     Installed,
@@ -152,31 +150,31 @@ impl eframe::App for App {
                     match &mut game.state {
                         GameState::NotDownloaded => {
                             if ui.button("Download").clicked() {
-                                let (progress_tx, progress_rx) = mpsc::channel(N_DOWNLOAD_CHUNKS);
+                                let progress = Arc::new((AtomicU64::new(0), AtomicU64::new(1)));
                                 let promise = Promise::spawn_async({
                                     let client = self.client.clone();
                                     let gdrive_id = game.info.gdrive_id.clone();
-                                    download_gdrive(gdrive_id, client, progress_tx)
+                                    let progress = progress.clone();
+                                    download_gdrive(gdrive_id, client, progress)
                                 });
-                                game.state = GameState::Downloading(promise, (0, progress_rx));
+                                game.state = GameState::Downloading(promise, progress);
                             }
                         },
-                        GameState::Downloading(promise, (progress, progress_rx)) => {
+                        GameState::Downloading(promise, progress) => {
                             if let Some(res) = promise.ready() {
                                 let bytes = res.as_ref().map_err(|e| anyhow!("{e}"))?.clone();
                                 game.state = GameState::Downloaded(bytes);
                             } else {
-                                while progress_rx.try_recv().is_ok() {
-                                    *progress += 1;
-                                }
+                                let numerator = progress.0.load(Relaxed);
+                                let denominator = progress.1.load(Relaxed);
                                 ui
                                     .add(
                                         ProgressBar::new(
-                                            *progress as f32 / N_DOWNLOAD_CHUNKS as f32,
+                                            numerator as f32 / denominator as f32,
                                         ).text("Downloading..."),
                                     )
                                     .on_hover_ui(|ui| {
-                                        ui.label(format!("{progress} out of {N_DOWNLOAD_CHUNKS} chunks downloaded"));
+                                        ui.label(format!("{numerator} out of {denominator} bytes downloaded"));
                                     });
                             };
                         },
@@ -308,7 +306,7 @@ fn extract_zip_with_password(bytes: Bytes, dir: PathBuf, password: &[u8]) -> Res
 async fn download_gdrive(
     gdrive_id: String,
     client: Client,
-    progress: mpsc::Sender<()>,
+    progress: Arc<(AtomicU64, AtomicU64)>,
 ) -> Result<Bytes> {
     let gdrive_url = format!(
         "https://drive.google.com/uc?export=download&id={}",
@@ -338,52 +336,17 @@ async fn download_gdrive(
 
     log::info!("real google drive download URL: {}", real_url);
 
-    let content_length: usize = client
-        .head(&real_url)
-        .send()
-        .await?
-        .headers()
-        .get("Content-Length")
-        .context(bad_drive_ctx)?
-        .to_str()?
-        .parse()
-        .unwrap_or(0);
+    let res = client.get(&real_url).send().await?;
 
-    let chunk_size = content_length / 8;
+    progress.1.store(res.content_length().unwrap(), Relaxed);
 
-    let joined = try_join_all((0..N_DOWNLOAD_CHUNKS).map(|i| {
-        let client = client.clone();
-        let real_url = real_url.clone();
-        let progress = progress.clone();
-        async move {
-            let start = i * chunk_size;
-            let end = if i == N_DOWNLOAD_CHUNKS - 1 {
-                content_length
-            } else {
-                (i + 1) * chunk_size
-            };
-            let response = client
-                .get(&real_url)
-                .header("Range", format!("bytes={}-{}", start, end))
-                .send()
-                .await?
-                .bytes()
-                .await?;
-            log::info!("downloaded chunk {i} of {N_DOWNLOAD_CHUNKS}");
-            progress.send(()).await?;
-            Ok::<_, anyhow::Error>(response)
-        }
-    }))
-    .await?;
-    let mut bytes = BytesMut::with_capacity(content_length as usize);
-    let mut f = std::fs::OpenOptions::new()
-        .create(true)
-        .truncate(true)
-        .write(true)
-        .open("test.zip")?;
-    for chunk in joined {
-        f.write_all(&chunk)?;
+    let mut bytes = BytesMut::new();
+    let mut stream = res.bytes_stream();
+    while let Some(chunk) = stream.next().await {
+        let chunk = chunk?;
+        progress.0.fetch_add(chunk.len() as u64, Relaxed);
         bytes.extend_from_slice(&chunk);
     }
+
     Ok(bytes.freeze())
 }
