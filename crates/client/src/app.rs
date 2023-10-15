@@ -148,18 +148,9 @@ impl App {
                         scope.push_constant("CONFIG_DIR", config_dir);
                         scope.push_constant("HOME_DIR", home_dir);
                     } else {
-                        scope.push_constant(
-                            "DATA_LOCAL_DIR",
-                            dirs::data_local_dir().unwrap().join("Bramletts Games"),
-                        );
-                        scope.push_constant(
-                            "DATA_DIR",
-                            dirs::data_dir().unwrap().join("Bramletts Games"),
-                        );
-                        scope.push_constant(
-                            "CONFIG_DIR",
-                            dirs::config_dir().unwrap().join("Bramletts Games"),
-                        );
+                        scope.push_constant("DATA_LOCAL_DIR", dirs::data_local_dir().unwrap());
+                        scope.push_constant("DATA_DIR", dirs::data_dir().unwrap());
+                        scope.push_constant("CONFIG_DIR", dirs::config_dir().unwrap());
                         scope.push_constant("HOME_DIR", dirs::home_dir().unwrap());
                     }
 
