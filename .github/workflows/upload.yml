@@ -35,12 +35,13 @@ jobs:
         uses: actions/configure-pages@v3
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo build --release --package client
-      - run: Copy-Item target/release/client.exe games.exe
+      - run: New-Item web
+      - run: Copy-Item target/release/client.exe web/games.exe
+      - run: Copy-Item index.html web/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          # Upload entire repository
-          path: games.exe index.html
+          path: web
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
