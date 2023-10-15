@@ -200,13 +200,15 @@ impl eframe::App for App {
         }
 
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Bramlett's Totally Reliable Game Downloader");
-            ui.label("Click a game to download it. Wait for it to download, then hit \"Run\".");
-            ui.label("Some games may take a while to download. Please be patient.");
+            ui.heading(crate::NAME);
+            ui.label("Click a game to install it. Wait for it to install, then hit \"Run\".");
+            ui.label("Some games may take a while to install. Please be patient.");
 
             ui.separator();
             ui.label("Games progress is saved on all computers.");
-            ui.label("I would advise using the same computer to avoid downloading a game more than once.");
+            ui.label(
+                "I would advise using the same computer to avoid installing a game more than once.",
+            );
             ui.separator();
 
             for game in &mut self.games {
@@ -420,7 +422,7 @@ async fn download_gdrive(
     // TODO: multithreaded download
     let response = client.get(&gdrive_url).send().await?.text().await?;
     let bad_drive_ctx =
-        "This really shouldn't happen. Google Drive did something weird with their downloading system.";
+        "This really shouldn't happen. Google Drive did something weird with their system.";
     let real_url = {
         let dom = tl::parse(&response, ParserOptions::default())?;
         let parser = dom.parser();

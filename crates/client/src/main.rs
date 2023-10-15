@@ -2,6 +2,8 @@
 // hide console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+const NAME: &str = "Bramlett's Totally Reliable Game Launcher";
+
 use env_logger::Env;
 
 mod app;
@@ -17,7 +19,7 @@ async fn main() -> eframe::Result<()> {
         ..Default::default()
     };
     eframe::run_native(
-        "Bramlett's Totally Reliable Game Downloader",
+        NAME,
         native_options,
         Box::new(|cc| Box::new(futures::executor::block_on(app::App::new(cc)).unwrap())),
     )
