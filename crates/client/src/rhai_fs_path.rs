@@ -10,7 +10,7 @@ pub mod functions {
     }
 
     #[rhai_fn(global)]
-    pub fn filename(path: PathBuf) -> String {
+    pub fn file_name(path: PathBuf) -> String {
         path.file_name().unwrap().to_str().unwrap().to_string()
     }
 
