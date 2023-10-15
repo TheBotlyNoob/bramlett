@@ -77,7 +77,7 @@ impl Debug for GameState {
 
 pub struct Game {
     info: GameInfo,
-    dir: PathBuf,
+    game_dir: PathBuf,
     save_dir: PathBuf,
     rhai_scope: Scope<'static>,
     hooks_ast: AST,
@@ -107,18 +107,22 @@ impl App {
             .await?
             .json::<Vec<GameInfo>>()
             .await?;
+
         let mut rhai_engine = Engine::new();
+        let module = rhai::exported_module!(crate::rhai_fs_path::functions);
+        rhai_engine.register_global_module(module.into());
         rhai_fs::FilesystemPackage::new().register_into_engine(&mut rhai_engine);
+
         let error = Rc::new(RefCell::new(None));
         Ok(Self {
             games: match games
                 .into_iter()
                 .map(|info| {
-                    let dir = dirs::data_local_dir()
+                    let game_dir = dirs::data_local_dir()
                         .unwrap()
                         .join("Bramletts Games")
                         .join(info.name.clone());
-                    std::fs::create_dir_all(&dir)?;
+                    std::fs::create_dir_all(&game_dir)?;
                     let save_dir = dirs::home_dir()
                         .unwrap()
                         .join("OneDrive - Brevard Public Schools")
@@ -126,16 +130,54 @@ impl App {
                         .join(&info.name);
                     std::fs::create_dir_all(&save_dir)?;
                     let mut scope = Scope::new();
-                    scope.push_constant("game_dir", dir.clone());
-                    scope.push_constant("save_dir", save_dir.clone());
+
+                    if !cfg!(windows) {
+                        let mut root = std::env::var("WINEPREFIX")
+                            .map(PathBuf::from)
+                            .unwrap_or_else(|_| dirs::home_dir().unwrap().join(".wine"));
+                        root.push("drive_c");
+
+                        let home_dir = root.join("users").join(whoami::username());
+
+                        scope.push_constant(
+                            "DATA_LOCAL_DIR",
+                            home_dir.join("AppData").join("Local"),
+                        );
+                        let config_dir = home_dir.join("AppData").join("Roaming");
+                        scope.push_constant("DATA_DIR", config_dir.clone());
+                        scope.push_constant("CONFIG_DIR", config_dir);
+                        scope.push_constant("HOME_DIR", home_dir);
+                    } else {
+                        scope.push_constant(
+                            "DATA_LOCAL_DIR",
+                            dirs::data_local_dir().unwrap().join("Bramletts Games"),
+                        );
+                        scope.push_constant(
+                            "DATA_DIR",
+                            dirs::data_dir().unwrap().join("Bramletts Games"),
+                        );
+                        scope.push_constant(
+                            "CONFIG_DIR",
+                            dirs::config_dir().unwrap().join("Bramletts Games"),
+                        );
+                        scope.push_constant("HOME_DIR", dirs::home_dir().unwrap());
+                    }
+
+                    scope.push_constant("GAME_DIR", game_dir.clone());
+                    scope.push_constant("SAVE_DIR", save_dir.clone());
+
                     let hooks_ast = rhai_engine.compile(info.hooks.clone())?;
                     Ok(Game {
-                        dir,
                         save_dir,
                         rhai_scope: scope,
                         hooks_ast,
                         info,
-                        state: GameState::NotDownloaded,
+                        state: if game_dir.join("installed").exists() {
+                            GameState::Installed
+                        } else {
+                            GameState::NotDownloaded
+                        },
+                        game_dir,
                     })
                 })
                 .collect::<Result<Vec<Game>>>()
@@ -164,14 +206,14 @@ impl eframe::App for App {
             });
             return;
         }
+
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading("Bramlett's Totally Reliable Game Downloader");
             ui.label("Click a game to download it. Wait for it to download, then hit \"Run\".");
             ui.label("Some games may take a while to download. Please be patient.");
 
-            let err = self.error.clone();
             for game in &mut self.games {
-                ui.group(err_wrapper(err.clone(), |ui| {
+                ui.group(err_wrapper(self.error.clone(), |ui| {
                     ui.label(&game.info.name);
                     match &mut game.state {
                         GameState::NotDownloaded => {
@@ -205,7 +247,7 @@ impl eframe::App for App {
                         GameState::Downloaded(bytes) => {
                             let progress = AtomicPercent::new();
                             let promise = Promise::<Result<()>>::spawn_blocking({
-                                let dir = game.dir.clone();
+                                let dir = game.game_dir.clone();
                                 let bytes = bytes.clone();
                                 let progress = progress.clone();
                                 move || extract_zip_with_password(bytes, dir, b"game", progress)
@@ -216,8 +258,11 @@ impl eframe::App for App {
                             if let Some(res) = promise.ready() {
                                 res.as_ref().map_err(|e| anyhow!("{e}"))?;
 
-                                // we run the post-install script here because the `Installed` state may be used
-                                // after running a game.
+                                std::fs::OpenOptions::new()
+                                    .create(true)
+                                    .write(true)
+                                    .open(game.game_dir.join("installed"))?;
+
                                 self.rhai_engine
                                     .call_fn::<()>(
                                         &mut game.rhai_scope,
@@ -240,21 +285,31 @@ impl eframe::App for App {
                             };
                         }
                         GameState::Installed => {
-                            if ui.button("Run").clicked() {
-                                self.rhai_engine
-                                    .call_fn::<()>(
-                                        &mut game.rhai_scope,
-                                        &game.hooks_ast,
-                                        "pre_run",
-                                        (),
+                            ui.horizontal(err_wrapper(self.error.clone(), |ui| {
+                                if ui.button("Run").clicked() {
+                                    self.rhai_engine
+                                        .call_fn::<()>(
+                                            &mut game.rhai_scope,
+                                            &game.hooks_ast,
+                                            "pre_run",
+                                            (),
+                                        )
+                                        .map_err(|e| anyhow!("{e}"))?;
+                                    let pid = std::process::Command::new(
+                                        game.game_dir.join(&game.info.exe),
                                     )
-                                    .map_err(|e| anyhow!("{e}"))?;
-                                let pid = std::process::Command::new(game.dir.join(&game.info.exe))
-                                    .current_dir(game.dir.clone())
+                                    .current_dir(game.game_dir.clone())
                                     .spawn()?
                                     .id();
-                                game.state = GameState::Running(Pid::from_u32(pid));
-                            }
+                                    game.state = GameState::Running(Pid::from_u32(pid));
+                                }
+                                if ui.button("Delete").clicked() {
+                                    std::fs::remove_dir_all(&game.game_dir)?;
+                                    game.state = GameState::NotDownloaded;
+                                }
+
+                                Ok(())
+                            }));
                         }
                         GameState::Running(pid) => {
                             ui.label("Running...");

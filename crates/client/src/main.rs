@@ -5,6 +5,7 @@
 use env_logger::Env;
 
 mod app;
+mod rhai_fs_path;
 
 #[tokio::main]
 async fn main() -> eframe::Result<()> {

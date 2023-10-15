@@ -7,8 +7,8 @@ pub struct GameInfo {
     pub exe: PathBuf,
     /// RHAI script with `post_install`, `pre_run` and `post_run` functions.
     ///
-    /// `post_install` should be used in most cases to make a symlink from the game
-    /// directory's save folder to the `save_dir`.
+    /// `post_run` should be used to sync the `game_dir`'s save data with the `save_dir`.
+    /// You are allowed to assume you are running on Windows.
     ///
     /// File system is available.
     ///
