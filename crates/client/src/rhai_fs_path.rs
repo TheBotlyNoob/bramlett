@@ -43,6 +43,13 @@ pub mod functions {
         Ok(())
     }
 
+    #[rhai_fn(global, return_raw)]
+    pub fn remove_dir_all(path: PathBuf) -> Result<(), Box<rhai::EvalAltResult>> {
+        std::fs::remove_dir_all(path)
+            .map_err(|e| rhai_err(format!("Failed to remove directory: {e}")))?;
+        Ok(())
+    }
+
     fn rhai_err(s: String) -> Box<rhai::EvalAltResult> {
         Box::new(rhai::EvalAltResult::ErrorRuntime(s.into(), Position::NONE))
     }
