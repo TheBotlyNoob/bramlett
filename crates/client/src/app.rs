@@ -124,11 +124,17 @@ impl App {
                         .join("Bramletts Games")
                         .join(info.name.clone());
                     std::fs::create_dir_all(&game_dir)?;
-                    let save_dir = dirs::home_dir()
-                        .unwrap()
-                        .join("OneDrive - Brevard Public Schools")
-                        .join("Saves")
-                        .join(&info.name);
+                    let mut save_dir = dirs::home_dir().unwrap();
+                    for path in std::fs::read_dir(&save_dir)?.filter_map(Result::ok) {
+                        if path.file_type()?.is_dir() {
+                            let name = path.file_name().to_string_lossy().to_lowercase();
+                            if name.starts_with("onedrive") {
+                                save_dir = save_dir.join(path.file_name());
+                                break;
+                            }
+                        };
+                    } // if no onedrive, just use home dir
+                    let save_dir = save_dir.join("Saves").join(&info.name);
                     std::fs::create_dir_all(&save_dir)?;
                     let mut scope = Scope::new();
 
