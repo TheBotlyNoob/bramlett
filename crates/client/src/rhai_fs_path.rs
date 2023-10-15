@@ -22,8 +22,11 @@ pub mod functions {
 
     #[rhai_fn(global, return_raw)]
     pub fn copy_dir(from: PathBuf, to: PathBuf) -> Result<(), Box<rhai::EvalAltResult>> {
-        std::fs::create_dir_all(&to)
-            .map_err(|e| rhai_err(format!("Failed to create directory: {e}")))?;
+        match std::fs::create_dir_all(&to) {
+            Ok(_) => (),
+            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => (),
+            Err(e) => return Err(rhai_err(format!("Failed to create directory: {e}"))),
+        };
         for entry in std::fs::read_dir(from)
             .map_err(|e| rhai_err(format!("Failed to read directory: {e}")))?
         {

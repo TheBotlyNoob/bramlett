@@ -11,7 +11,7 @@ prod_in_debug = []
 [dependencies]
 anyhow = "1.0.75"
 eframe = { version = "0.23.0", default-features = false, features = [
-    "accesskit",     # Make egui comptaible with screen readers. NOTE: adds a lot of dependencies.
+    # "accesskit",     # Make egui comptaible with screen readers. NOTE: adds a lot of dependencies.
     "default_fonts", # Embed the default egui fonts.
     "glow",          # Use the glow rendering backend. Alternative: "wgpu".
 ] }
@@ -20,12 +20,16 @@ env_logger = "0.10.0"
 futures = "0.3.28"
 log = "0.4.20"
 poll-promise = { version = "0.3.0", features = ["tokio"] }
-reqwest = { version = "0.11.22", default-features = false, features = ["rustls-tls", "json", "cookies", "stream"] }
+reqwest = { version = "0.11.22", default-features = false, features = [
+    "rustls-tls",
+    "json",
+    "cookies",
+    "stream",
+] }
 tl = "0.7.7"
 tokio = { version = "1.33.0", features = ["rt-multi-thread", "macros"] }
 common = { path = "../common" }
 bytes = "1.5.0"
-async-scoped = { version = "0.7.1", features = ["use-tokio"] }
 zip = "0.6.6"
 sysinfo = "0.29.10"
 rhai = "1.16.2"

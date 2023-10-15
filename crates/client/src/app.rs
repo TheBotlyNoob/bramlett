@@ -78,6 +78,7 @@ impl Debug for GameState {
 pub struct Game {
     info: GameInfo,
     game_dir: PathBuf,
+    #[allow(dead_code)]
     save_dir: PathBuf,
     rhai_scope: Scope<'static>,
     hooks_ast: AST,
@@ -203,6 +204,11 @@ impl eframe::App for App {
             ui.label("Click a game to download it. Wait for it to download, then hit \"Run\".");
             ui.label("Some games may take a while to download. Please be patient.");
 
+            ui.separator();
+            ui.label("Games progress is saved on all computers.");
+            ui.label("I would advise using the same computer to avoid downloading a game more than once.");
+            ui.separator();
+
             for game in &mut self.games {
                 ui.group(err_wrapper(self.error.clone(), |ui| {
                     ui.label(&game.info.name);
@@ -232,7 +238,6 @@ impl eframe::App for App {
                                             progress.get_denominator() as f32 / 1_000_000_000.0
                                         ));
                                     });
-                                ctx.request_repaint();
                             };
                         }
                         GameState::Downloaded(bytes) => {
@@ -272,7 +277,6 @@ impl eframe::App for App {
                                             progress.get_denominator()
                                         ));
                                     });
-                                ctx.request_repaint();
                             };
                         }
                         GameState::Installed => {
@@ -290,6 +294,7 @@ impl eframe::App for App {
                                         game.game_dir.join(&game.info.exe),
                                     )
                                     .current_dir(game.game_dir.clone())
+                                    .args(game.info.args.clone())
                                     .spawn()?
                                     .id();
                                     game.state = GameState::Running(Pid::from_u32(pid));
@@ -343,6 +348,8 @@ impl eframe::App for App {
                     .on_hover_text("Saving and some games may not work on non-Windows platforms.");
                 };
             });
+
+            ctx.request_repaint(); // too many moving parts, so just repaint every frame
         });
     }
 }
