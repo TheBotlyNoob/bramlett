@@ -13,8 +13,10 @@ anyhow = "1.0.75"
 eframe = { version = "0.23.0", default-features = false, features = [
     # "accesskit",     # Make egui comptaible with screen readers. NOTE: adds a lot of dependencies.
     "default_fonts", # Embed the default egui fonts.
-    "glow",          # Use the glow rendering backend. Alternative: "wgpu".
+    # "glow",          # Use the glow rendering backend. Alternative: "wgpu".
+    "wgpu",
 ] }
+winit = { version = "*", features = ["wayland", "x11"] }
 egui = "0.23.0"
 env_logger = "0.10.0"
 futures = "0.3.28"
