@@ -72,6 +72,20 @@ async fn main() -> shuttle_axum::ShuttleAxum {
                         hooks: script!("superhot"),
                         args: vec![],
                     },
+                    GameInfo {
+                        name: "Untitled Goose Game".into(),
+                        gdrive_id: "1MAUhwh-1wEWSTQg5mK8f0X74oVzcg4NM".into(),
+                        exe: PathBuf::from("Untitled.exe"),
+                        hooks: script!("goose"),
+                        args: vec![],
+                    },
+                    GameInfo {
+                        name: "Undertale".into(),
+                        gdrive_id: "1mm-NCvlluUzf4MUVECl_XB1ZmK1Fvw7J".into(),
+                        exe: PathBuf::from("UNDERTALE.exe"),
+                        hooks: script!("undertale"),
+                        args: vec![],
+                    },
                 ])
             }),
         )
