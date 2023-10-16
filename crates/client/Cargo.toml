@@ -24,6 +24,7 @@ log = { version = "0.4.20", features = ["release_max_level_off"] }
 poll-promise = { version = "0.3.0", features = ["tokio"] }
 reqwest = { version = "0.11.22", default-features = false, features = [
     # "rustls-tls",
+    "native-tls",
     "json",
     "cookies",
     "stream",
