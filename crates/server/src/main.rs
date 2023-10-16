@@ -65,6 +65,13 @@ async fn main() -> shuttle_axum::ShuttleAxum {
                         hooks: script!("portal"),
                         args: vec![],
                     },
+                    GameInfo {
+                        name: "SUPERHOT".into(),
+                        gdrive_id: "1wCazjUEACX_o8G0_09fJLGFms0HCR3DY".into(),
+                        exe: PathBuf::from("SUPERHOT.exe"),
+                        hooks: script!("superhot"),
+                        args: vec![],
+                    },
                 ])
             }),
         )
