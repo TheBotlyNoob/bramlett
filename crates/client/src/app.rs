@@ -193,19 +193,133 @@ impl App {
     }
 }
 
+fn app(
+    ui: &mut Ui,
+    game: &mut Game,
+    client: &Client,
+    rhai_engine: &Engine,
+    error: Rc<RefCell<Option<String>>>,
+) -> Result<()> {
+    ui.label(&game.info.name);
+    match &mut game.state {
+        GameState::NotDownloaded => {
+            if ui.button("Download").clicked() {
+                let progress = AtomicPercent::new();
+                let promise = Promise::spawn_async({
+                    let client = client.clone();
+                    let gdrive_id = game.info.gdrive_id.clone();
+                    let progress = progress.clone();
+                    download_gdrive(gdrive_id, client, progress)
+                });
+                game.state = GameState::Downloading(promise, progress);
+            }
+        }
+        GameState::Downloading(promise, progress) => {
+            if let Some(res) = promise.ready() {
+                let bytes = res.as_ref().map_err(|e| anyhow!("{e}"))?.clone();
+                game.state = GameState::Downloaded(bytes);
+            } else {
+                ui.add(ProgressBar::new(progress.get()).text("Downloading..."))
+                    .on_hover_ui(|ui| {
+                        ui.label(format!(
+                            "{:.3} out of {:.3} gigabytes downloaded",
+                            progress.get_numerator() as f32 / 1_000_000_000.0,
+                            progress.get_denominator() as f32 / 1_000_000_000.0
+                        ));
+                    });
+            };
+        }
+        GameState::Downloaded(bytes) => {
+            let progress = AtomicPercent::new();
+            let promise = Promise::<Result<()>>::spawn_blocking({
+                let dir = game.game_dir.clone();
+                let bytes = bytes.clone();
+                let progress = progress.clone();
+                move || extract_zip_with_password(bytes, dir, b"game", progress)
+            });
+            game.state = GameState::Installing(promise, progress);
+        }
+        GameState::Installing(promise, progress) => {
+            if let Some(res) = promise.ready() {
+                res.as_ref().map_err(|e| anyhow!("{e}"))?;
+
+                std::fs::OpenOptions::new()
+                    .create(true)
+                    .write(true)
+                    .open(game.game_dir.join("installed"))?;
+
+                rhai_engine
+                    .call_fn::<()>(&mut game.rhai_scope, &game.hooks_ast, "post_install", ())
+                    .map_err(|e| anyhow!("{e}"))?;
+                game.state = GameState::Installed;
+            } else {
+                ui.add(ProgressBar::new(progress.get()).text("Installing..."))
+                    .on_hover_ui(|ui| {
+                        ui.label(format!(
+                            "{} out of {} files installed",
+                            progress.get_numerator(),
+                            progress.get_denominator()
+                        ));
+                    });
+            };
+        }
+        GameState::Installed => {
+            ui.horizontal(err_wrapper(error.clone(), |ui| {
+                if ui.button("Run").clicked() {
+                    rhai_engine
+                        .call_fn::<()>(&mut game.rhai_scope, &game.hooks_ast, "pre_run", ())
+                        .map_err(|e| anyhow!("{e}"))?;
+                    let pid = std::process::Command::new(game.game_dir.join(&game.info.exe))
+                        .current_dir(game.game_dir.clone())
+                        .args(game.info.args.clone())
+                        .spawn()?
+                        .id();
+                    game.state = GameState::Running(Pid::from_u32(pid));
+                }
+                if ui.button("Delete").clicked() {
+                    std::fs::remove_dir_all(&game.game_dir)?;
+                    game.state = GameState::NotDownloaded;
+                }
+
+                Ok(())
+            }));
+        }
+        GameState::Running(pid) => {
+            ui.label("Running...");
+            let mut system = System::new_with_specifics(
+                RefreshKind::new().with_processes(ProcessRefreshKind::new()),
+            );
+            system.refresh_processes();
+            if ![ProcessStatus::Run, ProcessStatus::Sleep].contains(
+                &system.process(*pid).map(|p| p.status()).unwrap_or(
+                    // What's here doesn't actually matter so long as it's not `Run` or `Sleep`
+                    sysinfo::ProcessStatus::Zombie,
+                ),
+            ) {
+                game.state = GameState::Stopped;
+            }
+        }
+        GameState::Stopped => {
+            rhai_engine
+                .call_fn::<()>(&mut game.rhai_scope, &game.hooks_ast, "post_run", ())
+                .map_err(|e| anyhow!("{e}"))?;
+            game.state = GameState::Installed;
+        }
+    };
+    Ok(())
+}
+
 impl eframe::App for App {
     /// Called each time the UI needs repainting, which may be many times per second.
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        if let Some(err) = &*self.error.borrow() {
-            egui::CentralPanel::default().show(ctx, |ui| {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            if let Some(err) = &*self.error.borrow() {
                 ui.heading("Error (ask me about it, I'll try to help over PH):");
                 ui.separator();
                 ui.label(RichText::new(err).strong());
-            });
-            return;
-        }
+                return;
+            }
 
-        egui::CentralPanel::default().show(ctx, |ui| {
             ui.heading(crate::NAME);
             ui.label("Click a game to install it. Wait for it to install, then hit \"Run\".");
             ui.label("Some games may take a while to install. Please be patient.");
@@ -217,134 +331,21 @@ impl eframe::App for App {
             );
             ui.separator();
 
-            for game in &mut self.games {
-                ui.group(err_wrapper(self.error.clone(), |ui| {
-                    ui.label(&game.info.name);
-                    match &mut game.state {
-                        GameState::NotDownloaded => {
-                            if ui.button("Download").clicked() {
-                                let progress = AtomicPercent::new();
-                                let promise = Promise::spawn_async({
-                                    let client = self.client.clone();
-                                    let gdrive_id = game.info.gdrive_id.clone();
-                                    let progress = progress.clone();
-                                    download_gdrive(gdrive_id, client, progress)
-                                });
-                                game.state = GameState::Downloading(promise, progress);
-                            }
-                        }
-                        GameState::Downloading(promise, progress) => {
-                            if let Some(res) = promise.ready() {
-                                let bytes = res.as_ref().map_err(|e| anyhow!("{e}"))?.clone();
-                                game.state = GameState::Downloaded(bytes);
-                            } else {
-                                ui.add(ProgressBar::new(progress.get()).text("Downloading..."))
-                                    .on_hover_ui(|ui| {
-                                        ui.label(format!(
-                                            "{:.3} out of {:.3} gigabytes downloaded",
-                                            progress.get_numerator() as f32 / 1_000_000_000.0,
-                                            progress.get_denominator() as f32 / 1_000_000_000.0
-                                        ));
-                                    });
-                            };
-                        }
-                        GameState::Downloaded(bytes) => {
-                            let progress = AtomicPercent::new();
-                            let promise = Promise::<Result<()>>::spawn_blocking({
-                                let dir = game.game_dir.clone();
-                                let bytes = bytes.clone();
-                                let progress = progress.clone();
-                                move || extract_zip_with_password(bytes, dir, b"game", progress)
-                            });
-                            game.state = GameState::Installing(promise, progress);
-                        }
-                        GameState::Installing(promise, progress) => {
-                            if let Some(res) = promise.ready() {
-                                res.as_ref().map_err(|e| anyhow!("{e}"))?;
-
-                                std::fs::OpenOptions::new()
-                                    .create(true)
-                                    .write(true)
-                                    .open(game.game_dir.join("installed"))?;
-
-                                self.rhai_engine
-                                    .call_fn::<()>(
-                                        &mut game.rhai_scope,
-                                        &game.hooks_ast,
-                                        "post_install",
-                                        (),
-                                    )
-                                    .map_err(|e| anyhow!("{e}"))?;
-                                game.state = GameState::Installed;
-                            } else {
-                                ui.add(ProgressBar::new(progress.get()).text("Installing..."))
-                                    .on_hover_ui(|ui| {
-                                        ui.label(format!(
-                                            "{} out of {} files installed",
-                                            progress.get_numerator(),
-                                            progress.get_denominator()
-                                        ));
-                                    });
-                            };
-                        }
-                        GameState::Installed => {
-                            ui.horizontal(err_wrapper(self.error.clone(), |ui| {
-                                if ui.button("Run").clicked() {
-                                    self.rhai_engine
-                                        .call_fn::<()>(
-                                            &mut game.rhai_scope,
-                                            &game.hooks_ast,
-                                            "pre_run",
-                                            (),
-                                        )
-                                        .map_err(|e| anyhow!("{e}"))?;
-                                    let pid = std::process::Command::new(
-                                        game.game_dir.join(&game.info.exe),
-                                    )
-                                    .current_dir(game.game_dir.clone())
-                                    .args(game.info.args.clone())
-                                    .spawn()?
-                                    .id();
-                                    game.state = GameState::Running(Pid::from_u32(pid));
-                                }
-                                if ui.button("Delete").clicked() {
-                                    std::fs::remove_dir_all(&game.game_dir)?;
-                                    game.state = GameState::NotDownloaded;
-                                }
-
-                                Ok(())
-                            }));
-                        }
-                        GameState::Running(pid) => {
-                            ui.label("Running...");
-                            let mut system = System::new_with_specifics(
-                                RefreshKind::new().with_processes(ProcessRefreshKind::new()),
-                            );
-                            system.refresh_processes();
-                            if ![ProcessStatus::Run, ProcessStatus::Sleep].contains(
-                                &system.process(*pid).map(|p| p.status()).unwrap_or(
-                                    // What's here doesn't actually matter so long as it's not `Run` or `Sleep`
-                                    sysinfo::ProcessStatus::Zombie,
-                                ),
-                            ) {
-                                game.state = GameState::Stopped;
-                            }
-                        }
-                        GameState::Stopped => {
-                            self.rhai_engine
-                                .call_fn::<()>(
-                                    &mut game.rhai_scope,
-                                    &game.hooks_ast,
-                                    "post_run",
-                                    (),
-                                )
-                                .map_err(|e| anyhow!("{e}"))?;
-                            game.state = GameState::Installed;
-                        }
-                    };
-                    Ok(())
-                }));
-            }
+            ui.horizontal_wrapped(|ui| {
+                for game in &mut self.games {
+                    ui.group(|ui| {
+                        ui.vertical(err_wrapper(self.error.clone(), |ui| {
+                            app(
+                                ui,
+                                game,
+                                &self.client,
+                                &self.rhai_engine,
+                                self.error.clone(),
+                            )
+                        }));
+                    });
+                }
+            });
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 egui::warn_if_debug_build(ui);
                 if !cfg!(windows) {
