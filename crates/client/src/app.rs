@@ -333,21 +333,22 @@ impl eframe::App for App {
             );
             ui.separator();
 
-            ui.horizontal_wrapped(|ui| {
-                for game in &mut self.games {
-                    ui.group(|ui| {
-                        ui.vertical(err_wrapper(self.error.clone(), |ui| {
-                            app(
-                                ui,
-                                game,
-                                &self.client,
-                                &self.rhai_engine,
-                                self.error.clone(),
-                            )
-                        }));
-                    });
-                }
-            });
+            // ui.horizontal_wrapped(|ui| {
+            for game in &mut self.games {
+                ui.group(
+                    // ui.vertical(
+                    err_wrapper(self.error.clone(), |ui| {
+                        app(
+                            ui,
+                            game,
+                            &self.client,
+                            &self.rhai_engine,
+                            self.error.clone(),
+                        )
+                    }), // );
+                );
+            }
+            // });
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Center), |ui| {
                 egui::warn_if_debug_build(ui);
                 if !cfg!(windows) {
