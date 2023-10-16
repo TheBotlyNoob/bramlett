@@ -20,10 +20,10 @@ eframe = { version = "0.23.0", default-features = false, features = [
 egui = "0.23.0"
 env_logger = "0.10.0"
 futures = "0.3.28"
-log = "0.4.20"
+log = { version = "0.4.20", features = ["release_max_level_off"] }
 poll-promise = { version = "0.3.0", features = ["tokio"] }
 reqwest = { version = "0.11.22", default-features = false, features = [
-    "rustls-tls",
+    # "rustls-tls",
     "json",
     "cookies",
     "stream",
@@ -38,3 +38,4 @@ rhai = "1.16.2"
 dirs = "5.0.1"
 rhai-fs = "0.1.2"
 whoami = "1.4.1"
+obfstr = "0.4.3"

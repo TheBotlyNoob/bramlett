@@ -3,6 +3,7 @@ use bytes::{Bytes, BytesMut};
 use common::GameInfo;
 use egui::{ProgressBar, RichText, Ui};
 use futures::StreamExt;
+use obfstr::obfstr;
 use poll_promise::Promise;
 use reqwest::{cookie::Jar, Client, ClientBuilder};
 use rhai::{packages::Package, Engine, Scope, AST};
@@ -20,11 +21,6 @@ use sysinfo::{
 };
 use tl::ParserOptions;
 use zip::ZipArchive;
-
-#[cfg(all(debug_assertions, not(feature = "prod_in_debug")))]
-const SERVER_URL: &str = "http://127.0.0.1:8000";
-#[cfg(any(not(debug_assertions), feature = "prod_in_debug"))]
-const SERVER_URL: &str = "https://bramletts-games.shuttleapp.rs";
 
 #[derive(Clone)]
 pub struct AtomicPercent(pub Arc<(AtomicU64, AtomicU64)>);
@@ -102,8 +98,14 @@ impl App {
             .cookie_provider(Arc::new(Jar::default()))
             .build()
             .unwrap();
+
         let games = client
-            .get(SERVER_URL)
+            .get(
+                #[cfg(any(not(debug_assertions), feature = "prod_in_debug"))]
+                obfstr!("https://bramletts-games.shuttleapp.rs"),
+                #[cfg(all(debug_assertions, not(feature = "prod_in_debug")))]
+                obfstr!("http://127.0.0.1"),
+            ) // obfstr because... it's something to try and stop defender from flagging the exec
             .send()
             .await?
             .json::<Vec<GameInfo>>()
