@@ -10,14 +10,7 @@ prod_in_debug = []
 
 [dependencies]
 anyhow = "1.0.75"
-eframe = { version = "0.23.0", default-features = false, features = [
-    # "accesskit",     # Make egui comptaible with screen readers. NOTE: adds a lot of dependencies.
-    "default_fonts", # Embed the default egui fonts.
-    "glow",          # Use the glow rendering backend. Alternative: "wgpu".
-    # "wgpu",
-] }
-# winit = { version = "*", features = ["wayland", "x11"] } # uncomment if using wgpu backend
-egui = "0.23.0"
+iced = "0.10"
 env_logger = "0.10.0"
 futures = "0.3.28"
 log = { version = "0.4.20", features = ["release_max_level_off"] }
