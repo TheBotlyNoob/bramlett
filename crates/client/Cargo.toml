@@ -9,17 +9,14 @@ edition = "2021"
 prod_in_debug = []
 
 [dependencies]
-anyhow = "1.0.75"
-iced = "0.10"
+iced = { version = "0.10", features = ["tokio"] }
 env_logger = "0.10.0"
-futures = "0.3.28"
 log = { version = "0.4.20", features = ["release_max_level_off"] }
-poll-promise = { version = "0.3.0", features = ["tokio"] }
 reqwest = { version = "0.11.22", default-features = false, features = [
-    # "rustls-tls",
-    "native-tls",
+    # "rustls-tls", # use this if you're compiler errors
+    "native-tls", # use this for a smaller binary
     "json",
-    "cookies",
+    # "cookies",
     "stream",
 ] }
 tl = "0.7.7"
@@ -28,8 +25,9 @@ common = { path = "../common" }
 bytes = "1.5.0"
 zip = "0.6.6"
 sysinfo = "0.29.10"
-rhai = "1.16.2"
+rhai = { version = "1.16.2", features = ["sync"] }
 dirs = "5.0.1"
-rhai-fs = "0.1.2"
 whoami = "1.4.1"
 obfstr = "0.4.3"
+thiserror = "1.0.50"
+dialog = "0.3.0"
