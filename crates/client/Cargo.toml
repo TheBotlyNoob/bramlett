@@ -5,29 +5,12 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[features]
-prod_in_debug = []
-
 [dependencies]
-iced = { version = "0.10", features = ["tokio"] }
-env_logger = "0.10.0"
-log = { version = "0.4.20", features = ["release_max_level_off"] }
-reqwest = { version = "0.11.22", default-features = false, features = [
-    # "rustls-tls", # use this if you're compiler errors
-    "native-tls", # use this for a smaller binary
-    "json",
-    # "cookies",
-    "stream",
+rspc = { version = "0.1.3", features = ["axum"] }
+tokio = { version = "1.26.0", features = ["full"] }
+async-stream = "0.3.4"
+axum = { version = "0.6.10", features = ["ws"] }
+tower-http = { version = "0.4.0", default-features = false, features = [
+    "cors",
 ] }
-tl = "0.7.7"
-tokio = { version = "1.33.0", features = ["rt-multi-thread", "macros"] }
-common = { path = "../common" }
-bytes = "1.5.0"
-zip = "0.6.6"
-sysinfo = "0.29.10"
-rhai = { version = "1.16.2", features = ["sync"] }
-dirs = "5.0.1"
-whoami = "1.4.1"
-obfstr = "0.4.3"
-thiserror = "1.0.50"
-dialog = "0.3.0"
+once_cell = "1.18.0"
