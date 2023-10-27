@@ -178,7 +178,7 @@ async fn main() {
 
     router
         .export_ts(ExportConfig::new(
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../bindings.ts"),
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("frontend/lib/bindings.ts"),
         ))
         .unwrap();
 
@@ -205,7 +205,9 @@ async fn main() {
         )
         .layer(cors);
 
-    let addr = SocketAddr::from((Ipv6Addr::UNSPECIFIED, 4000));
+    let port = std::env::var("PORT").unwrap_or_else(|_| "4000".to_string());
+
+    let addr = SocketAddr::from((Ipv6Addr::UNSPECIFIED, port.parse().unwrap()));
     println!("listening on http://{}/rspc", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

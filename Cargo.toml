@@ -13,6 +13,6 @@ opt-level = 3
 opt-level = 1
 
 [workspace]
-members = ["crates/client", "crates/server", "crates/common"]
+members = ["crates/client", "crates/server", "crates/common", "xtask"]
 
 resolver = "2"
