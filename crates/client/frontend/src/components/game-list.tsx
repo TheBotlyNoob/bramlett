@@ -1,16 +1,34 @@
 "use client";
 
+import { Game } from "@/lib/bindings";
 import { rspc } from "@/lib/rspc";
-import {
-    CircleLoader,
-    ClimbingBoxLoader,
-    MoonLoader,
-    PuffLoader,
-    RotateLoader
-} from "react-spinners";
+import { Button, List } from "antd";
+import { ClimbingBoxLoader } from "react-spinners";
 
 export default function GamesList() {
     const { data, isLoading, error } = rspc.useQuery(["games"]);
+    const { mutate } = rspc.useMutation("downloadGame");
+
+    const gameStatus = (game: Game) => {
+        switch (game.status) {
+            case "NotDownloaded":
+                return (
+                    <Button
+                        onClick={() => {
+                            mutate(game.info.id);
+                        }}
+                    >
+                        Download
+                    </Button>
+                );
+            case "Downloading":
+                return <Button>Cancel</Button>;
+            case "Running":
+                return <p>Running...</p>;
+            case "Stopped":
+                return <Button>Start</Button>;
+        }
+    };
 
     return (
         <>
@@ -24,13 +42,20 @@ export default function GamesList() {
                     transform: "translate(-50%, -50%)"
                 }}
             />
-            {data &&
-                Object.entries(data).map(([key, game]) => (
-                    <div key={key}>
-                        <h2>{game.info.name}</h2>
-                        <p>{JSON.stringify(game.status)}</p>
-                    </div>
-                ))}
+
+            {data && (
+                <List
+                    bordered
+                    dataSource={Object.entries(data)}
+                    renderItem={([_, game]) => (
+                        <List.Item>
+                            <h2>{game.info.name}</h2>
+                            <p>{gameStatus(game)}</p>
+                        </List.Item>
+                    )}
+                />
+            )}
+
             {error && JSON.stringify(error)}
         </>
     );

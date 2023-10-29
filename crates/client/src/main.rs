@@ -1,5 +1,5 @@
 use std::{
-    net::{Ipv4Addr, Ipv6Addr, SocketAddr},
+    net::{Ipv4Addr, SocketAddr},
     path::PathBuf,
 };
 
@@ -83,9 +83,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     return Err(Error::GameCantDownload);
                 }
 
+                tracing::info!("downloading game {}", game.info.name);
+
                 let game_dir = config.game_dir(game.info.id);
-                let _ = std::fs::create_dir_all(&game_dir);
-                let game_dir = game_dir.join("Saves");
                 let _ = std::fs::create_dir_all(game_dir);
 
                 config.save()?;
@@ -120,7 +120,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cors = CorsLayer::new().allow_origin(AllowOrigin::list([
         HeaderValue::from_str(&format!("http://localhost:{port}")).unwrap(),
         HeaderValue::from_str(&format!("http://127.0.0.1:{port}")).unwrap(),
+        HeaderValue::from_str("http://localhost:3000").unwrap(),
     ]));
+    // let cors = CorsLayer::very_permissive();
 
     let app = axum::Router::new()
         .route("/", get(|| async { "Hello 'rspc'!" })) // TODO: display frontend here
