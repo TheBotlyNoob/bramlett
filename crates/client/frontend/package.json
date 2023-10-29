@@ -1,17 +1,30 @@
 {
-  "name": "frontend",
-  "type": "module",
-  "version": "0.0.1",
-  "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro check && astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
-  "dependencies": {
-    "@astrojs/check": "^0.2.1",
-    "astro": "^3.4.0",
-    "typescript": "^5.2.2"
-  }
+    "name": "frontend",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "@rspc/client": "link:rspc-pkgs/client",
+        "@rspc/query-core": "link:rspc-pkgs/query-core",
+        "@rspc/react-query": "link:rspc-pkgs/react-query",
+        "@tanstack/react-query": "^4.36.1",
+        "antd": "^5.10.2",
+        "next": "14.0.0",
+        "react": "^18",
+        "react-dom": "^18",
+        "react-spinners": "^0.13.8"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "@types/react": "^18",
+        "@types/react-dom": "^18",
+        "eslint": "^8",
+        "eslint-config-next": "14.0.0",
+        "typescript": "^5"
+    }
 }

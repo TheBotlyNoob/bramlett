@@ -1,0 +1,42 @@
+{
+    "name": "@rspc/react-query",
+    "version": "1.0.0-rc.3",
+    "description": "A blazingly fast and easy to use tRPC-like server for Rust.",
+    "keywords": [],
+    "author": "Oscar Beaumont",
+    "license": "MIT",
+    "main": "src/index.tsx",
+    "types": "dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "default": "./src/index.tsx"
+        }
+    },
+    "files": [
+        "src"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "test": "vitest"
+    },
+    "dependencies": {
+        "@rspc/query-core": "link:../query-core"
+    },
+    "devDependencies": {
+        "@rspc/client": "link:../client",
+        "@tanstack/react-query": "^4.36.1",
+        "@types/react": "^18.2.31",
+        "react": "^18.2.0",
+        "tslib": "^2.6.2",
+        "tsup": "^7.2.0",
+        "typescript": "^5.2.2",
+        "vitest": "^0.34.6"
+    },
+    "peerDependencies": {
+        "@rspc/client": "link:../client",
+        "@tanstack/react-query": "^4.26.0",
+        "react": "^18.2.0"
+    }
+}

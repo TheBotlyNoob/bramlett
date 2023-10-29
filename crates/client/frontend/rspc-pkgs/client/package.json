@@ -1,0 +1,30 @@
+{
+    "name": "@rspc/client",
+    "version": "1.0.0-rc.3",
+    "description": "A blazingly fast and easy to use tRPC-like server for Rust.",
+    "keywords": [],
+    "author": "Oscar Beaumont",
+    "license": "MIT",
+    "main": "src/index.ts",
+    "types": "dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "default": "./src/index.ts"
+        }
+    },
+    "files": [
+        "src"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "test": "vitest ./index.test.ts"
+    },
+    "devDependencies": {
+        "tsup": "^7.2.0",
+        "typescript": "^5.2.2",
+        "vitest": "^0.34.6",
+        "ws": "^8.14.2"
+    }
+}
