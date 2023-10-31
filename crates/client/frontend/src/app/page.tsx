@@ -1,15 +1,17 @@
-"use client";
-
 import { NextPage } from "next";
 import GamesList from "@/components/game-list";
+import { Suspense } from "react";
+import { ClimbingBoxLoader } from "react-spinners";
 
-const UsingUseQuery: NextPage = () => {
+const Index: NextPage = () => {
     return (
         <>
             <h1>Bramlett&apos;s Totally Awesome Game Launcher</h1>
-            <GamesList />
+            <Suspense fallback={<ClimbingBoxLoader />}>
+                <GamesList />
+            </Suspense>
         </>
     );
 };
 
-export default UsingUseQuery;
+export default Index;

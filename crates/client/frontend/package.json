@@ -6,25 +6,30 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "lint": "next lint",
+        "fmt": "prettier --write .",
+        "compile": "graphql-codegen",
+        "watch": "graphql-codegen -w"
     },
     "dependencies": {
-        "@rspc/client": "link:rspc-pkgs/client",
-        "@rspc/query-core": "link:rspc-pkgs/query-core",
-        "@rspc/react-query": "link:rspc-pkgs/react-query",
-        "@tanstack/react-query": "^4.36.1",
+        "@apollo/client": "^3.8.6",
         "antd": "^5.10.2",
+        "graphql": "^16.8.1",
         "next": "14.0.0",
         "react": "^18",
         "react-dom": "^18",
         "react-spinners": "^0.13.8"
     },
     "devDependencies": {
+        "@graphql-codegen/cli": "^5.0.0",
+        "@graphql-codegen/client-preset": "^4.1.0",
+        "@graphql-typed-document-node/core": "^3.2.0",
         "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",
         "eslint": "^8",
         "eslint-config-next": "14.0.0",
-        "typescript": "^5"
+        "prettier": "^3.0.3",
+        "typescript": "^5.2.2"
     }
 }
