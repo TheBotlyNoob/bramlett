@@ -1,9 +1,11 @@
+"use client";
+
 import { NextPage } from "next";
 import GamesList from "@/components/game-list";
 import { Suspense } from "react";
 import { ClimbingBoxLoader } from "react-spinners";
 
-const Index: NextPage = () => {
+export default function Index() {
     return (
         <>
             <h1>Bramlett&apos;s Totally Awesome Game Launcher</h1>
@@ -12,6 +14,4 @@ const Index: NextPage = () => {
             </Suspense>
         </>
     );
-};
-
-export default Index;
+}

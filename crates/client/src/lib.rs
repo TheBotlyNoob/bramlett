@@ -38,15 +38,15 @@ pub struct Game {
 
 /// Config, should be used as a singleton.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct Context {
+pub struct Ctx {
     games_dir: Arc<RwLock<PathBuf>>,
     saves_dir: Arc<RwLock<PathBuf>>,
     games: Arc<DashMap<GameId, Game>>,
 }
 
-impl juniper::Context for Context {}
+impl juniper::Context for Ctx {}
 
-impl Default for Context {
+impl Default for Ctx {
     fn default() -> Self {
         Self {
             games_dir: Arc::new(RwLock::new(
@@ -67,7 +67,7 @@ impl Default for Context {
     }
 }
 
-impl Context {
+impl Ctx {
     pub fn conf_dir() -> PathBuf {
         dirs::config_dir()
             .unwrap_or_else(|| PathBuf::from("bramletts games config"))
@@ -106,7 +106,7 @@ impl Context {
     }
 }
 
-pub async fn update_game_list(config: &mut Context) -> Result<()> {
+pub async fn update_game_list(config: &mut Ctx) -> Result<()> {
     let games_list = reqwest::get("http://localhost:8000")
         .await?
         .json::<Vec<GameInfo>>()

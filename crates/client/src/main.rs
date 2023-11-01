@@ -1,10 +1,12 @@
 //! This example demonstrates asynchronous subscriptions with warp and tokio 0.2
 
-use anyhow::Result;
-use client::{update_game_list, Context, Game, GameStatus};
+use anyhow::{Context, Result};
+use client::{update_game_list, Ctx, Game, GameStatus};
 use common::GameId;
 use dashmap::DashMap;
-use juniper::{graphql_object, EmptyMutation, EmptySubscription, GraphQLEnum, RootNode};
+use juniper::{
+    graphql_object, EmptyMutation, EmptySubscription, FieldResult, GraphQLEnum, RootNode,
+};
 use std::sync::Arc;
 use tokio::sync::watch;
 use warp::{http::Response, Filter};
@@ -23,22 +25,26 @@ impl GraphQLGame {
 }
 
 impl GraphQLGame {
-    fn get(&self) -> Game {
-        self.1.get(&self.0).expect("Game not found.").clone()
+    fn get(&self) -> FieldResult<Game> {
+        self.1
+            .get(&self.0)
+            .map(|g| g.value().clone())
+            .context("game not found")
+            .map_err(Into::into)
     }
 }
 
 // Field resolvers implementation
-#[graphql_object(context = Context)]
+#[graphql_object(context = Ctx)]
 impl GraphQLGame {
-    fn id(&self) -> i32 {
-        self.get().info.id.0
+    fn id(&self) -> FieldResult<i32> {
+        Ok(self.get()?.info.id.0)
     }
-    fn name(&self) -> String {
-        self.get().info.name
+    fn name(&self) -> FieldResult<String> {
+        Ok(self.get()?.info.name)
     }
-    fn status(&self) -> GraphQLGameStatus {
-        GraphQLGameStatus::from(self.get().status)
+    fn status(&self) -> FieldResult<GraphQLGameStatus> {
+        Ok(GraphQLGameStatus::from(self.get()?.status))
     }
 }
 
@@ -85,29 +91,28 @@ impl From<GameStatus> for GraphQLGameStatus {
     }
 }
 
-#[graphql_object(context = Context)]
+#[graphql_object(context = Ctx)]
 impl GraphQLGameStatus {
     fn status(&self) -> GraphQLGameStatusInner {
         self.status
     }
-    fn progress(&self) -> Option<[i32; 2]> {
-        self.progress.as_ref().map(|(num, denom)| {
-            [
-                (*num.borrow()).try_into().expect(""),
-                (*denom).try_into().expect(""),
-            ]
+    fn progress(&self) -> FieldResult<Option<[i32; 2]>> {
+        Ok(if let Some((num, denom)) = &self.progress {
+            Some([(*num.borrow()).try_into()?, (*denom).try_into()?])
+        } else {
+            None
         })
     }
 }
 
 struct Query;
 
-#[graphql_object(context = Context)]
+#[graphql_object(context = Ctx)]
 impl Query {
-    async fn game(context: &Context, id: i32) -> GraphQLGame {
-        GraphQLGame::new(GameId(id), context.games()).expect("Game not found.")
+    async fn game(context: &Ctx, id: i32) -> Option<GraphQLGame> {
+        GraphQLGame::new(GameId(id), context.games())
     }
-    async fn games(context: &Context) -> Vec<GraphQLGame> {
+    async fn games(context: &Ctx) -> Vec<GraphQLGame> {
         context
             .games()
             .iter()
@@ -116,7 +121,7 @@ impl Query {
     }
 }
 
-type Schema = RootNode<'static, Query, EmptyMutation<Context>, EmptySubscription<Context>>;
+type Schema = RootNode<'static, Query, EmptyMutation<Ctx>, EmptySubscription<Ctx>>;
 
 fn schema() -> Schema {
     Schema::new(Query, EmptyMutation::new(), EmptySubscription::new())
@@ -132,20 +137,9 @@ async fn main() -> Result<()> {
         )
         .init();
 
-    let log = warp::log("warp_subscriptions");
+    let log = warp::log("bramletts_games");
 
-    let homepage = warp::path::end().map(|| {
-        Response::builder()
-            .header("content-type", "text/html")
-            .body(
-                "<html><h1>juniper_warp/subscription example</h1>
-                        <div>visit <a href=\"/graphiql\">GraphiQL</a></div>
-                        <div>visit <a href=\"/playground\">GraphQL Playground</a></div>
-                </html>",
-            )
-    });
-
-    let config_file = Context::file();
+    let config_file = Ctx::file();
 
     tracing::trace!("config file: {config_file:#?}");
 
@@ -153,7 +147,7 @@ async fn main() -> Result<()> {
         let config_file = std::fs::File::open(config_file)?;
         serde_json::from_reader(config_file)?
     } else {
-        let config = Context::default();
+        let config = Ctx::default();
         config.save()?;
         config
     };
@@ -172,28 +166,45 @@ async fn main() -> Result<()> {
 
     let schema = Arc::new(schema());
 
-    tracing::info!("Listening on 127.0.0.1:8080");
+    tracing::info!("listening on 127.0.0.1:8080");
 
-    let routes = (warp::post()
-        .and(warp::path("graphql"))
-        .and(juniper_warp::make_graphql_filter(
-            schema.clone(),
-            warp::any().map(move || config.clone()).boxed(),
-        )))
-    .or(warp::get()
-        .and(warp::path("playground"))
-        .and(juniper_warp::playground_filter(
-            "/graphql",
-            Some("/subscriptions"),
-        )))
-    .or(warp::get()
-        .and(warp::path("graphiql"))
-        .and(juniper_warp::graphiql_filter(
-            "/graphql",
-            Some("/subscriptions"),
-        )))
-    .or(homepage)
-    .with(log);
+    let routes = warp::path("graphql")
+        .and(
+            (warp::post().and(juniper_warp::make_graphql_filter(
+                schema.clone(),
+                warp::any().map(move || config.clone()).boxed(),
+            )))
+            .or(warp::get()
+                .and(warp::path("playground"))
+                .and(juniper_warp::playground_filter(
+                    "/graphql",
+                    Some("/subscriptions"),
+                )))
+            .or(warp::get()
+                .and(warp::path("graphiql"))
+                .and(juniper_warp::graphiql_filter(
+                    "/graphql",
+                    Some("/subscriptions"),
+                )))
+            .or(warp::any().map(|| {
+                Response::builder()
+                    .header("content-type", "text/html")
+                    .body(
+                        "<html><h1>juniper_warp/subscription example</h1>
+                                <div>visit <a href=\"/graphiql\">GraphiQL</a></div>
+                                <div>visit <a href=\"/playground\">GraphQL Playground</a></div>
+                        </html>",
+                    )
+            })),
+        )
+        .with(log)
+        .with(
+            warp::cors()
+                .allow_origin("http://localhost:3000")
+                .allow_origin(&*format!("http://localhost:8080"))
+                .allow_headers(vec!["Content-Type", "User-Agent"])
+                .allow_methods(vec!["OPTIONS", "GET", "POST", "DELETE"]),
+        );
 
     warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
 

@@ -1,27 +1,38 @@
-import { useSuspenseQuery, gql } from "@apollo/client";
+"use client";
+
+import { useSuspenseQuery } from "@apollo/client";
+import { gql } from "@/__generated__";
+import { GamesQuery, GraphQlGameStatusInner } from "@/__generated__/graphql";
 import { Button, List } from "antd";
 
-export default function GamesList() {
-    "use client";
-
-    const { data, error } = useSuspenseQuery(gql`
-        query TheGames {
-            games {
-                id
-                name
+const GAMES_QUERY = gql(`
+    query Games {
+        games {
+            name
+            status {
+                status
             }
         }
-    `);
+    }
+`);
 
-    const gameStatus = (game: Game) => {
-        switch (game.status) {
-            case "NotDownloaded":
-                return <Button onClick={() => {}}>Download</Button>;
-            case "Downloading":
+export default function GamesList() {
+    const {
+        data: { games },
+        error,
+    } = useSuspenseQuery(GAMES_QUERY);
+
+    const gameStatus = ({ status }: GamesQuery["games"][0]) => {
+        switch (status.status) {
+            case GraphQlGameStatusInner.Downloading:
                 return <Button>Cancel</Button>;
-            case "Running":
-                return <p>Running...</p>;
-            case "Stopped":
+            case GraphQlGameStatusInner.Installing:
+                return <Button>Cancel</Button>;
+            case GraphQlGameStatusInner.NotDownloaded:
+                return <Button>Download</Button>;
+            case GraphQlGameStatusInner.Running:
+                return <Button>Stop</Button>;
+            case GraphQlGameStatusInner.Stopped:
                 return <Button>Start</Button>;
         }
     };
@@ -30,11 +41,11 @@ export default function GamesList() {
         <>
             <List
                 bordered
-                dataSource={Object.entries(data)}
+                dataSource={Object.entries(games)}
                 renderItem={([_, game]) => (
                     <List.Item>
                         <h2>{game.name}</h2>
-                        <p>{gameStatus(game)}</p>
+                        {gameStatus(game)}
                     </List.Item>
                 )}
             />

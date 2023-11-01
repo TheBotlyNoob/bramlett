@@ -20,11 +20,26 @@ export type GraphQlGame = {
   __typename?: 'GraphQLGame';
   id: Scalars['Int']['output'];
   name: Scalars['String']['output'];
+  status: GraphQlGameStatus;
 };
+
+export type GraphQlGameStatus = {
+  __typename?: 'GraphQLGameStatus';
+  progress?: Maybe<Array<Scalars['Int']['output']>>;
+  status: GraphQlGameStatusInner;
+};
+
+export enum GraphQlGameStatusInner {
+  Downloading = 'DOWNLOADING',
+  Installing = 'INSTALLING',
+  NotDownloaded = 'NOT_DOWNLOADED',
+  Running = 'RUNNING',
+  Stopped = 'STOPPED'
+}
 
 export type Query = {
   __typename?: 'Query';
-  game: GraphQlGame;
+  game?: Maybe<GraphQlGame>;
   games: Array<GraphQlGame>;
 };
 
@@ -33,10 +48,10 @@ export type QueryGameArgs = {
   id: Scalars['Int']['input'];
 };
 
-export type TheGamesQueryVariables = Exact<{ [key: string]: never; }>;
+export type GamesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type TheGamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'GraphQLGame', id: number, name: string }> };
+export type GamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'GraphQLGame', name: string, status: { __typename?: 'GraphQLGameStatus', status: GraphQlGameStatusInner } }> };
 
 
-export const TheGamesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"TheGames"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"games"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<TheGamesQuery, TheGamesQueryVariables>;
+export const GamesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Games"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"games"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"status"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]}}]} as unknown as DocumentNode<GamesQuery, GamesQueryVariables>;
