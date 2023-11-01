@@ -18,18 +18,36 @@ pub enum ClientError {
 
 pub type Result<T, E = ClientError> = std::result::Result<T, E>;
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum GameStatus {
     NotDownloaded,
     /// Downloading - (current, total)
-    Downloading(#[serde(skip)] Option<(watch::Receiver<u32>, u32)>),
+    #[serde(skip)]
+    Downloading(watch::Receiver<u32>, u32),
     /// Installing (unzipping) - (current, total)
-    Installing(u32, u32),
+    #[serde(skip)]
+    Installing(watch::Receiver<u32>, u32),
     Running,
     Stopped,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+// #[graphql_object]
+// impl GameStatus {
+//     fn is_downloaded(&self) -> bool {
+//         matches!(self, GameStatus::Running | GameStatus::Stopped)
+//     }
+
+//     fn is_running(&self) -> bool {
+//         matches!(self, GameStatus::Running)
+//     }
+
+//     fn is_stopped(&self) -> bool {
+//         matches!(self, GameStatus::Stopped)
+//     }
+//     // TODO: make this an actual GraphQL enum; this is a hack due to the
+// }
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Game {
     pub info: GameInfo,
     pub status: GameStatus,
@@ -37,13 +55,15 @@ pub struct Game {
 
 /// Config, should be used as a singleton.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct Config {
+pub struct Context {
     games_dir: Arc<RwLock<PathBuf>>,
     saves_dir: Arc<RwLock<PathBuf>>,
     games: Arc<DashMap<GameId, Game>>,
 }
 
-impl Default for Config {
+impl juniper::Context for Context {}
+
+impl Default for Context {
     fn default() -> Self {
         Self {
             games_dir: Arc::new(RwLock::new(
@@ -64,7 +84,7 @@ impl Default for Config {
     }
 }
 
-impl Config {
+impl Context {
     pub fn conf_dir() -> PathBuf {
         dirs::config_dir()
             .unwrap_or_else(|| PathBuf::from("bramletts games config"))
@@ -103,7 +123,7 @@ impl Config {
     }
 }
 
-pub async fn update_game_list(config: &mut Config) -> Result<()> {
+pub async fn update_game_list(config: &mut Context) -> Result<()> {
     let games_list = reqwest::get("http://localhost:8000")
         .await?
         .json::<Vec<GameInfo>>()

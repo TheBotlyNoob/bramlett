@@ -1,42 +1,77 @@
-use std::{
-    net::{Ipv4Addr, SocketAddr},
-    path::PathBuf,
-};
+//! This example demonstrates asynchronous subscriptions with warp and tokio 0.2
 
-use axum::{http::HeaderValue, routing::get};
-use client::{update_game_list, Config};
+use anyhow::Result;
+use client::{update_game_list, Context, Game};
 use common::GameId;
-use rspc::{ExportConfig, Rspc};
-use tower_http::cors::{AllowOrigin, CorsLayer};
-use tracing_subscriber::{filter::LevelFilter, EnvFilter};
+use dashmap::DashMap;
+use juniper::{graphql_object, EmptyMutation, EmptySubscription, RootNode};
+use std::sync::Arc;
+use warp::{http::Response, Filter};
 
-#[derive(thiserror::Error, serde::Serialize, specta::Type, Debug)]
-pub enum Error {
-    #[error("game not found")]
-    GameNotFound,
-    #[error("game already downloading")]
-    GameCantDownload,
-    #[error("client error: {0}")]
-    Client(
-        #[serde(skip)]
-        #[from]
-        client::ClientError,
-    ),
+struct GraphQLGame(pub GameId, Arc<DashMap<GameId, Game>>);
+
+impl GraphQLGame {
+    fn get(&self) -> Game {
+        self.1.get(&self.0).expect(
+            "Game not found in the map. This should never happen, because we only send existing games."
+        ).clone()
+    }
 }
 
-const R: Rspc<Config, Error> = Rspc::new();
+// Field resolvers implementation
+#[graphql_object(context = Context)]
+impl GraphQLGame {
+    fn id(&self) -> i32 {
+        self.get().info.id.0
+    }
+    fn name(&self) -> String {
+        self.get().info.name
+    }
+    // fn status(&self) -> GameStatus {
+    //     self.get().status
+    // }
+}
+
+struct Query;
+
+#[graphql_object(context = Context)]
+impl Query {
+    async fn game(context: &Context, id: i32) -> String {
+        // context.games().get(&GameId(id as u32)).unwrap().clone()
+        String::new()
+    }
+}
+
+type Schema = RootNode<'static, Query, EmptyMutation<Context>, EmptySubscription<Context>>;
+
+fn schema() -> Schema {
+    Schema::new(Query, EmptyMutation::new(), EmptySubscription::new())
+}
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
-            EnvFilter::builder()
-                .with_default_directive(LevelFilter::INFO.into())
+            tracing_subscriber::EnvFilter::builder()
+                .with_default_directive(tracing::level_filters::LevelFilter::INFO.into())
                 .from_env_lossy(),
         )
         .init();
 
-    let config_file = Config::file();
+    let log = warp::log("warp_subscriptions");
+
+    let homepage = warp::path::end().map(|| {
+        Response::builder()
+            .header("content-type", "text/html")
+            .body(
+                "<html><h1>juniper_warp/subscription example</h1>
+                        <div>visit <a href=\"/graphiql\">GraphiQL</a></div>
+                        <div>visit <a href=\"/playground\">GraphQL Playground</a></div>
+                </html>",
+            )
+    });
+
+    let config_file = Context::file();
 
     tracing::trace!("config file: {config_file:#?}");
 
@@ -44,7 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let config_file = std::fs::File::open(config_file)?;
         serde_json::from_reader(config_file)?
     } else {
-        let config = Config::default();
+        let config = Context::default();
         config.save()?;
         config
     };
@@ -61,87 +96,45 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("games dir: {:#?}", config.games_dir());
     tracing::info!("{} games", config.games().len());
 
-    let router = R
-        .router()
-        .procedure("version", R.query(|_, _: ()| Ok(env!("CARGO_PKG_VERSION"))))
-        .procedure(
-            "gameState",
-            R.query(|config, game: GameId| async move {
-                config
-                    .games()
-                    .get(&game)
-                    .map(|game| game.status.clone())
-                    .ok_or(Error::GameNotFound)
-            }),
-        )
-        .procedure(
-            "downloadGame",
-            R.mutation(|config, game: GameId| async move {
-                let games = config.games();
-                let game = games.get(&game).ok_or(Error::GameNotFound)?;
-                if !matches!(game.status, client::GameStatus::NotDownloaded) {
-                    return Err(Error::GameCantDownload);
-                }
+    let qm_schema = schema();
+    let qm_state = warp::any().map({
+        let config = config.clone();
+        move || config.clone()
+    });
+    let qm_graphql_filter = juniper_warp::make_graphql_filter(qm_schema, qm_state.boxed());
 
-                tracing::info!("downloading game {}", game.info.name);
+    let schema = Arc::new(schema());
 
-                let game_dir = config.game_dir(game.info.id);
-                let _ = std::fs::create_dir_all(game_dir);
+    tracing::info!("Listening on 127.0.0.1:8080");
 
-                config.save()?;
+    let routes = (warp::post()
+        .and(warp::path("graphql"))
+        .and(juniper_warp::make_graphql_filter(
+            schema.clone(),
+            warp::any().map(move || config.clone()).boxed(),
+        )))
+    // .or(
+    //     warp::path("subscriptions").and(juniper_warp::subscriptions::make_ws_filter(
+    //         schema,
+    //         ConnectionConfig::new(config.clone()),
+    //     )),
+    // )
+    .or(warp::get()
+        .and(warp::path("playground"))
+        .and(juniper_warp::playground_filter(
+            "/graphql",
+            Some("/subscriptions"),
+        )))
+    .or(warp::get()
+        .and(warp::path("graphiql"))
+        .and(juniper_warp::graphiql_filter(
+            "/graphql",
+            Some("/subscriptions"),
+        )))
+    .or(homepage)
+    .with(log);
 
-                Ok(())
-            }),
-        )
-        .procedure(
-            "games",
-            R.query(|config, _: ()| {
-                Ok((*config.games())
-                    .clone()
-                    .into_iter()
-                    .collect::<std::collections::HashMap<_, _>>())
-            }),
-        )
-        .build()
-        .unwrap()
-        .arced(); // This function is a shortcut to wrap the router in an `Arc`.
+    warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
 
-    router
-        .export_ts(ExportConfig::new(
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("frontend/src/lib/bindings.ts"),
-        ))
-        .unwrap();
-
-    let port = std::env::var("PORT")
-        .unwrap_or_else(|_| "4000".to_string())
-        .parse()
-        .unwrap();
-
-    let cors = CorsLayer::new().allow_origin(AllowOrigin::list([
-        HeaderValue::from_str(&format!("http://localhost:{port}")).unwrap(),
-        HeaderValue::from_str(&format!("http://127.0.0.1:{port}")).unwrap(),
-        HeaderValue::from_str("http://localhost:3000").unwrap(),
-    ]));
-    // let cors = CorsLayer::very_permissive();
-
-    let app = axum::Router::new()
-        .route("/", get(|| async { "Hello 'rspc'!" })) // TODO: display frontend here
-        .nest(
-            "/rspc",
-            rspc_httpz::endpoint(router, move |req: rspc_httpz::Request| {
-                tracing::info!("client requested operation '{}'", req.uri().path());
-                config.clone()
-            })
-            .axum(),
-        )
-        .layer(cors);
-
-    let addr = SocketAddr::from((Ipv4Addr::new(127, 0, 0, 1), port));
-
-    tracing::info!("listening on http://{addr}/rspc");
-
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .map_err(Into::into)
+    Ok(())
 }

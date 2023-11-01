@@ -7,7 +7,4 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1.0.188", features = ["derive"] }
-specta = { version = "2.0.0-rc.6", default-features = false, features = [
-    "serde",
-    "serde_json",
-] }
+juniper = { git = "https://github.com/graphql-rust/juniper", rev = "0fc95dd" }

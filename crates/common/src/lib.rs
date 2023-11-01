@@ -1,6 +1,9 @@
+use juniper::{GraphQLScalar, ScalarToken};
 use std::path::PathBuf;
 
-/// The ID of a game.
+use juniper::{GraphQLObject, InputValue, ScalarValue, Value};
+
+// / The ID of a game.
 #[derive(
     Debug,
     Copy,
@@ -12,10 +15,11 @@ use std::path::PathBuf;
     Ord,
     serde::Deserialize,
     serde::Serialize,
-    specta::Type,
+    GraphQLScalar,
 )]
 #[serde(transparent)]
-pub struct GameId(pub u32);
+#[graphql(transparent)]
+pub struct GameId(pub i32);
 
 #[derive(
     Debug,
@@ -27,7 +31,7 @@ pub struct GameId(pub u32);
     Ord,
     serde::Deserialize,
     serde::Serialize,
-    specta::Type,
+    GraphQLObject,
 )]
 pub struct GameInfo {
     /// The name of the game.
@@ -36,10 +40,6 @@ pub struct GameInfo {
     pub id: GameId,
     /// A public Google Drive ID, linking to a zip file with a password of "game".
     pub gdrive_id: String,
-    /// The path to the game's executable, relative to the game directory.
-    pub exe: PathBuf,
-    /// Extra flags to pass to the game's executable.
-    pub args: Vec<String>,
     /// RHAI script with `post_install`, `pre_run` and `post_run` functions.
     ///
     /// `pre_run` should be used to sync the `save_dir`'s save data with the `game_dir`.

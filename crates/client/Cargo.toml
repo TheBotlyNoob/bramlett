@@ -6,31 +6,26 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rspc = { git = "https://github.com/oscartbeaumont/rspc", rev = "811877b", features = [
-    "tracing",
-    "unstable",
-] }
-rspc-httpz = { git = "https://github.com/oscartbeaumont/rspc", rev = "811877b", features = [
-    "axum",
-] }
-tokio = { version = "1.33.0", features = ["full"] }
-async-stream = "0.3.5"
-axum = { version = "0.6.20", features = ["ws", "http2"] }
-tower-http = { version = "0.4.4", default-features = false, features = [
-    "cors",
-] }
-futures = "0.3.28"
-tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
-thiserror = { version = "1.0" }
-serde = { version = "1", default-features = false, features = ["derive", "rc"] }
-specta = { version = "2.0.0-rc.6", default-features = false, features = [
-    "serde",
-    "serde_json",
-] }
-common = { path = "../common" }
-dirs = "5.0.1"
+### lib ###
+common = { version = "0.1.0", path = "../common" }
 dashmap = { version = "5.5.3", features = ["serde"] }
+dirs = "5.0.1"
 reqwest = { version = "0.11.22", features = ["json"] }
-serde_with = "3.4.0"
-serde_json = "1.0.107"
+serde = { version = "1.0.190", features = ["derive", "rc"] }
+serde_json = "1.0.108"
+thiserror = "1.0.50"
+tokio = { version = "1.33.0", features = ["sync"] }
+
+
+### server ###
+juniper = { git = "https://github.com/graphql-rust/juniper", rev = "0fc95dd" }
+juniper_warp = { git = "https://github.com/graphql-rust/juniper", rev = "0fc95dd", features = [
+    "subscriptions",
+] }
+futures = "0.3.29"
+warp = "0.3.6"
+async-stream = "0.3.5"
+juniper_graphql_ws = "0.3.0"
+anyhow = "1.0.75"
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
+tracing = "0.1.40"
