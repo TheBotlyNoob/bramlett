@@ -1,6 +1,5 @@
 use axum::{routing::get, Json, Router};
 use common::{GameId, GameInfo};
-use std::path::PathBuf;
 
 macro_rules! script {
     ($name: literal) => {

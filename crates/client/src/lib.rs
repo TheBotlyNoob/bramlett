@@ -30,23 +30,6 @@ pub enum GameStatus {
     Running,
     Stopped,
 }
-
-// #[graphql_object]
-// impl GameStatus {
-//     fn is_downloaded(&self) -> bool {
-//         matches!(self, GameStatus::Running | GameStatus::Stopped)
-//     }
-
-//     fn is_running(&self) -> bool {
-//         matches!(self, GameStatus::Running)
-//     }
-
-//     fn is_stopped(&self) -> bool {
-//         matches!(self, GameStatus::Stopped)
-//     }
-//     // TODO: make this an actual GraphQL enum; this is a hack due to the
-// }
-
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Game {
     pub info: GameInfo,

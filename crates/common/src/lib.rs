@@ -1,7 +1,4 @@
-use juniper::{GraphQLScalar, ScalarToken};
-use std::path::PathBuf;
-
-use juniper::{GraphQLObject, InputValue, ScalarValue, Value};
+use juniper::{GraphQLObject, GraphQLScalar};
 
 // / The ID of a game.
 #[derive(

@@ -4,8 +4,9 @@ use anyhow::Result;
 use client::{update_game_list, Context, Game};
 use common::GameId;
 use dashmap::DashMap;
-use juniper::{graphql_object, EmptyMutation, EmptySubscription, RootNode};
+use juniper::{graphql_object, EmptyMutation, EmptySubscription, GraphQLEnum, RootNode};
 use std::sync::Arc;
+use tokio::sync::watch;
 use warp::{http::Response, Filter};
 
 struct GraphQLGame(pub GameId, Arc<DashMap<GameId, Game>>);
@@ -32,13 +33,43 @@ impl GraphQLGame {
     // }
 }
 
+#[derive(Debug, Copy, Clone, serde::Serialize, serde::Deserialize, GraphQLEnum)]
+enum GraphQLGameStatusInner {
+    NotDownloaded,
+    Downloading,
+    Installing,
+    Running,
+    Stopped,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+struct GraphQLGameStatus {
+    pub status: GraphQLGameStatusInner,
+    #[serde(skip)]
+    pub progress: Option<(watch::Receiver<u32>, u32)>,
+}
+
+#[graphql_object(context = Context)]
+impl GraphQLGameStatus {
+    fn status(&self) -> GraphQLGameStatusInner {
+        self.status
+    }
+    fn progress(&self) -> Option<[i32; 2]> {
+        self.progress.as_ref().map(|(num, denom)| {
+            [
+                (*num.borrow()).try_into().expect(""),
+                (*denom).try_into().expect(""),
+            ]
+        })
+    }
+}
+
 struct Query;
 
 #[graphql_object(context = Context)]
 impl Query {
-    async fn game(context: &Context, id: i32) -> String {
-        // context.games().get(&GameId(id as u32)).unwrap().clone()
-        String::new()
+    async fn game(context: &Context, id: i32) -> GraphQLGame {
+        GraphQLGame(GameId(id), context.games())
     }
 }
 
@@ -95,13 +126,6 @@ async fn main() -> Result<()> {
     tracing::info!("save dir: {:#?}", config.saves_dir());
     tracing::info!("games dir: {:#?}", config.games_dir());
     tracing::info!("{} games", config.games().len());
-
-    let qm_schema = schema();
-    let qm_state = warp::any().map({
-        let config = config.clone();
-        move || config.clone()
-    });
-    let qm_graphql_filter = juniper_warp::make_graphql_filter(qm_schema, qm_state.boxed());
 
     let schema = Arc::new(schema());
 
