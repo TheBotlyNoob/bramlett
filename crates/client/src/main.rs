@@ -1,7 +1,7 @@
 //! This example demonstrates asynchronous subscriptions with warp and tokio 0.2
 
 use anyhow::Result;
-use client::{update_game_list, Context, Game};
+use client::{update_game_list, Context, Game, GameStatus};
 use common::GameId;
 use dashmap::DashMap;
 use juniper::{graphql_object, EmptyMutation, EmptySubscription, GraphQLEnum, RootNode};
@@ -12,10 +12,19 @@ use warp::{http::Response, Filter};
 struct GraphQLGame(pub GameId, Arc<DashMap<GameId, Game>>);
 
 impl GraphQLGame {
+    pub fn new(id: GameId, games: Arc<DashMap<GameId, Game>>) -> Option<Self> {
+        // make sure the game exists
+        if games.contains_key(&id) {
+            Some(Self(id, games))
+        } else {
+            None
+        }
+    }
+}
+
+impl GraphQLGame {
     fn get(&self) -> Game {
-        self.1.get(&self.0).expect(
-            "Game not found in the map. This should never happen, because we only send existing games."
-        ).clone()
+        self.1.get(&self.0).expect("Game not found.").clone()
     }
 }
 
@@ -28,9 +37,9 @@ impl GraphQLGame {
     fn name(&self) -> String {
         self.get().info.name
     }
-    // fn status(&self) -> GameStatus {
-    //     self.get().status
-    // }
+    fn status(&self) -> GraphQLGameStatus {
+        GraphQLGameStatus::from(self.get().status)
+    }
 }
 
 #[derive(Debug, Copy, Clone, serde::Serialize, serde::Deserialize, GraphQLEnum)]
@@ -47,6 +56,33 @@ struct GraphQLGameStatus {
     pub status: GraphQLGameStatusInner,
     #[serde(skip)]
     pub progress: Option<(watch::Receiver<u32>, u32)>,
+}
+
+impl From<GameStatus> for GraphQLGameStatus {
+    fn from(s: GameStatus) -> Self {
+        match s {
+            GameStatus::NotDownloaded => Self {
+                status: GraphQLGameStatusInner::NotDownloaded,
+                progress: None,
+            },
+            GameStatus::Downloading(num, denom) => Self {
+                status: GraphQLGameStatusInner::Downloading,
+                progress: Some((num, denom)),
+            },
+            GameStatus::Installing(num, denom) => Self {
+                status: GraphQLGameStatusInner::Installing,
+                progress: Some((num, denom)),
+            },
+            GameStatus::Running => Self {
+                status: GraphQLGameStatusInner::Running,
+                progress: None,
+            },
+            GameStatus::Stopped => Self {
+                status: GraphQLGameStatusInner::Stopped,
+                progress: None,
+            },
+        }
+    }
 }
 
 #[graphql_object(context = Context)]
@@ -69,7 +105,14 @@ struct Query;
 #[graphql_object(context = Context)]
 impl Query {
     async fn game(context: &Context, id: i32) -> GraphQLGame {
-        GraphQLGame(GameId(id), context.games())
+        GraphQLGame::new(GameId(id), context.games()).expect("Game not found.")
+    }
+    async fn games(context: &Context) -> Vec<GraphQLGame> {
+        context
+            .games()
+            .iter()
+            .map(|k| GraphQLGame(*k.key(), context.games())) // we don't call GraphQLGame::new here because we know the game exists
+            .collect()
     }
 }
 
@@ -137,12 +180,6 @@ async fn main() -> Result<()> {
             schema.clone(),
             warp::any().map(move || config.clone()).boxed(),
         )))
-    // .or(
-    //     warp::path("subscriptions").and(juniper_warp::subscriptions::make_ws_filter(
-    //         schema,
-    //         ConnectionConfig::new(config.clone()),
-    //     )),
-    // )
     .or(warp::get()
         .and(warp::path("playground"))
         .and(juniper_warp::playground_filter(

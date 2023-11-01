@@ -4,7 +4,14 @@ import { Button, List } from "antd";
 export default function GamesList() {
     "use client";
 
-    const { data, error } = useSuspenseQuery(gql``);
+    const { data, error } = useSuspenseQuery(gql`
+        query TheGames {
+            games {
+                id
+                name
+            }
+        }
+    `);
 
     const gameStatus = (game: Game) => {
         switch (game.status) {
@@ -26,7 +33,7 @@ export default function GamesList() {
                 dataSource={Object.entries(data)}
                 renderItem={([_, game]) => (
                     <List.Item>
-                        <h2>{game.info.name}</h2>
+                        <h2>{game.name}</h2>
                         <p>{gameStatus(game)}</p>
                     </List.Item>
                 )}
