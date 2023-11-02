@@ -4,7 +4,7 @@ use client::{update_game_list, Config, Ctx, Game, GameStatus};
 use common::GameId;
 use dashmap::DashMap;
 use juniper::{graphql_object, EmptySubscription, FieldResult, GraphQLEnum, RootNode};
-use std::{net::Ipv4Addr, process::Command, sync::Arc};
+use std::{process::Command, sync::Arc, time::Duration};
 use tokio::sync::watch;
 use warp::Filter;
 
@@ -297,18 +297,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .allow_methods(["OPTIONS", "GET", "POST", "DELETE"]),
     );
 
-    // check if the port is already in use
-    if let Err(e) = tokio::net::TcpListener::bind((Ipv4Addr::new(127, 0, 0, 1), port)).await {
-        tracing::error!("failed to bind to port {port}: {e:#}");
-        if e.kind() == std::io::ErrorKind::AddrInUse {
-            tracing::error!("is the server already running?");
-            if cfg!(not(debug_assertions)) {
-                tracing::info!("opening browser to existing server...");
-                webbrowser::open(&format!("http://localhost:{DEFAULT_PORT}"))?;
-                std::process::exit(1);
-            }
-        }
-    };
+    tokio::spawn(async move {
+        tokio::time::sleep(Duration::from_secs(1)).await; // open web browser after server starts
+        webbrowser::open(&format!("http://localhost:{port}"))
+    });
 
     warp::serve(routes).run(([127, 0, 0, 1], port)).await;
 
