@@ -175,6 +175,7 @@ impl Mutation {
                     )
                     .unwrap();
                     games.get_mut(&game.info.id).unwrap().status = GameStatus::Stopped;
+                    ctx.config.save().unwrap();
                 });
             }
         });
