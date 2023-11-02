@@ -1,15 +1,18 @@
-//! This example demonstrates asynchronous subscriptions with warp and tokio 0.2
+#![warn(clippy::pedantic, clippy::nursery)]
 
-use anyhow::{Context, Result};
-use client::{update_game_list, Ctx, Game, GameStatus};
+use client::{update_game_list, Config, Ctx, Game, GameStatus};
 use common::GameId;
 use dashmap::DashMap;
-use juniper::{
-    graphql_object, EmptyMutation, EmptySubscription, FieldResult, GraphQLEnum, RootNode,
-};
+use juniper::{graphql_object, EmptySubscription, FieldResult, GraphQLEnum, RootNode};
 use std::sync::Arc;
 use tokio::sync::watch;
 use warp::{http::Response, Filter};
+
+#[derive(Debug, Copy, Clone, thiserror::Error)]
+pub enum GraphQLError {
+    #[error("game not found")]
+    GameNotFound,
+}
 
 struct GraphQLGame(pub GameId, Arc<DashMap<GameId, Game>>);
 
@@ -29,8 +32,7 @@ impl GraphQLGame {
         self.1
             .get(&self.0)
             .map(|g| g.value().clone())
-            .context("game not found")
-            .map_err(Into::into)
+            .ok_or_else(|| GraphQLError::GameNotFound.into())
     }
 }
 
@@ -61,7 +63,7 @@ enum GraphQLGameStatusInner {
 struct GraphQLGameStatus {
     pub status: GraphQLGameStatusInner,
     #[serde(skip)]
-    pub progress: Option<(watch::Receiver<u32>, u32)>,
+    pub progress: Option<watch::Receiver<(u32, u32)>>,
 }
 
 impl From<GameStatus> for GraphQLGameStatus {
@@ -71,13 +73,13 @@ impl From<GameStatus> for GraphQLGameStatus {
                 status: GraphQLGameStatusInner::NotDownloaded,
                 progress: None,
             },
-            GameStatus::Downloading(num, denom) => Self {
+            GameStatus::Downloading(prog) => Self {
                 status: GraphQLGameStatusInner::Downloading,
-                progress: Some((num, denom)),
+                progress: Some(prog),
             },
-            GameStatus::Installing(num, denom) => Self {
+            GameStatus::Installing(prog) => Self {
                 status: GraphQLGameStatusInner::Installing,
-                progress: Some((num, denom)),
+                progress: Some(prog),
             },
             GameStatus::Running => Self {
                 status: GraphQLGameStatusInner::Running,
@@ -93,15 +95,17 @@ impl From<GameStatus> for GraphQLGameStatus {
 
 #[graphql_object(context = Ctx)]
 impl GraphQLGameStatus {
-    fn status(&self) -> GraphQLGameStatusInner {
+    const fn status(&self) -> GraphQLGameStatusInner {
         self.status
     }
     fn progress(&self) -> FieldResult<Option<[i32; 2]>> {
-        Ok(if let Some((num, denom)) = &self.progress {
-            Some([(*num.borrow()).try_into()?, (*denom).try_into()?])
-        } else {
-            None
-        })
+        Ok(
+            if let Some((num, denom)) = self.progress.as_ref().map(|p| *p.borrow()) {
+                Some([num.try_into()?, denom.try_into()?])
+            } else {
+                None
+            },
+        )
     }
 }
 
@@ -109,28 +113,49 @@ struct Query;
 
 #[graphql_object(context = Ctx)]
 impl Query {
-    async fn game(context: &Ctx, id: i32) -> Option<GraphQLGame> {
-        GraphQLGame::new(GameId(id), context.games())
+    fn game(context: &Ctx, id: i32) -> Option<GraphQLGame> {
+        GraphQLGame::new(GameId(id), context.config.games())
     }
-    async fn games(context: &Ctx) -> Vec<GraphQLGame> {
+    fn games(context: &Ctx) -> Vec<GraphQLGame> {
         let mut games = context
+            .config
             .games()
             .iter()
-            .map(|k| GraphQLGame(*k.key(), context.games())) // we don't call GraphQLGame::new here because we know the game exists
+            .map(|k| GraphQLGame(*k.key(), context.config.games())) // we don't call GraphQLGame::new here because we know the game exists
             .collect::<Vec<_>>();
         games.sort_unstable_by_key(|g| g.0);
         games
     }
 }
 
-type Schema = RootNode<'static, Query, EmptyMutation<Ctx>, EmptySubscription<Ctx>>;
+struct Mutation;
+
+#[graphql_object(context = Ctx)]
+impl Mutation {
+    fn download(ctx: &Ctx, game: GameId) -> FieldResult<GraphQLGame> {
+        let games = ctx.config.games();
+        let mut game = games.get_mut(&game).ok_or(GraphQLError::GameNotFound)?;
+        let (tx, rx) = watch::channel((0, 0));
+        tokio::spawn({
+            let game = game.clone();
+            let ctx = ctx.clone();
+            async move {
+                let _ = client::download::download_game(game, ctx, tx).await;
+            }
+        });
+        game.status = GameStatus::Downloading(rx);
+        Ok(GraphQLGame(game.info.id, ctx.config.games()))
+    }
+}
+
+type Schema = RootNode<'static, Query, Mutation, EmptySubscription<Ctx>>;
 
 fn schema() -> Schema {
-    Schema::new(Query, EmptyMutation::new(), EmptySubscription::new())
+    Schema::new(Query, Mutation, EmptySubscription::new())
 }
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::builder()
@@ -141,7 +166,7 @@ async fn main() -> Result<()> {
 
     let log = warp::log("bramletts_games");
 
-    let config_file = Ctx::file();
+    let config_file = Config::file();
 
     tracing::trace!("config file: {config_file:#?}");
 
@@ -149,7 +174,7 @@ async fn main() -> Result<()> {
         let config_file = std::fs::File::open(config_file)?;
         serde_json::from_reader(config_file)?
     } else {
-        let config = Ctx::default();
+        let config = Config::default();
         config.save()?;
         config
     };
@@ -166,6 +191,11 @@ async fn main() -> Result<()> {
     tracing::info!("games dir: {:#?}", config.games_dir());
     tracing::info!("{} games", config.games().len());
 
+    let ctx = Ctx {
+        config: config.clone(),
+        client: reqwest::Client::new(),
+    };
+
     let schema = Arc::new(schema());
 
     tracing::info!("listening on 127.0.0.1:8080");
@@ -174,7 +204,7 @@ async fn main() -> Result<()> {
         .and(
             (warp::post().and(juniper_warp::make_graphql_filter(
                 schema.clone(),
-                warp::any().map(move || config.clone()).boxed(),
+                warp::any().map(move || ctx.clone()).boxed(),
             )))
             .or(warp::get()
                 .and(warp::path("playground"))

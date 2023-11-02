@@ -1,9 +1,10 @@
 "use client";
 
-import { useSuspenseQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { gql } from "@/__generated__";
 import { GamesQuery, GraphQlGameStatusInner } from "@/__generated__/graphql";
 import { Button, List } from "antd";
+import { ClimbingBoxLoader } from "react-spinners";
 
 const GAMES_QUERY = gql(`
     query Games {
@@ -16,11 +17,20 @@ const GAMES_QUERY = gql(`
     }
 `);
 
+const DOWNLOAD_GAME = gql(`
+    mutation DownloadGame($game: GameId!) {
+        download(game: $game) {
+            status {
+                status
+            }
+        }
+    }
+`);
+
 export default function GamesList() {
-    const {
-        data: { games },
-        error,
-    } = useSuspenseQuery(GAMES_QUERY);
+    const { loading, data, error, refetch } = useQuery(GAMES_QUERY);
+
+    // setInterval(refetch, 1000);
 
     const gameStatus = ({ status }: GamesQuery["games"][0]) => {
         switch (status.status) {
@@ -39,16 +49,20 @@ export default function GamesList() {
 
     return (
         <>
-            <List
-                bordered
-                dataSource={Object.entries(games)}
-                renderItem={([_, game]) => (
-                    <List.Item>
-                        <h2>{game.name}</h2>
-                        {gameStatus(game)}
-                    </List.Item>
-                )}
-            />
+            <ClimbingBoxLoader loading={loading} />
+
+            {data && (
+                <List
+                    bordered
+                    dataSource={Object.entries(data.games)}
+                    renderItem={([_, game]) => (
+                        <List.Item>
+                            <h2>{game.name}</h2>
+                            {gameStatus(game)}
+                        </List.Item>
+                    )}
+                />
+            )}
 
             {error && JSON.stringify(error)}
         </>

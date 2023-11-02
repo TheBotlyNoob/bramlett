@@ -6,6 +6,8 @@ use std::{
 };
 use tokio::sync::watch;
 
+pub mod download;
+
 #[derive(thiserror::Error, Debug)]
 pub enum ClientError {
     #[error("network error: {0}")]
@@ -14,6 +16,10 @@ pub enum ClientError {
     Io(#[from] std::io::Error),
     #[error("json error: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("HTML parsing error: {0}")]
+    Html(#[from] tl::ParseError),
+    #[error("Google Drive HTML structure error")]
+    BadDrive,
 }
 
 pub type Result<T, E = ClientError> = std::result::Result<T, E>;
@@ -23,10 +29,10 @@ pub enum GameStatus {
     NotDownloaded,
     /// Downloading - (current, total)
     #[serde(skip)]
-    Downloading(watch::Receiver<u32>, u32),
+    Downloading(watch::Receiver<(u32, u32)>),
     /// Installing (unzipping) - (current, total)
     #[serde(skip)]
-    Installing(watch::Receiver<u32>, u32),
+    Installing(watch::Receiver<(u32, u32)>),
     Running,
     Stopped,
 }
@@ -36,17 +42,15 @@ pub struct Game {
     pub status: GameStatus,
 }
 
-/// Config, should be used as a singleton.
+/// Config
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct Ctx {
+pub struct Config {
     games_dir: Arc<RwLock<PathBuf>>,
     saves_dir: Arc<RwLock<PathBuf>>,
     games: Arc<DashMap<GameId, Game>>,
 }
 
-impl juniper::Context for Ctx {}
-
-impl Default for Ctx {
+impl Default for Config {
     fn default() -> Self {
         Self {
             games_dir: Arc::new(RwLock::new(
@@ -67,7 +71,7 @@ impl Default for Ctx {
     }
 }
 
-impl Ctx {
+impl Config {
     pub fn conf_dir() -> PathBuf {
         dirs::config_dir()
             .unwrap_or_else(|| PathBuf::from("bramletts games config"))
@@ -106,7 +110,15 @@ impl Ctx {
     }
 }
 
-pub async fn update_game_list(config: &mut Ctx) -> Result<()> {
+#[derive(Debug, Clone)]
+pub struct Ctx {
+    pub config: Config,
+    pub client: reqwest::Client,
+}
+
+impl juniper::Context for Ctx {}
+
+pub async fn update_game_list(config: &mut Config) -> Result<()> {
     let games_list = reqwest::get("http://localhost:8000")
         .await?
         .json::<Vec<GameInfo>>()
