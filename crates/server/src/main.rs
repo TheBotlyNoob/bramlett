@@ -73,7 +73,7 @@ fn games() -> Vec<GameInfo> {
             hooks: script!("goose"),
         },
         GameInfo {
-            name: "Undertale".into(),
+            name: "UNDERTALE".into(),
             id: GameId(8),
             gdrive_id: "1mm-NCvlluUzf4MUVECl_XB1ZmK1Fvw7J".into(),
             exe: "UNDERTALE.exe".into(),

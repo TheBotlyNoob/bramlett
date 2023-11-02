@@ -31,3 +31,6 @@ tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 tracing = "0.1.40"
 tl = "0.7.7"
 zip = "0.6.6"
+rust-embed = { version = "8.0.0", features = ["warp"] }
+mime_guess = "2.0.4"
+webbrowser = "0.8.12"

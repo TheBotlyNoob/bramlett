@@ -56,7 +56,7 @@ export default function GamesList() {
                         placement="topRight"
                         title={`Downloading... (${
                             game.status.progress![0] / 1000
-                        } GB out of ${game.status.progress![1] / 1000})`}
+                        }GB out of ${game.status.progress![1] / 1000}GB)`}
                     >
                         <Progress
                             percent={Math.round(downloadProgress * 100)}
@@ -71,7 +71,7 @@ export default function GamesList() {
                         placement="topRight"
                         title={`Installing... (${
                             game.status.progress![0] / 1000
-                        } GB out of ${game.status.progress![1] / 1000})`}
+                        }GB out of ${game.status.progress![1] / 1000}GB)`}
                     >
                         <Progress
                             percent={Math.round(installProgress * 100)}

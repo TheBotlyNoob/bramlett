@@ -4,14 +4,18 @@ use client::{update_game_list, Config, Ctx, Game, GameStatus};
 use common::GameId;
 use dashmap::DashMap;
 use juniper::{graphql_object, EmptySubscription, FieldResult, GraphQLEnum, RootNode};
-use std::{process::Command, sync::Arc};
+use std::{net::Ipv4Addr, process::Command, sync::Arc};
 use tokio::sync::watch;
-use warp::{http::Response, Filter};
+use warp::Filter;
+
+const DEFAULT_PORT: u16 = 8635;
 
 #[derive(Debug, Copy, Clone, thiserror::Error)]
 pub enum GraphQLError {
     #[error("game not found")]
     GameNotFound,
+    #[error("game already downloaded, downloading or installing")]
+    GameAlreadyDownloaded,
 }
 
 struct GraphQLGame(pub GameId, Arc<DashMap<GameId, Game>>);
@@ -155,6 +159,12 @@ impl Mutation {
         let (tx, rx) = watch::channel((0, 0));
         let game = {
             let mut game = games.get_mut(&game).ok_or(GraphQLError::GameNotFound)?;
+            if matches!(
+                game.status,
+                GameStatus::Downloading(_) | GameStatus::Installing(_)
+            ) {
+                return Err(GraphQLError::GameAlreadyDownloaded.into());
+            }
             game.status = GameStatus::Downloading(rx);
             game.clone()
         };
@@ -245,50 +255,92 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let schema = Arc::new(schema());
 
     let port = std::env::var("PORT")
-        .map(|p| p.parse().expect("invalid port"))
-        .unwrap_or(8080);
+        .map(|p| {
+            tracing::warn!(
+                "using port from env var: make sure to change the port on the frontend as well."
+            );
+            p.parse().expect("invalid port")
+        })
+        .unwrap_or(DEFAULT_PORT);
 
     tracing::info!("listening on http://localhost:{port}");
 
-    let routes = warp::path("graphql")
-        .and(
-            (warp::post().and(juniper_warp::make_graphql_filter(
-                schema.clone(),
-                warp::any().map(move || ctx.clone()).boxed(),
+    let routes = warp::path("graphql").and(
+        (warp::post().and(juniper_warp::make_graphql_filter(
+            schema.clone(),
+            warp::any().map(move || ctx.clone()).boxed(),
+        )))
+        .or(warp::get()
+            .and(warp::path("playground"))
+            .and(juniper_warp::playground_filter(
+                "/graphql",
+                Some("/subscriptions"),
             )))
-            .or(warp::get()
-                .and(warp::path("playground"))
-                .and(juniper_warp::playground_filter(
-                    "/graphql",
-                    Some("/subscriptions"),
-                )))
-            .or(warp::get()
-                .and(warp::path("graphiql"))
-                .and(juniper_warp::graphiql_filter(
-                    "/graphql",
-                    Some("/subscriptions"),
-                )))
-            .or(warp::any().map(|| {
-                Response::builder()
-                    .header("content-type", "text/html")
-                    .body(
-                        "<html><h1>juniper_warp/subscription example</h1>
-                                <div>visit <a href=\"/graphiql\">GraphiQL</a></div>
-                                <div>visit <a href=\"/playground\">GraphQL Playground</a></div>
-                        </html>",
-                    )
-            })),
-        )
-        .with(warp::log("graphql"))
-        .with(
-            warp::cors()
-                .allow_origin("http://localhost:3000")
-                .allow_origin(&*format!("http://localhost:{port}"))
-                .allow_headers(vec!["Content-Type", "User-Agent"])
-                .allow_methods(vec!["OPTIONS", "GET", "POST", "DELETE"]),
-        );
+        .or(warp::get()
+            .and(warp::path("graphiql"))
+            .and(juniper_warp::graphiql_filter(
+                "/graphql",
+                Some("/subscriptions"),
+            ))),
+    );
+
+    #[cfg(not(debug_assertions))]
+    let routes = routes.or(warp::path::tail()
+        .and_then(frontend::serve)
+        .or(warp::path::end().and_then(frontend::serve_index)));
+
+    let routes = routes.with(warp::log("graphql")).with(
+        warp::cors()
+            .allow_origin("http://localhost:3000")
+            .allow_origin(&*format!("http://localhost:{port}"))
+            .allow_headers(["Content-Type", "User-Agent"])
+            .allow_methods(["OPTIONS", "GET", "POST", "DELETE"]),
+    );
+
+    // check if the port is already in use
+    if let Err(e) = tokio::net::TcpListener::bind((Ipv4Addr::new(127, 0, 0, 1), port)).await {
+        tracing::error!("failed to bind to port {port}: {e:#}");
+        if e.kind() == std::io::ErrorKind::AddrInUse {
+            tracing::error!("is the server already running?");
+            if cfg!(not(debug_assertions)) {
+                tracing::info!("opening browser to existing server...");
+                webbrowser::open(&format!("http://localhost:{DEFAULT_PORT}"))?;
+                std::process::exit(1);
+            }
+        }
+    };
 
     warp::serve(routes).run(([127, 0, 0, 1], port)).await;
 
     Ok(())
+}
+
+#[cfg(not(debug_assertions))]
+mod frontend {
+    use rust_embed::RustEmbed;
+    use warp::{http::header::HeaderValue, path::Tail, reply::Response, Rejection, Reply};
+
+    #[derive(RustEmbed)]
+    #[folder = "frontend/out"]
+    struct Frontend;
+
+    pub async fn serve_index() -> Result<impl Reply, Rejection> {
+        serve_impl("index.html")
+    }
+
+    pub async fn serve(path: Tail) -> Result<impl Reply, Rejection> {
+        serve_impl(path.as_str())
+    }
+
+    fn serve_impl(path: &str) -> Result<impl Reply, Rejection> {
+        let asset = Frontend::get(path).ok_or_else(warp::reject::not_found)?;
+        let mime = mime_guess::from_path(path).first_or_octet_stream();
+
+        let mut res = Response::new(asset.data.into());
+        res.headers_mut().insert(
+            "content-type",
+            HeaderValue::from_str(mime.as_ref()).unwrap(),
+        );
+        Ok(res)
+    }
 }

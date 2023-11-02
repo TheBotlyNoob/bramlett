@@ -121,10 +121,14 @@ pub struct Ctx {
 impl juniper::Context for Ctx {}
 
 pub async fn update_game_list(config: &mut Config) -> Result<()> {
-    let games_list = reqwest::get("http://localhost:8000")
-        .await?
-        .json::<Vec<GameInfo>>()
-        .await?;
+    let games_list = reqwest::get(if cfg!(debug_assertions) {
+        "http://localhost:8000"
+    } else {
+        "https://bramletts-games.shuttleapp.rs"
+    })
+    .await?
+    .json::<Vec<GameInfo>>()
+    .await?;
 
     for game_info in games_list.into_iter() {
         let game = Game {
