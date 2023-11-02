@@ -16,6 +16,8 @@ pub enum ClientError {
     Io(#[from] std::io::Error),
     #[error("json error: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("zip error: {0}")]
+    Zip(#[from] zip::result::ZipError),
     #[error("HTML parsing error: {0}")]
     Html(#[from] tl::ParseError),
     #[error("Google Drive HTML structure error")]
@@ -29,10 +31,10 @@ pub enum GameStatus {
     NotDownloaded,
     /// Downloading - (current, total)
     #[serde(skip)]
-    Downloading(watch::Receiver<(u32, u32)>),
+    Downloading(watch::Receiver<(u64, u64)>),
     /// Installing (unzipping) - (current, total)
     #[serde(skip)]
-    Installing(watch::Receiver<(u32, u32)>),
+    Installing(watch::Receiver<(u64, u64)>),
     Running,
     Stopped,
 }

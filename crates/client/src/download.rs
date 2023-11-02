@@ -1,14 +1,19 @@
+use std::fs;
+use std::io::Cursor;
+use std::path::PathBuf;
+
 use crate::{ClientError, Result};
 use crate::{Ctx, Game};
 use bytes::{Bytes, BytesMut};
 use futures::StreamExt;
 use tl::ParserOptions;
 use tokio::sync::watch;
+use zip::ZipArchive;
 
 pub async fn download_game(
     game: Game,
     ctx: Ctx,
-    progress: watch::Sender<(u32, u32)>,
+    progress: watch::Sender<(u64, u64)>,
 ) -> Result<Bytes> {
     let gdrive_url = format!(
         "https://drive.google.com/uc?export=download&id={}",
@@ -34,10 +39,10 @@ pub async fn download_game(
             .replace("&amp;", "&")
     };
 
-    tracing::info!("real google drive download URL: {}", real_url);
+    tracing::info!("real google drive download URL: {real_url}");
 
     let res = ctx.client.get(&real_url).send().await?;
-    let content_length = res.content_length().unwrap().try_into().unwrap();
+    let content_length = res.content_length().unwrap();
     if progress.send((0, content_length)).is_err() {
         tracing::warn!("progress receiver dropped");
     };
@@ -47,7 +52,10 @@ pub async fn download_game(
     let mut recvd = 0;
     while let Some(chunk) = stream.next().await {
         let chunk = chunk?;
-        recvd += chunk.len() as u32;
+        recvd += chunk.len() as u64;
+
+        tracing::trace!("received {} bytes", chunk.len());
+
         if progress.send((recvd, content_length)).is_err() {
             tracing::warn!("progress receiver dropped");
         };
@@ -55,4 +63,55 @@ pub async fn download_game(
     }
 
     Ok(bytes.freeze())
+}
+
+pub fn extract_zip_with_password(
+    bytes: Bytes,
+    dir: PathBuf,
+    password: &[u8],
+    progress: watch::Sender<(u64, u64)>,
+) -> Result<()> {
+    std::fs::create_dir_all(&dir)?;
+    let mut archive = ZipArchive::new(Cursor::new(&bytes))?;
+    let archive_size = archive.len() as u64;
+    if progress.send((0, archive_size)).is_err() {
+        tracing::warn!("progress receiver dropped");
+    };
+    for i in 0..archive.len() {
+        let mut file = archive.by_index_decrypt(i, password)?.unwrap();
+        let mut filepath_components = file.enclosed_name().unwrap().components();
+        filepath_components.next();
+        let outpath = dir.join(filepath_components.as_path());
+
+        tracing::debug!(?outpath, "extracting");
+
+        if file.name().ends_with('/') {
+            fs::create_dir_all(&outpath)?
+        } else {
+            if let Some(p) = outpath.parent() {
+                if !p.exists() {
+                    fs::create_dir_all(p)?;
+                }
+            }
+            let mut outfile = fs::File::create(&outpath)?;
+            std::io::copy(&mut file, &mut outfile)?;
+        }
+
+        // make sure executable is executable on unix for wine users
+        #[cfg(unix)]
+        if let Some(ext) = outpath.extension() {
+            if ext == "exe" {
+                use std::os::unix::fs::PermissionsExt;
+
+                let mut perms = fs::metadata(&outpath)?.permissions();
+                perms.set_mode(0o755);
+                fs::set_permissions(&outpath, perms)?;
+            }
+        }
+
+        if progress.send((i as u64 + 1, archive_size)).is_err() {
+            tracing::warn!("progress receiver dropped");
+        };
+    }
+    Ok(())
 }

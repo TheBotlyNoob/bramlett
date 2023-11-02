@@ -37,6 +37,8 @@ pub struct GameInfo {
     pub id: GameId,
     /// A public Google Drive ID, linking to a zip file with a password of "game".
     pub gdrive_id: String,
+    /// The name of the game's executable, relative to the game directory.
+    pub exe: String,
     /// RHAI script with `post_install`, `pre_run` and `post_run` functions.
     ///
     /// `pre_run` should be used to sync the `save_dir`'s save data with the `game_dir`.

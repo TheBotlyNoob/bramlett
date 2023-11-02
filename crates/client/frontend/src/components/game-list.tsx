@@ -1,17 +1,19 @@
 "use client";
 
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { gql } from "@/__generated__";
 import { GamesQuery, GraphQlGameStatusInner } from "@/__generated__/graphql";
-import { Button, List } from "antd";
+import { Button, List, Progress, Tooltip } from "antd";
 import { ClimbingBoxLoader } from "react-spinners";
 
 const GAMES_QUERY = gql(`
     query Games {
         games {
+            id
             name
             status {
                 status
+                progress
             }
         }
     }
@@ -20,8 +22,18 @@ const GAMES_QUERY = gql(`
 const DOWNLOAD_GAME = gql(`
     mutation DownloadGame($game: GameId!) {
         download(game: $game) {
-            status {
-                status
+            void {
+                __typename
+            }
+        }
+    }
+`);
+
+const RUN_GAME = gql(`
+    mutation RunGame($game: GameId!) {
+        run(game: $game) {
+            void {
+                __typename
             }
         }
     }
@@ -29,21 +41,65 @@ const DOWNLOAD_GAME = gql(`
 
 export default function GamesList() {
     const { loading, data, error, refetch } = useQuery(GAMES_QUERY);
+    const [downloadGame] = useMutation(DOWNLOAD_GAME);
+    const [runGame] = useMutation(RUN_GAME);
 
-    // setInterval(refetch, 1000);
+    setInterval(refetch, 1000);
 
-    const gameStatus = ({ status }: GamesQuery["games"][0]) => {
-        switch (status.status) {
+    const gameStatus = (game: GamesQuery["games"][0]) => {
+        switch (game.status.status) {
             case GraphQlGameStatusInner.Downloading:
-                return <></>;
+                let downloadProgress =
+                    game.status.progress![0] / game.status.progress![1];
+                return (
+                    <Tooltip
+                        placement="topRight"
+                        title={`Downloading... (${
+                            game.status.progress![0] / 1000
+                        } GB out of ${game.status.progress![1] / 1000})`}
+                    >
+                        <Progress
+                            percent={Math.round(downloadProgress * 100)}
+                        ></Progress>
+                    </Tooltip>
+                );
             case GraphQlGameStatusInner.Installing:
-                return <Button>Cancel</Button>;
+                let installProgress =
+                    game.status.progress![0] / game.status.progress![1];
+                return (
+                    <Tooltip
+                        placement="topRight"
+                        title={`Installing... (${
+                            game.status.progress![0] / 1000
+                        } GB out of ${game.status.progress![1] / 1000})`}
+                    >
+                        <Progress
+                            percent={Math.round(installProgress * 100)}
+                        ></Progress>
+                    </Tooltip>
+                );
             case GraphQlGameStatusInner.NotDownloaded:
-                return <Button>Download</Button>;
+                return (
+                    <Button
+                        onClick={() => {
+                            downloadGame({ variables: { game: game.id } });
+                        }}
+                    >
+                        Download
+                    </Button>
+                );
             case GraphQlGameStatusInner.Running:
                 return <Button>Stop</Button>;
             case GraphQlGameStatusInner.Stopped:
-                return <Button>Start</Button>;
+                return (
+                    <Button
+                        onClick={() => {
+                            runGame({ variables: { game: game.id } });
+                        }}
+                    >
+                        Start
+                    </Button>
+                );
         }
     };
 
@@ -51,13 +107,19 @@ export default function GamesList() {
         <>
             <ClimbingBoxLoader loading={loading} />
 
-            {data && (
+            {data && !error && (
                 <List
                     bordered
                     dataSource={Object.entries(data.games)}
                     renderItem={([_, game]) => (
                         <List.Item>
-                            <h2>{game.name}</h2>
+                            <h2
+                                style={{
+                                    marginRight: "10em",
+                                }}
+                            >
+                                {game.name}
+                            </h2>
                             {gameStatus(game)}
                         </List.Item>
                     )}

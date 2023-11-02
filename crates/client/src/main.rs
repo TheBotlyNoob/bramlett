@@ -4,7 +4,7 @@ use client::{update_game_list, Config, Ctx, Game, GameStatus};
 use common::GameId;
 use dashmap::DashMap;
 use juniper::{graphql_object, EmptySubscription, FieldResult, GraphQLEnum, RootNode};
-use std::sync::Arc;
+use std::{process::Command, sync::Arc};
 use tokio::sync::watch;
 use warp::{http::Response, Filter};
 
@@ -50,7 +50,7 @@ impl GraphQLGame {
     }
 }
 
-#[derive(Debug, Copy, Clone, serde::Serialize, serde::Deserialize, GraphQLEnum)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, GraphQLEnum)]
 enum GraphQLGameStatusInner {
     NotDownloaded,
     Downloading,
@@ -59,11 +59,21 @@ enum GraphQLGameStatusInner {
     Stopped,
 }
 
+struct Void;
+
+#[graphql_object]
+impl Void {
+    #[allow(clippy::self_named_constructors)]
+    const fn void() -> Self {
+        Self
+    }
+}
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 struct GraphQLGameStatus {
     pub status: GraphQLGameStatusInner,
     #[serde(skip)]
-    pub progress: Option<watch::Receiver<(u32, u32)>>,
+    pub progress: Option<watch::Receiver<(u64, u64)>>,
 }
 
 impl From<GameStatus> for GraphQLGameStatus {
@@ -98,14 +108,22 @@ impl GraphQLGameStatus {
     const fn status(&self) -> GraphQLGameStatusInner {
         self.status
     }
-    fn progress(&self) -> FieldResult<Option<[i32; 2]>> {
-        Ok(
-            if let Some((num, denom)) = self.progress.as_ref().map(|p| *p.borrow()) {
-                Some([num.try_into()?, denom.try_into()?])
-            } else {
-                None
-            },
-        )
+    /// Progress in megabytes
+    fn progress(&self) -> std::option::Option<[i32; 2]> {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss)]
+        self.progress
+            .as_ref()
+            .map(|p| *p.borrow())
+            .map(|(num, denom)| {
+                if self.status == GraphQLGameStatusInner::Downloading {
+                    [
+                        (num as f32 / 1e+6) as i32, // make it megabytes b/c bytes are too big to fit in i32
+                        (denom as f32 / 1e+6) as i32,
+                    ]
+                } else {
+                    [num as i32, denom as i32]
+                }
+            })
     }
 }
 
@@ -132,19 +150,48 @@ struct Mutation;
 
 #[graphql_object(context = Ctx)]
 impl Mutation {
-    fn download(ctx: &Ctx, game: GameId) -> FieldResult<GraphQLGame> {
+    fn download(ctx: &Ctx, game: GameId) -> FieldResult<Void> {
         let games = ctx.config.games();
-        let mut game = games.get_mut(&game).ok_or(GraphQLError::GameNotFound)?;
         let (tx, rx) = watch::channel((0, 0));
+        let game = {
+            let mut game = games.get_mut(&game).ok_or(GraphQLError::GameNotFound)?;
+            game.status = GameStatus::Downloading(rx);
+            game.clone()
+        };
         tokio::spawn({
-            let game = game.clone();
             let ctx = ctx.clone();
             async move {
-                let _ = client::download::download_game(game, ctx, tx).await;
+                let bytes = client::download::download_game(game.clone(), ctx.clone(), tx)
+                    .await
+                    .unwrap();
+                tokio::task::spawn_blocking(move || {
+                    let (tx, rx) = watch::channel((0, 0));
+                    games.get_mut(&game.info.id).unwrap().status = GameStatus::Installing(rx);
+                    client::download::extract_zip_with_password(
+                        bytes,
+                        ctx.config.game_dir(game.info.id),
+                        b"game",
+                        tx,
+                    )
+                    .unwrap();
+                    games.get_mut(&game.info.id).unwrap().status = GameStatus::Stopped;
+                });
             }
         });
-        game.status = GameStatus::Downloading(rx);
-        Ok(GraphQLGame(game.info.id, ctx.config.games()))
+        Ok(Void)
+    }
+
+    fn run(ctx: &Ctx, game: GameId) -> FieldResult<Void> {
+        let games = ctx.config.games();
+        let game = {
+            let mut game = games.get_mut(&game).ok_or(GraphQLError::GameNotFound)?;
+            game.status = GameStatus::Running;
+            game.clone()
+        };
+        Command::new(ctx.config.game_dir(game.info.id).join(&game.info.exe))
+            .current_dir(ctx.config.game_dir(game.info.id))
+            .spawn()?;
+        Ok(Void)
     }
 }
 
@@ -164,11 +211,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .init();
 
-    let log = warp::log("bramletts_games");
-
     let config_file = Config::file();
 
-    tracing::trace!("config file: {config_file:#?}");
+    tracing::info!("config file: {config_file:#?}");
 
     let mut config = if config_file.exists() {
         let config_file = std::fs::File::open(config_file)?;
@@ -179,7 +224,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         config
     };
 
-    tracing::trace!("updating game list...");
+    tracing::debug!("updating game list...");
 
     if let Err(e) = update_game_list(&mut config).await {
         tracing::warn!("failed to update game list: {e:#}");
@@ -198,7 +243,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let schema = Arc::new(schema());
 
-    tracing::info!("listening on 127.0.0.1:8080");
+    let port = std::env::var("PORT")
+        .map(|p| p.parse().expect("invalid port"))
+        .unwrap_or(8080);
+
+    tracing::info!("listening on http://localhost:{port}");
 
     let routes = warp::path("graphql")
         .and(
@@ -229,16 +278,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     )
             })),
         )
-        .with(log)
+        .with(warp::log("graphql"))
         .with(
             warp::cors()
                 .allow_origin("http://localhost:3000")
-                .allow_origin(&*format!("http://localhost:8080"))
+                .allow_origin(&*format!("http://localhost:{port}"))
                 .allow_headers(vec!["Content-Type", "User-Agent"])
                 .allow_methods(vec!["OPTIONS", "GET", "POST", "DELETE"]),
         );
 
-    warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
+    warp::serve(routes).run(([127, 0, 0, 1], port)).await;
 
     Ok(())
 }

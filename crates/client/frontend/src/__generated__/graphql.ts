@@ -26,6 +26,7 @@ export type GraphQlGame = {
 
 export type GraphQlGameStatus = {
   __typename?: 'GraphQLGameStatus';
+  /** Progress in megabytes */
   progress?: Maybe<Array<Scalars['Int']['output']>>;
   status: GraphQlGameStatusInner;
 };
@@ -40,11 +41,17 @@ export enum GraphQlGameStatusInner {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  download: GraphQlGame;
+  download: Void;
+  run: Void;
 };
 
 
 export type MutationDownloadArgs = {
+  game: Scalars['GameId']['input'];
+};
+
+
+export type MutationRunArgs = {
   game: Scalars['GameId']['input'];
 };
 
@@ -59,18 +66,31 @@ export type QueryGameArgs = {
   id: Scalars['Int']['input'];
 };
 
+export type Void = {
+  __typename?: 'Void';
+  void: Void;
+};
+
 export type GamesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'GraphQLGame', name: string, status: { __typename?: 'GraphQLGameStatus', status: GraphQlGameStatusInner } }> };
+export type GamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'GraphQLGame', id: number, name: string, status: { __typename?: 'GraphQLGameStatus', status: GraphQlGameStatusInner, progress?: Array<number> | null } }> };
 
 export type DownloadGameMutationVariables = Exact<{
   game: Scalars['GameId']['input'];
 }>;
 
 
-export type DownloadGameMutation = { __typename?: 'Mutation', download: { __typename?: 'GraphQLGame', status: { __typename?: 'GraphQLGameStatus', status: GraphQlGameStatusInner } } };
+export type DownloadGameMutation = { __typename?: 'Mutation', download: { __typename?: 'Void', void: { __typename: 'Void' } } };
+
+export type RunGameMutationVariables = Exact<{
+  game: Scalars['GameId']['input'];
+}>;
 
 
-export const GamesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Games"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"games"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"status"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]}}]} as unknown as DocumentNode<GamesQuery, GamesQueryVariables>;
-export const DownloadGameDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DownloadGame"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"game"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"GameId"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"download"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"game"},"value":{"kind":"Variable","name":{"kind":"Name","value":"game"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]}}]} as unknown as DocumentNode<DownloadGameMutation, DownloadGameMutationVariables>;
+export type RunGameMutation = { __typename?: 'Mutation', run: { __typename?: 'Void', void: { __typename: 'Void' } } };
+
+
+export const GamesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Games"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"games"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"status"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"progress"}}]}}]}}]}}]} as unknown as DocumentNode<GamesQuery, GamesQueryVariables>;
+export const DownloadGameDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DownloadGame"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"game"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"GameId"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"download"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"game"},"value":{"kind":"Variable","name":{"kind":"Name","value":"game"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"void"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}}]}}]}}]}}]} as unknown as DocumentNode<DownloadGameMutation, DownloadGameMutationVariables>;
+export const RunGameDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RunGame"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"game"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"GameId"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"run"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"game"},"value":{"kind":"Variable","name":{"kind":"Name","value":"game"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"void"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}}]}}]}}]}}]} as unknown as DocumentNode<RunGameMutation, RunGameMutationVariables>;
