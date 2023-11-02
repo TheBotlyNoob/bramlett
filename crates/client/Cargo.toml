@@ -5,38 +5,32 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[features]
-prod_in_debug = []
-
 [dependencies]
-anyhow = "1.0.75"
-eframe = { version = "0.23.0", default-features = false, features = [
-    # "accesskit",     # Make egui comptaible with screen readers. NOTE: adds a lot of dependencies.
-    "default_fonts", # Embed the default egui fonts.
-    "glow",          # Use the glow rendering backend. Alternative: "wgpu".
-    # "wgpu",
-] }
-# winit = { version = "*", features = ["wayland", "x11"] } # uncomment if using wgpu backend
-egui = "0.23.0"
-env_logger = "0.10.0"
-futures = "0.3.28"
-log = { version = "0.4.20", features = ["release_max_level_off"] }
-poll-promise = { version = "0.3.0", features = ["tokio"] }
-reqwest = { version = "0.11.22", default-features = false, features = [
-    # "rustls-tls",
-    "native-tls",
-    "json",
-    "cookies",
-    "stream",
-] }
-tl = "0.7.7"
-tokio = { version = "1.33.0", features = ["rt-multi-thread", "macros"] }
-common = { path = "../common" }
-bytes = "1.5.0"
-zip = "0.6.6"
-sysinfo = "0.29.10"
-rhai = "1.16.2"
+### lib ###
+common = { version = "0.1.0", path = "../common" }
+dashmap = { version = "5.5.3", features = ["serde"] }
 dirs = "5.0.1"
-rhai-fs = "0.1.2"
-whoami = "1.4.1"
-obfstr = "0.4.3"
+reqwest = { version = "0.11.22", features = ["json", "stream"] }
+serde = { version = "1.0.190", features = ["derive", "rc"] }
+serde_json = "1.0.108"
+thiserror = "1.0.50"
+tokio = { version = "1.33.0", features = ["sync", "rt", "process"] }
+bytes = "1.5.0"
+
+### server ###
+juniper = { git = "https://github.com/graphql-rust/juniper", rev = "0fc95dd" }
+juniper_warp = { git = "https://github.com/graphql-rust/juniper", rev = "0fc95dd", features = [
+    "subscriptions",
+] }
+futures = "0.3.29"
+warp = "0.3.6"
+async-stream = "0.3.5"
+juniper_graphql_ws = "0.3.0"
+anyhow = "1.0.75"
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
+tracing = "0.1.40"
+tl = "0.7.7"
+zip = "0.6.6"
+rust-embed = { version = "8.0.0", features = ["warp"] }
+mime_guess = "2.0.4"
+webbrowser = "0.8.12"

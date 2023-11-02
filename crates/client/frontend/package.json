@@ -1,0 +1,40 @@
+{
+    "name": "frontend",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint",
+        "fmt": "prettier --write .",
+        "compile": "graphql-codegen",
+        "watch": "graphql-codegen -w",
+        "codegen": "graphql-codegen --config codegen.ts"
+    },
+    "dependencies": {
+        "@apollo/client": "^3.8.6",
+        "antd": "^5.10.3",
+        "graphql": "^16.8.1",
+        "next": "14.0.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-spinners": "^0.13.8",
+        "usehooks-ts": "^2.9.1"
+    },
+    "devDependencies": {
+        "@graphql-codegen/cli": "5.0.0",
+        "@graphql-codegen/client-preset": "4.1.0",
+        "@graphql-codegen/typescript": "^4.0.1",
+        "@graphql-codegen/typescript-resolvers": "^4.0.1",
+        "@graphql-typed-document-node/core": "^3.2.0",
+        "@parcel/watcher": "^2.3.0",
+        "@types/node": "^20.8.10",
+        "@types/react": "^18.2.33",
+        "@types/react-dom": "^18.2.14",
+        "eslint": "^8.52.0",
+        "eslint-config-next": "14.0.0",
+        "prettier": "^3.0.3",
+        "typescript": "^5.2.2"
+    }
+}
