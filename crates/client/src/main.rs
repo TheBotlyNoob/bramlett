@@ -113,11 +113,13 @@ impl Query {
         GraphQLGame::new(GameId(id), context.games())
     }
     async fn games(context: &Ctx) -> Vec<GraphQLGame> {
-        context
+        let mut games = context
             .games()
             .iter()
             .map(|k| GraphQLGame(*k.key(), context.games())) // we don't call GraphQLGame::new here because we know the game exists
-            .collect()
+            .collect::<Vec<_>>();
+        games.sort_unstable_by_key(|g| g.0);
+        games
     }
 }
 

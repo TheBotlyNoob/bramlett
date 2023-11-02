@@ -25,7 +25,7 @@ export default function GamesList() {
     const gameStatus = ({ status }: GamesQuery["games"][0]) => {
         switch (status.status) {
             case GraphQlGameStatusInner.Downloading:
-                return <Button>Cancel</Button>;
+                return <></>;
             case GraphQlGameStatusInner.Installing:
                 return <Button>Cancel</Button>;
             case GraphQlGameStatusInner.NotDownloaded:

@@ -1,6 +1,5 @@
 "use client";
 
-import { NextPage } from "next";
 import GamesList from "@/components/game-list";
 import { Suspense } from "react";
 import { ClimbingBoxLoader } from "react-spinners";
