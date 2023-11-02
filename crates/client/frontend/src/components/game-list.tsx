@@ -81,6 +81,7 @@ export default function GamesList() {
             case GraphQlGameStatusInner.NotDownloaded:
                 return (
                     <Button
+                        size="large"
                         onClick={() => {
                             downloadGame({ variables: { game: game.id } });
                         }}
@@ -89,10 +90,12 @@ export default function GamesList() {
                     </Button>
                 );
             case GraphQlGameStatusInner.Running:
-                return <Button>Stop</Button>;
+                return <h3>Running...</h3>;
             case GraphQlGameStatusInner.Stopped:
                 return (
                     <Button
+                        type="primary"
+                        size="large"
                         onClick={() => {
                             runGame({ variables: { game: game.id } });
                         }}
