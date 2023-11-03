@@ -4,8 +4,8 @@ use client::{update_game_list, Config, Ctx, Game, GameStatus};
 use common::GameId;
 use dashmap::DashMap;
 use juniper::{graphql_object, EmptySubscription, FieldResult, GraphQLEnum, RootNode};
-use std::{process::Command, sync::Arc, time::Duration};
-use tokio::sync::watch;
+use std::{sync::Arc, time::Duration};
+use tokio::{process::Command, sync::watch};
 use warp::Filter;
 
 const DEFAULT_PORT: u16 = 8635;
@@ -199,9 +199,19 @@ impl Mutation {
             game.status = GameStatus::Running;
             game.clone()
         };
-        Command::new(ctx.config.game_dir(game.info.id).join(&game.info.exe))
-            .current_dir(ctx.config.game_dir(game.info.id))
-            .spawn()?;
+        let ctx = ctx.clone();
+        tokio::spawn(async move {
+            Command::new(ctx.config.game_dir(game.info.id).join(&game.info.exe))
+                .current_dir(ctx.config.game_dir(game.info.id))
+                .spawn()
+                .unwrap()
+                .wait()
+                .await
+                .unwrap();
+
+            let mut game = games.get_mut(&game.info.id).unwrap();
+            game.status = GameStatus::Stopped;
+        });
         Ok(Void)
     }
 }
@@ -297,10 +307,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .allow_methods(["OPTIONS", "GET", "POST", "DELETE"]),
     );
 
-    tokio::spawn(async move {
-        tokio::time::sleep(Duration::from_secs(1)).await; // open web browser after server starts
-        webbrowser::open(&format!("http://localhost:{port}"))
-    });
+    if cfg!(not(debug_assertions)) {
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_secs(1)).await; // open web browser after server starts
+            webbrowser::open(&format!("http://localhost:{port}"))
+        });
+    }
 
     warp::serve(routes).run(([127, 0, 0, 1], port)).await;
 
