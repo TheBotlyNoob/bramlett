@@ -34,6 +34,9 @@ jobs:
             - name: Setup Pages
               uses: actions/configure-pages@v3
             - uses: dtolnay/rust-toolchain@stable
+            - uses: pnpm/action-setup@v2
+              with:
+                  version: 8
             - uses: extractions/setup-just@v1
             - run: just release
             - run: Copy-Item target/release/client.exe web/games.exe
