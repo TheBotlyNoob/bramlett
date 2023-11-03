@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use axum::{routing::get, Json, Router};
 use common::{GameId, GameInfo};
 
@@ -88,4 +90,13 @@ async fn main() -> shuttle_axum::ShuttleAxum {
         // `GET /` goes to `root`
         .route("/", get(|| async { Json(games()) }))
         .into())
+}
+
+#[cfg(test)]
+#[test]
+fn assert_unique_ids() {
+    let mut seen_ids = HashSet::new();
+    for game in games() {
+        assert!(seen_ids.insert(game.id));
+    }
 }
