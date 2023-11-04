@@ -1,0 +1,37 @@
+[tasks.frontend-deps]
+workspace = false
+cwd = "crates/client/frontend"
+command = "npm"
+args = ["install"]
+
+[tasks.frontend-rel]
+workspace = false
+cwd = "crates/client/frontend"
+command = "npm"
+args = ["run", "build"]
+dependencies = ["frontend-deps"]
+
+[tasks.client-rel]
+workspace = false
+cwd = "crates/client"
+command = "cargo"
+args = ["build", "--release"]
+dependencies = ["frontend-rel"]
+
+[tasks.frontend-dev]
+workspace = false
+cwd = "crates/client/frontend"
+command = "pnpm"
+args = ["run", "dev"]
+dependencies = ["frontend-deps"]
+
+[tasks.client-dev]
+workspace = false
+cwd = "crates/client"
+command = "cargo"
+args = ["run"]
+dependencies = ["frontend-dev"]
+
+[tasks.dev]
+workspace = false
+run_task = { name = ["client-dev", "frontend-dev"], parallel = true }

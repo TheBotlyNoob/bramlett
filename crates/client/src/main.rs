@@ -4,7 +4,7 @@ use client::{update_game_list, Config, Ctx, Game, GameStatus};
 use common::GameId;
 use dashmap::DashMap;
 use juniper::{graphql_object, EmptySubscription, FieldResult, GraphQLEnum, RootNode};
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 use tokio::{process::Command, sync::watch};
 use warp::Filter;
 
@@ -245,18 +245,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         config
     };
 
-    tracing::debug!("updating game list...");
-
-    if let Err(e) = update_game_list(&mut config).await {
-        tracing::warn!("failed to update game list: {e:#}");
-    } else {
-        config.save()?;
-    };
-
-    tracing::info!("save dir: {:#?}", config.saves_dir());
-    tracing::info!("games dir: {:#?}", config.games_dir());
-    tracing::info!("{} games", config.games().len());
-
     let ctx = Ctx {
         config: config.clone(),
         client: reqwest::Client::new(),
@@ -272,8 +260,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             p.parse().expect("invalid port")
         })
         .unwrap_or(DEFAULT_PORT);
-
-    tracing::info!("listening on http://localhost:{port}");
 
     let routes = warp::path("graphql").and(
         (warp::post().and(juniper_warp::make_graphql_filter(
@@ -308,12 +294,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     if cfg!(not(debug_assertions)) {
-        tokio::spawn(async move {
-            tokio::time::sleep(Duration::from_secs(1)).await; // open web browser after server starts
-            webbrowser::open(&format!("http://localhost:{port}"))
+        std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::from_secs(1)); // open web browser after server starts
+            let _ = webbrowser::open(&format!("http://localhost:{port}"));
         });
     }
 
+    tracing::debug!("updating game list...");
+
+    if let Err(e) = update_game_list(&mut config).await {
+        tracing::warn!("failed to update game list: {e:#}");
+    } else {
+        config.save()?;
+    };
+
+    tracing::info!("save dir: {:#?}", config.saves_dir());
+    tracing::info!("games dir: {:#?}", config.games_dir());
+    tracing::info!("{} games", config.games().len());
+
+    tracing::info!("listening on http://localhost:{port}");
     warp::serve(routes).run(([127, 0, 0, 1], port)).await;
 
     Ok(())
