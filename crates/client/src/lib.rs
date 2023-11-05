@@ -3,7 +3,9 @@
 
 use common::{GameId, GameInfo};
 use dashmap::DashMap;
+use rustpython_vm as vm;
 use std::{
+    fmt::Debug,
     path::PathBuf,
     sync::{Arc, RwLock},
 };
@@ -51,7 +53,7 @@ impl serde::Serialize for GameStatus {
         S: serde::Serializer,
     {
         match *self {
-            Self::Downloading(..) | Self::Installing(..) | Self::NotDownloaded => {
+            Self::NotDownloaded | Self::Downloading(..) | Self::Installing(..) => {
                 ser.serialize_unit_variant("GameStatus", 0, "NotDownloaded")
             }
             Self::Running | Self::Stopped => ser.serialize_unit_variant("GameStatus", 4, "Stopped"),
@@ -59,10 +61,22 @@ impl serde::Serialize for GameStatus {
     }
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
 pub struct Game {
     pub info: GameInfo,
     pub status: GameStatus,
+    #[serde(skip)]
+    py_interp: Option<Arc<vm::Interpreter>>,
+}
+
+impl Debug for Game {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Game")
+            .field("info", &self.info)
+            .field("status", &self.status)
+            .field("py_interp", &"Interpreter { .. }")
+            .finish()
+    }
 }
 
 /// Config
@@ -95,13 +109,11 @@ impl Default for Config {
 }
 
 impl Config {
-    #[must_use = "pure function"]
     pub fn conf_dir() -> PathBuf {
         dirs::config_dir()
             .unwrap_or_else(|| PathBuf::from("bramletts games config"))
             .join("Bramletts Games")
     }
-    #[must_use = "pure function"]
     pub fn file() -> PathBuf {
         Self::conf_dir().join("config.json")
     }
@@ -177,6 +189,9 @@ pub async fn update_game_list(config: &Config) -> Result<()> {
         let game = Game {
             info: game_info,
             status: GameStatus::NotDownloaded,
+            py_interp: vm::Interpreter::with_init(Default::default(), |vm| {
+                vm.add_native_modules(vm::stdlib::get_module_inits());
+            }),
         };
         config.games.insert(game.info.id, game);
     }

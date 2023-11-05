@@ -16,7 +16,9 @@ serde_json = "1.0.108"
 thiserror = "1.0.50"
 tokio = { version = "1.33.0", features = ["sync", "rt", "process"] }
 bytes = "1.5.0"
-rustpython-vm = { git = "https://github.com/RustPython/RustPython", rev = "af884cb" }
+rustpython-vm = { git = "https://github.com/RustPython/RustPython", rev = "af884cb", features = [
+    "freeze-stdlib",
+] }
 
 ### server ###
 juniper = { git = "https://github.com/graphql-rust/juniper", rev = "0fc95dd" }
@@ -27,7 +29,6 @@ futures = "0.3.29"
 warp = "0.3.6"
 async-stream = "0.3.5"
 juniper_graphql_ws = "0.3.0"
-anyhow = "1.0.75"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 tracing = "0.1.40"
 tl = "0.7.7"

@@ -39,7 +39,7 @@ pub struct GameInfo {
     pub gdrive_id: String,
     /// The name of the game's executable, relative to the game directory.
     pub exe: String,
-    /// RHAI script with `post_install`, `pre_run` and `post_run` functions.
+    /// python script with `post_install`, `pre_run` and `post_run` functions.
     ///
     /// `pre_run` should be used to sync the `save_dir`'s save data with the `game_dir`.
     /// `post_run` should be used to sync the `game_dir`'s save data with the `save_dir`.
