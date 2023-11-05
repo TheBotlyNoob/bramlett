@@ -1,37 +1,56 @@
+[config]
+default_to_workspace = false
+
+[env]
+CARGO_MAKE_RUN_DEPRECATED_MIGRATION = false
+
 [tasks.frontend-deps]
-workspace = false
 cwd = "crates/client/frontend"
-command = "npm"
-args = ["install"]
+script_runner = "@shell"
+script = "pnpm install"
 
 [tasks.frontend-rel]
-workspace = false
 cwd = "crates/client/frontend"
-command = "npm"
-args = ["run", "build"]
+script_runner = "@shell"
+script = "pnpm run build"
 dependencies = ["frontend-deps"]
 
-[tasks.client-rel]
-workspace = false
-cwd = "crates/client"
+[tasks.release]
 command = "cargo"
-args = ["build", "--release"]
+args = ["build", "--release", "--package", "client"]
 dependencies = ["frontend-rel"]
 
 [tasks.frontend-dev]
-workspace = false
+deprecated = "don't use this manually; use `cargo make dev` instead"
 cwd = "crates/client/frontend"
-command = "pnpm"
-args = ["run", "dev"]
-dependencies = ["frontend-deps"]
+script_runner = "@shell"
+script = "pnpm run dev"
+# needs frontend-deps, but that's dealt with in `tasks.dev`
+
+[tasks.frontend-gql-dev]
+deprecated = "don't use this manually; use `cargo make dev` instead"
+cwd = "crates/client/frontend"
+script_runner = "@shell"
+script = "pnpm run watch"
+# needs frontend-deps, but that's dealt with in `tasks.dev`
 
 [tasks.client-dev]
-workspace = false
-cwd = "crates/client"
+deprecated = "don't use this manually; use `cargo make dev` instead"
 command = "cargo"
-args = ["run"]
-dependencies = ["frontend-dev"]
+args = ["run", "--package", "client"]
+
+[tasks.server-dev]
+deprecated = "don't use this manually; use `cargo make dev` instead"
+cwd = "crates/server"
+command = "cargo"
+args = ["shuttle", "run"]
+
 
 [tasks.dev]
-workspace = false
-run_task = { name = ["client-dev", "frontend-dev"], parallel = true }
+run_task = { name = [
+    "server-dev",
+    "client-dev",
+    "frontend-dev",
+    "frontend-gql-dev",
+], fork = true, parallel = true }
+dependencies = ["frontend-deps"]

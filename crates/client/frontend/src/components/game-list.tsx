@@ -5,6 +5,7 @@ import { gql } from "@/__generated__";
 import { GamesQuery, GraphQlGameStatusInner } from "@/__generated__/graphql";
 import { Button, List, Progress, Tooltip } from "antd";
 import { ClimbingBoxLoader } from "react-spinners";
+import { Icon } from "@iconify/react";
 
 const GAMES_QUERY = gql(`
     query Games {
@@ -39,10 +40,21 @@ const RUN_GAME = gql(`
     }
 `);
 
+const UPDATE_GAME_LIST = gql(`
+    mutation UpdateGames {
+        updateGameList {
+            void {
+                __typename
+            }
+        }
+    }
+`);
+
 export default function GamesList() {
     const { loading, data, error, refetch } = useQuery(GAMES_QUERY);
     const [downloadGame] = useMutation(DOWNLOAD_GAME);
     const [runGame] = useMutation(RUN_GAME);
+    const [updateGameList] = useMutation(UPDATE_GAME_LIST);
 
     setInterval(refetch, 1000);
 
@@ -111,22 +123,37 @@ export default function GamesList() {
             <ClimbingBoxLoader loading={loading} />
 
             {data && !error && (
-                <List
-                    bordered
-                    dataSource={Object.entries(data.games)}
-                    renderItem={([_, game]) => (
-                        <List.Item>
-                            <h2
-                                style={{
-                                    marginRight: "10em",
-                                }}
-                            >
-                                {game.name}
-                            </h2>
-                            {gameStatus(game)}
-                        </List.Item>
-                    )}
-                />
+                <>
+                    <List
+                        bordered
+                        header={
+                            process.env.NODE_ENV === "development" && (
+                                <Tooltip title="refresh game list">
+                                    <Button
+                                        onClick={() => {
+                                            updateGameList();
+                                        }}
+                                    >
+                                        <Icon icon="mdi:refresh" />
+                                    </Button>
+                                </Tooltip>
+                            )
+                        }
+                        dataSource={Object.entries(data.games)}
+                        renderItem={([_, game]) => (
+                            <List.Item>
+                                <h2
+                                    style={{
+                                        marginRight: "10em",
+                                    }}
+                                >
+                                    {game.name}
+                                </h2>
+                                {gameStatus(game)}
+                            </List.Item>
+                        )}
+                    />
+                </>
             )}
 
             {error && JSON.stringify(error)}

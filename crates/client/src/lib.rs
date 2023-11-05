@@ -1,3 +1,6 @@
+#![warn(clippy::pedantic, clippy::nursery)]
+#![allow(clippy::must_use_candidate)]
+
 use common::{GameId, GameInfo};
 use dashmap::DashMap;
 use std::{
@@ -22,11 +25,13 @@ pub enum ClientError {
     Html(#[from] tl::ParseError),
     #[error("Google Drive HTML structure error")]
     BadDrive,
+    #[error("incorrect zip password")]
+    BadZipPassword,
 }
 
 pub type Result<T, E = ClientError> = std::result::Result<T, E>;
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize)]
 pub enum GameStatus {
     NotDownloaded,
     /// Downloading - (current, total)
@@ -35,9 +40,25 @@ pub enum GameStatus {
     /// Installing (unzipping) - (current, total)
     #[serde(skip)]
     Installing(watch::Receiver<(u64, u64)>),
+    #[serde(skip)]
     Running,
     Stopped,
 }
+
+impl serde::Serialize for GameStatus {
+    fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match *self {
+            Self::Downloading(..) | Self::Installing(..) | Self::NotDownloaded => {
+                ser.serialize_unit_variant("GameStatus", 0, "NotDownloaded")
+            }
+            Self::Running | Self::Stopped => ser.serialize_unit_variant("GameStatus", 4, "Stopped"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Game {
     pub info: GameInfo,
@@ -74,14 +95,20 @@ impl Default for Config {
 }
 
 impl Config {
+    #[must_use = "pure function"]
     pub fn conf_dir() -> PathBuf {
         dirs::config_dir()
             .unwrap_or_else(|| PathBuf::from("bramletts games config"))
             .join("Bramletts Games")
     }
+    #[must_use = "pure function"]
     pub fn file() -> PathBuf {
         Self::conf_dir().join("config.json")
     }
+    /// Saves the config to the config file.
+    ///
+    /// # Errors
+    /// Returns an error if the config file can't be written to.
     pub fn save(&self) -> Result<()> {
         let config_dir = Self::conf_dir();
         let _ = std::fs::create_dir_all(config_dir);
@@ -90,9 +117,12 @@ impl Config {
         serde_json::to_writer_pretty(config_file, self)?;
         Ok(())
     }
+    /// Gets the directory where games are stored.
+    #[allow(clippy::missing_panics_doc)]
     pub fn games_dir(&self) -> PathBuf {
         self.games_dir.read().unwrap().clone()
     }
+    #[allow(clippy::missing_panics_doc)]
     pub fn saves_dir(&self) -> PathBuf {
         self.saves_dir.read().unwrap().clone()
     }
@@ -100,9 +130,11 @@ impl Config {
         self.games.clone()
     }
 
+    #[allow(clippy::missing_panics_doc)]
     pub fn set_games_dir(&self, games_dir: PathBuf) {
         *self.games_dir.write().unwrap() = games_dir;
     }
+    #[allow(clippy::missing_panics_doc)]
     pub fn set_saves_dir(&self, saves_dir: PathBuf) {
         *self.saves_dir.write().unwrap() = saves_dir;
     }
@@ -120,7 +152,15 @@ pub struct Ctx {
 
 impl juniper::Context for Ctx {}
 
-pub async fn update_game_list(config: &mut Config) -> Result<()> {
+/// Updates the game list in the config file to match the server's game list.
+/// Doesn't modify existing games.
+///
+/// # Errors
+/// Returns an error if the server is unreachable, the game list is invalid, or the config file
+/// can't be written to.
+pub async fn update_game_list(config: &Config) -> Result<()> {
+    tracing::info!("updating game list...");
+
     let games_list = reqwest::get(if cfg!(debug_assertions) {
         "http://localhost:8000"
     } else {
@@ -130,7 +170,10 @@ pub async fn update_game_list(config: &mut Config) -> Result<()> {
     .json::<Vec<GameInfo>>()
     .await?;
 
-    for game_info in games_list.into_iter() {
+    for game_info in games_list {
+        if config.games.contains_key(&game_info.id) {
+            continue;
+        }
         let game = Game {
             info: game_info,
             status: GameStatus::NotDownloaded,
