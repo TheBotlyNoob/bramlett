@@ -65,8 +65,8 @@ impl serde::Serialize for GameStatus {
 pub struct Game {
     pub info: GameInfo,
     pub status: GameStatus,
-    #[serde(skip)]
-    py_interp: Option<Arc<vm::Interpreter>>,
+    // #[serde(skip)]
+    // py_interp: Option<Arc<vm::Interpreter>>,
 }
 
 impl Debug for Game {
@@ -189,9 +189,9 @@ pub async fn update_game_list(config: &Config) -> Result<()> {
         let game = Game {
             info: game_info,
             status: GameStatus::NotDownloaded,
-            py_interp: vm::Interpreter::with_init(Default::default(), |vm| {
-                vm.add_native_modules(vm::stdlib::get_module_inits());
-            }),
+            // py_interp: vm::Interpreter::with_init(Default::default(), |vm| {
+            //     vm.add_native_modules(vm::stdlib::get_module_inits());
+            // }),
         };
         config.games.insert(game.info.id, game);
     }
