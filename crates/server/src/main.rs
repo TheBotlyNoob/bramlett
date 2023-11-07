@@ -73,6 +73,34 @@ fn games() -> Vec<GameInfo> {
             exe: "SUPERHOT.exe".into(),
             hooks: script!("superhot"),
         },
+        GameInfo {
+            name: "Five Nights at Freddy's".into(),
+            id: GameId(9),
+            gdrive_id: "1TddScp06i7Echbh-JAa_PKTce3GyBRhg".into(),
+            exe: "FiveNightsatFreddys.exe".into(),
+            hooks: script!("fnaf"),
+        },
+        GameInfo {
+            name: "Five Nights at Freddy's 2".into(),
+            id: GameId(10),
+            gdrive_id: "1C-3vrgV0gaLeZ5b19WKRroQUJRkhs5AD".into(),
+            exe: "FiveNightsatFreddys2.exe".into(),
+            hooks: script!("fnaf2"),
+        },
+        // GameInfo {
+        //     name: "Five Nights at Freddy's 3".into(),
+        //     id: GameId(11),
+        //     gdrive_id: todo!(),
+        //     exe: "FiveNightsatFreddys3.exe".into(),
+        //     hooks: script!("fnaf3"),
+        // },
+        // GameInfo {
+        //     name: "Five Nights at Freddy's 4".into(),
+        //     id: GameId(12),
+        //     gdrive_id: todo!(),
+        //     exe: "FiveNightsatFreddys4.exe".into(),
+        //     hooks: script!("fnaf4"),
+        // },
     ]
 }
 
