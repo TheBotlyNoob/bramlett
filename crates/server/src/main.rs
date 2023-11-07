@@ -21,7 +21,7 @@ fn games() -> Vec<GameInfo> {
             name: "Geometry Dash".into(),
             id: GameId(1),
             gdrive_id: "16CYi7pAMTsmbVmlEtUBOkLjvpqtQdght".into(),
-            exe: "GeometryDash.exe".into(),
+            exe: "steamapps/common/Geometry Dash/GeometryDash.exe".into(),
             hooks: script!("geometry_dash"),
         },
         GameInfo {
@@ -87,20 +87,27 @@ fn games() -> Vec<GameInfo> {
             exe: "FiveNightsatFreddys2.exe".into(),
             hooks: script!("fnaf2"),
         },
-        // GameInfo {
-        //     name: "Five Nights at Freddy's 3".into(),
-        //     id: GameId(11),
-        //     gdrive_id: todo!(),
-        //     exe: "FiveNightsatFreddys3.exe".into(),
-        //     hooks: script!("fnaf3"),
-        // },
-        // GameInfo {
-        //     name: "Five Nights at Freddy's 4".into(),
-        //     id: GameId(12),
-        //     gdrive_id: todo!(),
-        //     exe: "FiveNightsatFreddys4.exe".into(),
-        //     hooks: script!("fnaf4"),
-        // },
+        GameInfo {
+            name: "Five Nights at Freddy's 3".into(),
+            id: GameId(11),
+            gdrive_id: "1Qu2_VRYU_Fm1_gDLw264oVzvfIjw8f42".into(),
+            exe: "FiveNightsatFreddys3.exe".into(),
+            hooks: script!("fnaf3"),
+        },
+        GameInfo {
+            name: "Five Nights at Freddy's 4".into(),
+            id: GameId(12),
+            gdrive_id: "1Q2KZvvSimGWjDWmRnvvqcGZMtqjw2EM3".into(),
+            exe: "FiveNightsatFreddys4.exe".into(),
+            hooks: script!("fnaf4"),
+        },
+        GameInfo {
+            name: "UNDERTALE".into(),
+            id: GameId(13),
+            gdrive_id: "1DEnp81K_zmy-l5CRsyXCl6gVKCNakwiN".into(),
+            exe: "Undertale.exe".into(),
+            hooks: script!("undertale"),
+        },
     ]
 }
 

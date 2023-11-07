@@ -4,6 +4,7 @@ default_to_workspace = false
 [env]
 CARGO_MAKE_RUN_DEPRECATED_MIGRATION = false
 
+
 [tasks.frontend-deps]
 cwd = "crates/client/frontend"
 script_runner = "@shell"
@@ -38,6 +39,11 @@ script = "pnpm run watch"
 deprecated = "don't use this manually; use `cargo make dev` instead"
 command = "cargo"
 args = ["run", "--package", "client"]
+
+[tasks.deploy-server]
+cwd = "crates/server"
+command = "cargo"
+args = ["shuttle", "deploy", "--no-test"]
 
 [tasks.server-dev]
 deprecated = "don't use this manually; use `cargo make dev` instead"
