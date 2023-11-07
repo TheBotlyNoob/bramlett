@@ -15,12 +15,6 @@ export default function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    if (typeof window !== "undefined") {
-        window.onload = () => {
-            document.getElementById("holderStyle")?.remove();
-        };
-    }
-
     return (
         <html lang="en">
             <body className={inter.className}>

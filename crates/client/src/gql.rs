@@ -177,7 +177,7 @@ impl Mutation {
                     client::download::extract_zip_with_password(
                         &bytes,
                         &ctx.config.game_dir(game.info.id),
-                        b"game",
+                        "game",
                         tx,
                     )
                     .unwrap();
@@ -200,13 +200,13 @@ impl Mutation {
         tracing::info!("running game: {game:?}");
         let ctx = ctx.clone();
         tokio::spawn(async move {
-            Command::new(ctx.config.game_dir(game.info.id).join(&game.info.exe))
-                .current_dir(ctx.config.game_dir(game.info.id))
-                .spawn()
-                .unwrap()
-                .wait()
-                .await
-                .unwrap();
+            if let Ok(mut child) =
+                Command::new(ctx.config.game_dir(game.info.id).join(&game.info.exe))
+                    .current_dir(ctx.config.game_dir(game.info.id))
+                    .spawn()
+            {
+                let _ = child.wait().await;
+            }
 
             tracing::info!("game stopped: {game:?}");
 
@@ -218,8 +218,7 @@ impl Mutation {
 
     pub async fn update_game_list(ctx: &Ctx) -> FieldResult<Void> {
         let ctx = ctx.clone();
-        client::update_game_list(&ctx.config).await?;
-        ctx.config.save()?;
+        client::update_game_list(&ctx.config, true).await?;
         Ok(Void)
     }
 }

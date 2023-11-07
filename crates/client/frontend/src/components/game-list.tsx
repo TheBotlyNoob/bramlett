@@ -82,10 +82,11 @@ export default function GamesList() {
                     <Tooltip
                         placement="topRight"
                         title={`Installing... (${
-                            game.status.progress![0] / 1000
-                        }GB out of ${game.status.progress![1] / 1000}GB)`}
+                            game.status.progress![0]
+                        } files out of ${game.status.progress![1]})`}
                     >
                         <Progress
+                            strokeColor="#50C878"
                             percent={Math.round(installProgress * 100)}
                         ></Progress>
                     </Tooltip>

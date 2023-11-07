@@ -15,13 +15,6 @@ serde = { version = "1.0.190", features = ["derive", "rc"] }
 serde_json = "1.0.108"
 thiserror = "1.0.50"
 tokio = { version = "1.33.0", features = ["sync", "rt", "process"] }
-bytes = "1.5.0"
-rustpython-vm = { git = "https://github.com/RustPython/RustPython", rev = "af884cb", features = [
-    "freeze-stdlib",
-] }
-malachite-bigint = { version = "=0.1.0" }
-malachite-q = "=0.3.2"
-malachite-base = "=0.3.2"
 
 ### server ###
 juniper = { git = "https://github.com/graphql-rust/juniper", rev = "0fc95dd" }
@@ -35,7 +28,8 @@ juniper_graphql_ws = "0.3.0"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 tracing = "0.1.40"
 tl = "0.7.7"
-zip = "0.6.6"
 rust-embed = { version = "8.0.0", features = ["warp"] }
 mime_guess = "2.0.4"
 webbrowser = "0.8.12"
+thread_local = "1.1.7"
+sevenz-rust = { version = "0.5.3", features = ["aes256"] }

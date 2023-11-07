@@ -94,7 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         });
     }
 
-    if let Err(e) = update_game_list(&config).await {
+    if let Err(e) = update_game_list(&config, true).await {
         tracing::warn!("failed to update game list: {e:#} -- is the server running?");
     } else {
         config.save()?;

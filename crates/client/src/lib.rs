@@ -3,7 +3,6 @@
 
 use common::{GameId, GameInfo};
 use dashmap::DashMap;
-use rustpython_vm as vm;
 use std::{
     fmt::Debug,
     path::PathBuf,
@@ -22,7 +21,7 @@ pub enum ClientError {
     #[error("json error: {0}")]
     Json(#[from] serde_json::Error),
     #[error("zip error: {0}")]
-    Zip(#[from] zip::result::ZipError),
+    Zip(#[from] sevenz_rust::Error),
     #[error("HTML parsing error: {0}")]
     Html(#[from] tl::ParseError),
     #[error("Google Drive HTML structure error")]
@@ -65,8 +64,6 @@ impl serde::Serialize for GameStatus {
 pub struct Game {
     pub info: GameInfo,
     pub status: GameStatus,
-    // #[serde(skip)]
-    // py_interp: Option<Arc<vm::Interpreter>>,
 }
 
 impl Debug for Game {
@@ -74,7 +71,6 @@ impl Debug for Game {
         f.debug_struct("Game")
             .field("info", &self.info)
             .field("status", &self.status)
-            .field("py_interp", &"Interpreter { .. }")
             .finish()
     }
 }
@@ -170,7 +166,7 @@ impl juniper::Context for Ctx {}
 /// # Errors
 /// Returns an error if the server is unreachable, the game list is invalid, or the config file
 /// can't be written to.
-pub async fn update_game_list(config: &Config) -> Result<()> {
+pub async fn update_game_list(config: &Config, update_existing: bool) -> Result<()> {
     tracing::info!("updating game list...");
 
     let games_list = reqwest::get(if cfg!(debug_assertions) {
@@ -183,18 +179,24 @@ pub async fn update_game_list(config: &Config) -> Result<()> {
     .await?;
 
     for game_info in games_list {
-        if config.games.contains_key(&game_info.id) {
+        let existing_status = config.games.get(&game_info.id).map(|g| g.status.clone());
+
+        if !update_existing && existing_status.is_some() {
             continue;
         }
+
         let game = Game {
             info: game_info,
-            status: GameStatus::NotDownloaded,
+            status: existing_status.unwrap_or(GameStatus::NotDownloaded),
             // py_interp: vm::Interpreter::with_init(Default::default(), |vm| {
             //     vm.add_native_modules(vm::stdlib::get_module_inits());
             // }),
         };
+
         config.games.insert(game.info.id, game);
     }
+
+    config.save()?;
 
     Ok(())
 }

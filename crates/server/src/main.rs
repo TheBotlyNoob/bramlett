@@ -3,7 +3,8 @@ use common::{GameId, GameInfo};
 
 macro_rules! script {
     ($name: literal) => {
-        include_str!(concat!("../scripts/", $name, ".rhai")).into()
+        // TODO: actually do this
+        String::new()
     };
 }
 
@@ -12,72 +13,65 @@ fn games() -> Vec<GameInfo> {
         GameInfo {
             name: "Papers Please".into(),
             id: GameId(0),
-            gdrive_id: "1HzLYxrQQ1a8wj89KwTXMQ_hwdE4lCLvr".into(),
+            gdrive_id: "1sBkd4vADCCH3WmoF6DqtKhjEt7G3D307".into(),
             exe: "PapersPlease.exe".into(),
             hooks: script!("papers_please"),
         },
         GameInfo {
             name: "Geometry Dash".into(),
             id: GameId(1),
-            gdrive_id: "1vUtZqg6eDpRlKWNzDkjwq9_REN2LfYHt".into(),
+            gdrive_id: "16CYi7pAMTsmbVmlEtUBOkLjvpqtQdght".into(),
             exe: "GeometryDash.exe".into(),
             hooks: script!("geometry_dash"),
         },
         GameInfo {
             name: "Bloons TD 6".into(),
             id: GameId(2),
-            gdrive_id: "16paRX1A9qxvFyWzgGGremMviKWvT0fuN".into(),
+            gdrive_id: "1yd62Hz-e4d_Z0gilXc18dRRmoD5o0WSY".into(),
             exe: "BloonsTD6.exe".into(),
             hooks: script!("bloons_td_6"),
         },
         GameInfo {
             name: "OMORI".into(),
             id: GameId(3),
-            gdrive_id: "1liGmClrNJu2yPmX3HdyMoO_QXI64gJKy".into(),
+            gdrive_id: "13QjrN_I8ccliWslVMINW2HNSNVxsqkSp".into(),
             exe: "OMORI.exe".into(),
             hooks: script!("omori"),
         },
         GameInfo {
-            name: "Five Nights at Freddy's".into(),
+            name: "Totally Accurate Battle Simulator".into(),
             id: GameId(4),
-            gdrive_id: "1gnn4X4OtIVuB-t6ZblBN_UUD4NawbzJf".into(),
-            exe: "FiveNightsatFreddys.exe".into(),
-            hooks: script!("fnaf"),
+            gdrive_id: "1KiuU7rf9BK6v3_TJTbRw_HLi9hUSWByJ".into(),
+            exe: "TotallyAccurateBattleSimulator.exe".into(),
+            hooks: script!("tabs"),
         },
         GameInfo {
-            name: "Five Nights at Freddy's 2".into(),
+            name: "Half-Life".into(),
             id: GameId(5),
-            gdrive_id: "1gPjMCiX5IHnhoXi18jGAbHf1CiMlzSEf".into(),
-            exe: "FiveNightsatFreddys2.exe".into(),
-            hooks: script!("fnaf2"),
+            gdrive_id: "1TTHHjQWSu_KBwTv6ox7pppsFGd-8t95V".into(),
+            exe: "hl.exe".into(),
+            hooks: script!("half_life"),
+        },
+        GameInfo {
+            name: "Call of Duty 2".into(),
+            id: GameId(6),
+            gdrive_id: "1GtNsZggdQkyLK8Seiem7KGhRIyFHFP7C".into(),
+            exe: "CoD2SP_s.exe".into(),
+            hooks: script!("cod2"),
         },
         GameInfo {
             name: "Portal".into(),
-            id: GameId(6),
-            gdrive_id: "14eIkhwzFvZ8T2jEVs_1loEv9A2TcZSP2".into(),
+            id: GameId(7),
+            gdrive_id: "1B_GDs711J30mCwMU8F12L8fBKX4dbYJM".into(),
             exe: "Portal.exe".into(),
             hooks: script!("portal"),
         },
         GameInfo {
             name: "SUPERHOT".into(),
-            id: GameId(7),
-            gdrive_id: "1wCazjUEACX_o8G0_09fJLGFms0HCR3DY".into(),
+            id: GameId(8),
+            gdrive_id: "1qZSFbucjmEmhkbr9y93csZklYtkfzibK".into(),
             exe: "SUPERHOT.exe".into(),
             hooks: script!("superhot"),
-        },
-        GameInfo {
-            name: "Untitled Goose Game".into(),
-            id: GameId(8),
-            gdrive_id: "1MAUhwh-1wEWSTQg5mK8f0X74oVzcg4NM".into(),
-            exe: "Untitled.exe".into(),
-            hooks: script!("goose"),
-        },
-        GameInfo {
-            name: "UNDERTALE".into(),
-            id: GameId(9),
-            gdrive_id: "1mm-NCvlluUzf4MUVECl_XB1ZmK1Fvw7J".into(),
-            exe: "UNDERTALE.exe".into(),
-            hooks: script!("undertale"),
         },
     ]
 }
