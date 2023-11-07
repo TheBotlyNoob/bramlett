@@ -170,9 +170,9 @@ pub async fn update_game_list(config: &Config, update_existing: bool) -> Result<
     tracing::info!("updating game list...");
 
     let games_list = reqwest::get(if cfg!(debug_assertions) {
-        "http://localhost:8000"
+        "http://localhost:8000/games"
     } else {
-        "https://bramletts-games.shuttleapp.rs"
+        "https://bramletts-games.shuttleapp.rs/games"
     })
     .await?
     .json::<Vec<GameInfo>>()

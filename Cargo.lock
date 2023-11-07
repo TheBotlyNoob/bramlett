@@ -144,11 +144,7 @@ dependencies = [
  "pin-project-lite",
  "rustversion",
  "serde",
- "serde_json",
- "serde_path_to_error",
- "serde_urlencoded",
  "sync_wrapper",
- "tokio",
  "tower",
  "tower-layer",
  "tower-service",
@@ -2343,16 +2339,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_path_to_error"
-version = "0.1.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4beec8bce849d58d06238cb50db2e1c417cfeafa4c63f692b15c82b7c80f8335"
-dependencies = [
- "itoa",
- "serde",
-]
-
-[[package]]
 name = "serde_urlencoded"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2368,12 +2354,12 @@ dependencies = [
 name = "server"
 version = "0.1.0"
 dependencies = [
- "axum",
  "common",
- "shuttle-axum",
  "shuttle-runtime",
+ "shuttle-warp",
  "tokio",
  "tracing",
+ "warp",
 ]
 
 [[package]]
@@ -2438,16 +2424,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f40ca3c46823713e0d4209592e8d6e826aa57e928f09752619fc696c499637f6"
 dependencies = [
  "lazy_static",
-]
-
-[[package]]
-name = "shuttle-axum"
-version = "0.31.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6e5907efdc8da608606c877f1e8f86757ab46f252c8cd15b3654be459761451"
-dependencies = [
- "axum",
- "shuttle-runtime",
 ]
 
 [[package]]
@@ -2564,6 +2540,16 @@ dependencies = [
  "shuttle-common",
  "strfmt",
  "thiserror",
+]
+
+[[package]]
+name = "shuttle-warp"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a8cd6fa7f4f19b4a54ff930dc09281cd94754f7501ee08d5b46c1873d5b1ca5"
+dependencies = [
+ "shuttle-runtime",
+ "warp",
 ]
 
 [[package]]

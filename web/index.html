@@ -54,6 +54,28 @@
                 color: #2ecc71;
             }
         </style>
+        <script defer>
+            (async () => {
+                await fetch("https://bramletts-games.shuttleapp.rs/games")
+                    .then((r) => r.json())
+                    .then((r) => {
+                        for (const game of r) {
+                            document.getElementById("games").innerHTML += `
+                            <tr>
+                                <td>
+                                    <img
+                                        src="${game.icon}"
+                                        alt="${game.name} icon"
+                                        style="width: 50px; height: 50px"
+                                    />
+                                </td>
+                                <td>${game.name}</td>
+                            </tr>
+                            `;
+                        }
+                    });
+            })();
+        </script>
     </head>
     <body>
         <div class="container">
@@ -66,6 +88,18 @@
                 <a href="bramlett.exe" class="nes-btn is-primary"
                     >Download for Windows</a
                 >
+
+                <div class="nes-table-responsive">
+                    <table class="nes-table is-bordered is-dark">
+                        <thead>
+                            <tr>
+                                <th>Icon</th>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="games"></tbody>
+                    </table>
+                </div>
             </main>
 
             <footer>

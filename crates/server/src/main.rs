@@ -1,5 +1,6 @@
-use axum::{routing::get, Json, Router};
 use common::{GameId, GameInfo};
+use warp::Filter;
+use warp::Reply;
 
 macro_rules! script {
     ($name: literal) => {
@@ -112,13 +113,21 @@ fn games() -> Vec<GameInfo> {
 }
 
 #[shuttle_runtime::main]
-async fn main() -> shuttle_axum::ShuttleAxum {
-    Ok(Router::new()
-        // `GET /` goes to `root`
-        .route("/", get(|| async { Json(games()) }))
-        .into())
+async fn warp() -> shuttle_warp::ShuttleWarp<(impl Reply,)> {
+    let route = warp::get()
+        .and(
+            warp::path("games")
+                .and(warp::path::end())
+                .map(|| warp::reply::json(&games())),
+        )
+        .with(
+            warp::cors()
+                .allow_any_origin()
+                .allow_headers(["Content-Type", "User-Agent"])
+                .allow_methods(["OPTIONS", "GET", "POST", "DELETE"]),
+        );
+    Ok(route.boxed().into())
 }
-
 #[cfg(test)]
 #[test]
 fn assert_unique_ids() {
