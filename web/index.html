@@ -2,12 +2,79 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta http-equiv="refresh" content="0; URL=./bramlett.exe" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <link
+            href="https://unpkg.com/nes.css@latest/css/nes.min.css"
+            rel="stylesheet"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body,
+            html {
+                background-color: #212529;
+                color: white;
+                width: 100%;
+                height: 100%;
+                padding: 0;
+                margin: 0;
+                font-family: "Press Start 2P", "Lucida Sans",
+                    "Lucida Sans Regular", "Lucida Grande",
+                    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+            }
+
+            .container {
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            main {
+                flex: 1;
+                display: flex;
+
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+            footer {
+                display: flex;
+
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            mark {
+                background-color: #212529;
+                color: #2ecc71;
+            }
+        </style>
     </head>
     <body>
-        <script>
-            window.location = "./bramlett.exe"; // if the meta tag doesn't work
-        </script>
+        <div class="container">
+            <main>
+                <h1>Bramlett's Game Launcher</h1>
+                <p>
+                    The game launcher built
+                    <mark style="text-decoration: underline">for school</mark>.
+                </p>
+                <a href="bramlett.exe" class="nes-btn is-primary"
+                    >Download for Windows</a
+                >
+            </main>
+
+            <footer>
+                <p>
+                    made with <i class="nes-icon heart"></i> by Jay (<mark
+                        >the smart one</mark
+                    >)
+                </p>
+            </footer>
+        </div>
     </body>
 </html>
