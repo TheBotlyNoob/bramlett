@@ -25,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .init();
 
-    // #[cfg(not(debug_assertions))]
+    #[cfg(not(debug_assertions))]
     self_update::backends::github::Update::configure()
         .repo_owner("TheBotlyNoob")
         .repo_name("bramletts-games")
