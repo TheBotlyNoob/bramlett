@@ -35,6 +35,8 @@ pub struct GameInfo {
     pub name: String,
     /// The game's ID.
     pub id: GameId,
+    /// A link to the game's icon.
+    pub icon: String,
     /// A public Google Drive ID, linking to a zip file with a password of "game".
     pub gdrive_id: String,
     /// The name of the game's executable, relative to the game directory.

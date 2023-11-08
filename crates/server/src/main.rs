@@ -13,6 +13,7 @@ fn games() -> Vec<GameInfo> {
     vec![
         GameInfo {
             name: "Papers Please".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/434529ee3a4ce2b39f5bce0502c444c3.png".into(),
             id: GameId(0),
             gdrive_id: "1sBkd4vADCCH3WmoF6DqtKhjEt7G3D307".into(),
             exe: "PapersPlease.exe".into(),
@@ -20,6 +21,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "Geometry Dash".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/818d9d1eaede1c656acf1db6a10d9866.png".into(),
             id: GameId(1),
             gdrive_id: "16CYi7pAMTsmbVmlEtUBOkLjvpqtQdght".into(),
             exe: "steamapps/common/Geometry Dash/GeometryDash.exe".into(),
@@ -27,6 +29,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "Bloons TD 6".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/b9ba7f4a80d4097aa09d1a2a13fdd183.png".into(),
             id: GameId(2),
             gdrive_id: "1yd62Hz-e4d_Z0gilXc18dRRmoD5o0WSY".into(),
             exe: "BloonsTD6.exe".into(),
@@ -34,6 +37,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "OMORI".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/1f892957b260a88f9b21ab438a520ff1.webp".into(), // I would LOVE a custom icon if you've finished the game
             id: GameId(3),
             gdrive_id: "13QjrN_I8ccliWslVMINW2HNSNVxsqkSp".into(),
             exe: "OMORI.exe".into(),
@@ -41,6 +45,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "Totally Accurate Battle Simulator".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/fdd570402b33973a780e64fdce5c391e.png".into(),
             id: GameId(4),
             gdrive_id: "1KiuU7rf9BK6v3_TJTbRw_HLi9hUSWByJ".into(),
             exe: "TotallyAccurateBattleSimulator.exe".into(),
@@ -48,6 +53,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "Half-Life".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/10f16ffcd88e1cf00e43178442437763.png".into(),
             id: GameId(5),
             gdrive_id: "1TTHHjQWSu_KBwTv6ox7pppsFGd-8t95V".into(),
             exe: "hl.exe".into(),
@@ -55,6 +61,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "Call of Duty 2".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/8a563489dff3761a5f856d56d8937c95.jpg".into(),
             id: GameId(6),
             gdrive_id: "1GtNsZggdQkyLK8Seiem7KGhRIyFHFP7C".into(),
             exe: "CoD2SP_s.exe".into(),
@@ -62,6 +69,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "Portal".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/f772a46e9df669d0a39f78213b6685dc.webp".into(),
             id: GameId(7),
             gdrive_id: "1B_GDs711J30mCwMU8F12L8fBKX4dbYJM".into(),
             exe: "Portal.exe".into(),
@@ -69,6 +77,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "SUPERHOT".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/33ce538f76f7a4060a93caa7bfd6c8c3.png".into(),
             id: GameId(8),
             gdrive_id: "1qZSFbucjmEmhkbr9y93csZklYtkfzibK".into(),
             exe: "SUPERHOT.exe".into(),
@@ -76,6 +85,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "Five Nights at Freddy's".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/0ede7c7ae62e005507fc15cd016c3fdf.png".into(),
             id: GameId(9),
             gdrive_id: "1TddScp06i7Echbh-JAa_PKTce3GyBRhg".into(),
             exe: "FiveNightsatFreddys.exe".into(),
@@ -83,6 +93,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "Five Nights at Freddy's 2".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/ea2621147c2f3912a780587ee03c3889.png".into(),
             id: GameId(10),
             gdrive_id: "1C-3vrgV0gaLeZ5b19WKRroQUJRkhs5AD".into(),
             exe: "FiveNightsatFreddys2.exe".into(),
@@ -90,6 +101,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "Five Nights at Freddy's 3".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/ca6bb18482982a6fd1c6c6e74d7dae9e.png".into(),
             id: GameId(11),
             gdrive_id: "1Qu2_VRYU_Fm1_gDLw264oVzvfIjw8f42".into(),
             exe: "FiveNightsatFreddys3.exe".into(),
@@ -97,6 +109,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "Five Nights at Freddy's 4".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/cba7dbaf4c4cb512fdb03f79f3e02693.png".into(),
             id: GameId(12),
             gdrive_id: "1Q2KZvvSimGWjDWmRnvvqcGZMtqjw2EM3".into(),
             exe: "FiveNightsatFreddys4.exe".into(),
@@ -104,6 +117,7 @@ fn games() -> Vec<GameInfo> {
         },
         GameInfo {
             name: "UNDERTALE".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/49da5f75021bacfc161ee7fb005d65a6.png".into(),
             id: GameId(13),
             gdrive_id: "1DEnp81K_zmy-l5CRsyXCl6gVKCNakwiN".into(),
             exe: "Undertale.exe".into(),
