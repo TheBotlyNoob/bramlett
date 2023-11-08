@@ -30,7 +30,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let config = if config_file.exists() {
         let config_file = std::fs::File::open(config_file)?;
-        serde_json::from_reader(config_file)?
+        match serde_json::from_reader(config_file) {
+            Ok(c) => c,
+            Err(e) => {
+                tracing::warn!("failed to parse config file: {e:#}");
+                let config = Config::default();
+                config.save()?;
+                config
+            }
+        }
     } else {
         let config = Config::default();
         config.save()?;

@@ -6,12 +6,14 @@ import { GamesQuery, GraphQlGameStatusInner } from "@/__generated__/graphql";
 import { Button, List, Progress, Tooltip } from "antd";
 import { ClimbingBoxLoader } from "react-spinners";
 import { Icon } from "@iconify/react";
+import Image from "next/image";
 
 const GAMES_QUERY = gql(`
     query Games {
         games {
             id
             name
+            icon
             status {
                 status
                 progress
@@ -143,6 +145,17 @@ export default function GamesList() {
                         dataSource={Object.entries(data.games)}
                         renderItem={([_, game]) => (
                             <List.Item>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={game.icon}
+                                    alt={`${game.name}'s icon`}
+                                    width="175"
+                                    style={{
+                                        borderRadius: "1em",
+                                        // gray border of 2px
+                                        border: "2px solid #808080",
+                                    }}
+                                />
                                 <h2
                                     style={{
                                         marginRight: "10em",

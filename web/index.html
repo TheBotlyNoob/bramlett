@@ -60,16 +60,17 @@
                     .then((r) => r.json())
                     .then((r) => {
                         for (const game of r) {
+                            // icons are always 600x900
                             document.getElementById("games").innerHTML += `
                             <tr>
                                 <td>
                                     <img
                                         src="${game.icon}"
                                         alt="${game.name} icon"
-                                        style="width: 50px; height: 50px"
+                                        width="225"
                                     />
                                 </td>
-                                <td>${game.name}</td>
+                                <td style="text-align: center;">${game.name}</td>
                             </tr>
                             `;
                         }
@@ -89,17 +90,21 @@
                     >Download for Windows</a
                 >
 
-                <div class="nes-table-responsive">
-                    <table class="nes-table is-bordered is-dark">
-                        <thead>
-                            <tr>
-                                <th>Icon</th>
-                                <th>Name</th>
-                            </tr>
-                        </thead>
-                        <tbody id="games"></tbody>
-                    </table>
-                </div>
+                <details>
+                    <summary class="nes-btn">Game List</summary>
+
+                    <div class="nes-table-responsive">
+                        <table class="nes-table is-bordered is-dark">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: center">Icon</th>
+                                    <th style="text-align: center">Name</th>
+                                </tr>
+                            </thead>
+                            <tbody id="games"></tbody>
+                        </table>
+                    </div>
+                </details>
             </main>
 
             <footer>

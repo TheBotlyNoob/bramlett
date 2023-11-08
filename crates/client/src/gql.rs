@@ -44,6 +44,9 @@ impl GraphQLGame {
     pub fn name(&self) -> FieldResult<String> {
         Ok(self.get()?.info.name)
     }
+    pub fn icon(&self) -> FieldResult<String> {
+        Ok(self.get()?.info.icon)
+    }
     pub fn status(&self) -> FieldResult<GraphQLGameStatus> {
         Ok(GraphQLGameStatus::from(self.get()?.status))
     }
