@@ -18,7 +18,13 @@ reqwest = { version = "0.11.22", default-features = false, features = [
 serde = { version = "1.0.190", features = ["derive", "rc"] }
 serde_json = "1.0.108"
 thiserror = "1.0.50"
-tokio = { version = "1.33.0", features = ["sync", "rt", "process"] }
+tokio = { version = "1.33.0", features = [
+    "sync",
+    "rt",
+    "process",
+    "rt-multi-thread", # server
+    "macros",          # server
+] }
 thread_local = "1.1.7"
 tracing = "0.1.40"
 tl = "0.7.7"
@@ -36,5 +42,5 @@ webbrowser = "0.8.12"
 self_update = { version = "0.39.0", default-features = false, features = [
     "rustls",
     "archive-zip",
-    "compression-zip-deflate"
+    "compression-zip-deflate",
 ] }
