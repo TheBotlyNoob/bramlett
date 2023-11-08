@@ -57,13 +57,17 @@
             .nes-table.is-dark::before {
                 display: none !important;
             }
+
+            #games > tr > td:first-child {
+                padding: 0;
+            }
         </style>
         <script>
             (async () => {
                 await fetch("https://bramletts-games.shuttleapp.rs/games")
                     .then((r) => r.json())
                     .then((r) => {
-                        document.addEventListener("DOMContentLoaded", () => {
+                        const update = () => {
                             for (const game of r) {
                                 // icons are always 600x900
                                 document.getElementById("games").innerHTML += `
@@ -79,7 +83,15 @@
                                 </tr>
                                 `;
                             }
-                        });
+                        };
+                        if (document.readyState === "loading") {
+                            document.addEventListener(
+                                "DOMContentLoaded",
+                                update
+                            );
+                        } else {
+                            update();
+                        }
                     });
             })();
         </script>
