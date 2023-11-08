@@ -1,51 +1,126 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Build Release
 
-on:
-    # Runs on pushes targeting the default branch
-    push:
-        branches: ["master"]
-
-    # Allows you to run this workflow manually from the Actions tab
-    workflow_dispatch:
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-permissions:
-    contents: read
-    pages: write
-    id-token: write
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-    group: "pages"
+    group: "bin"
     cancel-in-progress: true
 
+on:
+    release:
+        types: [created]
+
 jobs:
-    # Single deploy job since we're just deploying
-    deploy:
-        environment:
-            name: github-pages
-            url: ${{ steps.deployment.outputs.page_url }}
+    frontend:
         runs-on: windows-latest
         steps:
             - name: Checkout
               uses: actions/checkout@v3
-            - name: Setup Pages
-              uses: actions/configure-pages@v3
             - uses: pnpm/action-setup@v2
               with:
                   version: 8
+            - run: cd crates/client/frontend
+                  pnpm install
+                  pnpm run build
+
+    build_linux:
+        strategy:
+            fail-fast: false
+            matrix:
+                platform:
+                    - name: linux 64bit
+                      os: ubuntu-latest
+                      arch: x86_64-unknown-linux-musl
+                      artifact: bramlett-linux-amd64
+                      dpkg_arch: amd64
+
+                    - name: linux arm64
+                      os: ubuntu-latest
+                      arch: aarch64-unknown-linux-musl
+                      artifact: bramlett-linux-aarch64
+                      dpkg_arch: arm64
+
+                    - name: linux arm7
+                      os: ubuntu-latest
+                      arch: armv7-unknown-linux-gnueabihf
+                      artifact: bramlett-linux-armv7
+                      dpkg_arch: armhf
+
+                    - name: linux 32bit
+                      os: ubuntu-latest
+                      arch: i686-unknown-linux-gnu
+                      artifact: bramlett-linux-i686
+                      dpkg_arch: i386
+
+                    - name: linux mipsel
+                      os: ubuntu-latest
+                      arch: mipsel-unknown-linux-musl
+                      artifact: bramlett-linux-mipsel
+                      dpkg_arch: mipsel
+
+                    - name: linux mips
+                      os: ubuntu-latest
+                      arch: mips-unknown-linux-musl
+                      artifact: bramlett-linux-mips
+                      dpkg_arch: mips
+
+        runs-on: ${{ matrix.platform.os }}
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Get release
+              id: get_release
+              uses: bruceadams/get-release@v1.2.3
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
+
+            - name: build release
+              uses: actions-rs/cargo@v1
+              with:
+                  use-cross: true
+                  command: build
+                  args: --target ${{ matrix.platform.arch }} --release --all
+
+            - name: Upload Binary
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
+              with:
+                  upload_url: ${{ steps.get_release.outputs.upload_url }}
+                  asset_path: ./target/${{ matrix.platform.arch }}/release/client
+                  asset_name: ${{ matrix.platform.artifact }}
+                  asset_content_type: application/octet-stream
+
+    build_windows:
+        strategy:
+            fail-fast: false
+            matrix:
+                platform:
+                    - name: windows 32bit
+                      os: windows-latest
+                      arch: i686-pc-windows-msvc
+                      artifact: bramlett-windows-x86
+                    - name: windows 64bit
+                      os: windows-latest
+                      arch: x86_64-pc-windows-msvc
+                      artifact: bramlett-windows-x86_64
+        runs-on: ${{ matrix.platform.os }}
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Get release
+              id: get_release
+              uses: bruceadams/get-release@v1.2.3
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
             - uses: dtolnay/rust-toolchain@stable
-            - uses: taiki-e/cache-cargo-install-action@v1
               with:
-                  tool: cargo-make
-            - run: cargo make release
-            - run: cp target/release/client.exe web/bramlett.exe
-            - name: Upload artifact
-              uses: actions/upload-pages-artifact@v2
+                  targets: ${{ matrix.platform.arch }}
+
+            - name: Upload .exe
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}
               with:
-                  path: web
-            - name: Deploy to GitHub Pages
-              id: deployment
-              uses: actions/deploy-pages@v2
+                  upload_url: ${{ steps.get_release.outputs.upload_url }}
+                  asset_path: ./target/${{ matrix.platform.arch }}/release/client.exe
+                  asset_name: ${{ matrix.platform.artifact }}.exe
+                  asset_content_type: application/octet-stream

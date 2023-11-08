@@ -10,6 +10,7 @@ mod gql;
 const DEFAULT_PORT: u16 = 8635;
 
 #[tokio::main]
+#[allow(clippy::too_many_lines)]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::registry()
         .with(
@@ -23,6 +24,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .with_filter(filter_fn(|m| !m.target().contains("graphql"))),
         )
         .init();
+
+    self_update::backends::github::Update::configure()
+        .repo_owner("TheBotlyNoob")
+        .repo_name("bramletts-games")
+        .bin_name("bramlett")
+        .show_download_progress(true)
+        .current_version(self_update::cargo_crate_version!())
+        .no_confirm(true)
+        .build()?
+        .update()?;
 
     let config_file = Config::file();
 

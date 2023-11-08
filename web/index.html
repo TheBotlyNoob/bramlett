@@ -53,27 +53,33 @@
                 background-color: #212529;
                 color: #2ecc71;
             }
+
+            .nes-table.is-dark::before {
+                display: none !important;
+            }
         </style>
-        <script defer>
+        <script>
             (async () => {
                 await fetch("https://bramletts-games.shuttleapp.rs/games")
                     .then((r) => r.json())
                     .then((r) => {
-                        for (const game of r) {
-                            // icons are always 600x900
-                            document.getElementById("games").innerHTML += `
-                            <tr>
-                                <td>
-                                    <img
-                                        src="${game.icon}"
-                                        alt="${game.name} icon"
-                                        width="225"
-                                    />
-                                </td>
-                                <td style="text-align: center;">${game.name}</td>
-                            </tr>
-                            `;
-                        }
+                        document.addEventListener("DOMContentLoaded", () => {
+                            for (const game of r) {
+                                // icons are always 600x900
+                                document.getElementById("games").innerHTML += `
+                                <tr>
+                                    <td>
+                                        <img
+                                            src="${game.icon}"
+                                            alt="${game.name} icon"
+                                            width="225"
+                                        />
+                                    </td>
+                                    <td style="text-align: center;">${game.name}</td>
+                                </tr>
+                                `;
+                            }
+                        });
                     });
             })();
         </script>
@@ -86,8 +92,16 @@
                     The game launcher built
                     <mark style="text-decoration: underline">for school</mark>.
                 </p>
-                <a href="bramlett.exe" class="nes-btn is-primary"
+                <a
+                    href="https://github.com/TheBotlyNoob/bramletts-games/releases/latest/download/bramlett-windows-x86_64.exe"
+                    class="nes-btn is-primary"
                     >Download for Windows</a
+                >
+                <a
+                    href="https://github.com/TheBotlyNoob/bramletts-games/releases/latest"
+                    style="font-size: 14px; margin-bottom: 25px"
+                    class="nes-text is-success"
+                    >Download for Others</a
                 >
 
                 <details>
