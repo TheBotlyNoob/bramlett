@@ -1,129 +1,69 @@
-name: Build Release
+name: Release
 
-concurrency:
-    group: "bin"
-    cancel-in-progress: true
+permissions:
+    contents: write
 
 on:
-    release:
-        types: [created]
+    push:
+        tags:
+            - v[0-9]+.*
 
 jobs:
-    frontend:
-        runs-on: windows-latest
+    create-release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: taiki-e/create-gh-release-action@v1
+              with:
+                  # (required) GitHub token for creating GitHub Releases.
+                  token: ${{ secrets.GITHUB_TOKEN }}
+    upload-assets:
+        strategy:
+            matrix:
+                include:
+                    - target: aarch64-unknown-linux-gnu
+                      os: ubuntu-latest
+                    - target: aarch64-apple-darwin
+                      os: macos-latest
+                    - target: x86_64-unknown-linux-musl
+                      os: ubuntu-latest
+                    - target: x86_64-apple-darwin
+                      os: macos-latest
+                    # Universal macOS binary is supported as universal-apple-darwin.
+                    - target: universal-apple-darwin
+                      os: macos-latest
+                    - target: x86_64-pc-windows-msvc
+                      os: windows-latest
+
+        runs-on: ${{ matrix.os }}
         steps:
             - name: Checkout
               uses: actions/checkout@v3
+            - name: Setup Pages
+              uses: actions/configure-pages@v3
             - uses: pnpm/action-setup@v2
               with:
                   version: 8
+            - uses: dtolnay/rust-toolchain@stable
             - run: |
                   cd crates/client/frontend
                   pnpm install
                   pnpm run build
-
-    build_linux:
-        needs: frontend
-        strategy:
-            fail-fast: false
-            matrix:
-                platform:
-                    - name: linux 64bit
-                      os: ubuntu-latest
-                      arch: x86_64-unknown-linux-musl
-                      artifact: bramlett-linux-amd64
-                      dpkg_arch: amd64
-
-                    - name: linux arm64
-                      os: ubuntu-latest
-                      arch: aarch64-unknown-linux-musl
-                      artifact: bramlett-linux-aarch64
-                      dpkg_arch: arm64
-
-                    - name: linux arm7
-                      os: ubuntu-latest
-                      arch: armv7-unknown-linux-gnueabihf
-                      artifact: bramlett-linux-armv7
-                      dpkg_arch: armhf
-
-                    - name: linux 32bit
-                      os: ubuntu-latest
-                      arch: i686-unknown-linux-gnu
-                      artifact: bramlett-linux-i686
-                      dpkg_arch: i386
-
-                    - name: linux mipsel
-                      os: ubuntu-latest
-                      arch: mipsel-unknown-linux-musl
-                      artifact: bramlett-linux-mipsel
-                      dpkg_arch: mipsel
-
-                    - name: linux mips
-                      os: ubuntu-latest
-                      arch: mips-unknown-linux-musl
-                      artifact: bramlett-linux-mips
-                      dpkg_arch: mips
-
-        runs-on: ${{ matrix.platform.os }}
-        steps:
-            - uses: actions/checkout@v3
-
-            - name: Get release
-              id: get_release
-              uses: bruceadams/get-release@v1.2.3
-              env:
-                  GITHUB_TOKEN: ${{ github.token }}
-
-            - name: build release
-              uses: actions-rs/cargo@v1
+            - uses: taiki-e/upload-rust-binary-action@v1
               with:
-                  use-cross: true
-                  command: build
-                  args: --target ${{ matrix.platform.arch }} --release --all
-
-            - name: Upload Binary
-              uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ github.token }}
-              with:
-                  upload_url: ${{ steps.get_release.outputs.upload_url }}
-                  asset_path: ./target/${{ matrix.platform.arch }}/release/client
-                  asset_name: ${{ matrix.platform.artifact }}
-                  asset_content_type: application/octet-stream
-
-    build_windows:
-        needs: frontend
-        strategy:
-            fail-fast: false
-            matrix:
-                platform:
-                    - name: windows 32bit
-                      os: windows-latest
-                      arch: i686-pc-windows-msvc
-                      artifact: bramlett-windows-x86
-                    - name: windows 64bit
-                      os: windows-latest
-                      arch: x86_64-pc-windows-msvc
-                      artifact: bramlett-windows-x86_64
-        runs-on: ${{ matrix.platform.os }}
-        steps:
-            - uses: actions/checkout@v3
-
-            - name: Get release
-              id: get_release
-              uses: bruceadams/get-release@v1.2.3
-              env:
-                  GITHUB_TOKEN: ${{ github.token }}
-            - uses: dtolnay/rust-toolchain@stable
-              with:
-                  targets: ${{ matrix.platform.arch }}
-
-            - name: Upload .exe
-              uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ github.token }}
-              with:
-                  upload_url: ${{ steps.get_release.outputs.upload_url }}
-                  asset_path: ./target/${{ matrix.platform.arch }}/release/client.exe
-                  asset_name: ${{ matrix.platform.artifact }}.exe
-                  asset_content_type: application/octet-stream
+                  # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
+                  # Note that glob pattern is not supported yet.
+                  bin: client
+                  # (optional) Archive name (non-extension portion of filename) to be uploaded.
+                  # [default value: $bin-$target]
+                  # [possible values: the following variables and any string]
+                  #   variables:
+                  #     - $bin    - Binary name (non-extension portion of filename).
+                  #     - $target - Target triple.
+                  #     - $tag    - Tag of this release.
+                  # When multiple binary names are specified, default archive name or $bin variable cannot be used.
+                  archive: bramlett-$target
+                  tar: none
+                  zip: none
+                  # (required) GitHub token for uploading assets to GitHub Releases.
+                  token: ${{ secrets.GITHUB_TOKEN }}

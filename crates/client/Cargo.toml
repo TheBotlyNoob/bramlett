@@ -10,27 +10,23 @@ edition = "2021"
 common = { path = "../common" }
 dashmap = { version = "5.5.3", features = ["serde"] }
 dirs = "5.0.1"
-reqwest = { version = "0.11.22", features = ["json", "stream"] }
+reqwest = { version = "0.11.22", features = ["json", "stream", "rustls"] }
 serde = { version = "1.0.190", features = ["derive", "rc"] }
 serde_json = "1.0.108"
 thiserror = "1.0.50"
 tokio = { version = "1.33.0", features = ["sync", "rt", "process"] }
+thread_local = "1.1.7"
+tracing = "0.1.40"
+tl = "0.7.7"
+sevenz-rust = { version = "0.5.3", features = ["aes256"] }
 
 ### server ###
 juniper = { git = "https://github.com/graphql-rust/juniper", rev = "0fc95dd" }
-juniper_warp = { git = "https://github.com/graphql-rust/juniper", rev = "0fc95dd", features = [
-    "subscriptions",
-] }
+juniper_warp = { git = "https://github.com/graphql-rust/juniper", rev = "0fc95dd" }
 futures = "0.3.29"
 warp = "0.3.6"
-async-stream = "0.3.5"
-juniper_graphql_ws = "0.3.0"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
-tracing = "0.1.40"
-tl = "0.7.7"
 rust-embed = { version = "8.0.0", features = ["warp"] }
 mime_guess = "2.0.4"
 webbrowser = "0.8.12"
-thread_local = "1.1.7"
-sevenz-rust = { version = "0.5.3", features = ["aes256"] }
-self_update = "0.39.0"
+self_update = { version = "0.39.0", features = ["rustls"] }
