@@ -25,11 +25,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .init();
 
-    #[cfg(not(debug_assertions))]
+    // #[cfg(not(debug_assertions))]
     self_update::backends::github::Update::configure()
         .repo_owner("TheBotlyNoob")
         .repo_name("bramletts-games")
-        .bin_name(format!("bramlett-{}", self_update::get_target()))
+        .bin_name("bramlett")
         .show_download_progress(true)
         .current_version(self_update::cargo_crate_version!())
         .no_confirm(true)
