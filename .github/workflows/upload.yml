@@ -64,6 +64,6 @@ jobs:
                   # When multiple binary names are specified, default archive name or $bin variable cannot be used.
                   archive: bramlett-$target
                   tar: none
-                  zip: none
+                  zip: all
                   # (required) GitHub token for uploading assets to GitHub Releases.
                   token: ${{ secrets.GITHUB_TOKEN }}
