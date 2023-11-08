@@ -17,7 +17,8 @@ jobs:
             - uses: pnpm/action-setup@v2
               with:
                   version: 8
-            - run: cd crates/client/frontend
+            - run: |
+                  cd crates/client/frontend
                   pnpm install
                   pnpm run build
 
