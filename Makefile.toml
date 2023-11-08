@@ -18,7 +18,7 @@ dependencies = ["frontend-deps"]
 
 [tasks.release]
 command = "cargo"
-args = ["build", "--release", "--package", "client"]
+args = ["build", "--release", "--package", "bramlett"]
 dependencies = ["frontend-rel"]
 
 [tasks.frontend-dev]
@@ -38,7 +38,7 @@ script = "pnpm run watch"
 [tasks.client-dev]
 deprecated = "don't use this manually; use `cargo make dev` instead"
 command = "cargo"
-args = ["run", "--package", "client"]
+args = ["run", "--package", "bramlett"]
 
 [tasks.deploy-server]
 cwd = "crates/server"
