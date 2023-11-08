@@ -1,4 +1,4 @@
-use client::{Ctx, Game, GameStatus};
+use bramlett::{Ctx, Game, GameStatus};
 use common::GameId;
 use dashmap::DashMap;
 use juniper::{graphql_object, EmptySubscription, FieldResult, GraphQLEnum, RootNode};
@@ -170,14 +170,14 @@ impl Mutation {
         tokio::spawn({
             let ctx = ctx.clone();
             async move {
-                let bytes = client::download::download_game(game.clone(), ctx.clone(), tx)
+                let bytes = bramlett::download::download_game(game.clone(), ctx.clone(), tx)
                     .await
                     .unwrap();
                 tracing::info!("downloaded game: {game:?}; extracting...");
                 tokio::task::spawn_blocking(move || {
                     let (tx, rx) = watch::channel((0, 0));
                     games.get_mut(&game.info.id).unwrap().status = GameStatus::Installing(rx);
-                    client::download::extract_zip_with_password(
+                    bramlett::download::extract_zip_with_password(
                         &bytes,
                         &ctx.config.game_dir(game.info.id),
                         "game",
@@ -221,7 +221,7 @@ impl Mutation {
 
     pub async fn update_game_list(ctx: &Ctx) -> FieldResult<Void> {
         let ctx = ctx.clone();
-        client::update_game_list(&ctx.config, true).await?;
+        bramlett::update_game_list(&ctx.config, true).await?;
         Ok(Void)
     }
 }

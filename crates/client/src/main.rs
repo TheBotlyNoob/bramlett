@@ -1,6 +1,6 @@
 #![warn(clippy::pedantic, clippy::nursery)]
 
-use client::{update_game_list, Config, Ctx};
+use bramlett::{update_game_list, Config, Ctx};
 use std::sync::Arc;
 use tracing_subscriber::{filter::filter_fn, layer::SubscriberExt, util::SubscriberInitExt, Layer};
 use warp::Filter;
