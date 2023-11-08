@@ -22,6 +22,7 @@ jobs:
                   pnpm run build
 
     build_linux:
+        needs: frontend
         strategy:
             fail-fast: false
             matrix:
@@ -90,6 +91,7 @@ jobs:
                   asset_content_type: application/octet-stream
 
     build_windows:
+        needs: frontend
         strategy:
             fail-fast: false
             matrix:
