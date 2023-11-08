@@ -10,7 +10,11 @@ edition = "2021"
 common = { path = "../common" }
 dashmap = { version = "5.5.3", features = ["serde"] }
 dirs = "5.0.1"
-reqwest = { version = "0.11.22", features = ["json", "stream", "rustls"] }
+reqwest = { version = "0.11.22", default-features = false, features = [
+    "json",
+    "stream",
+    "rustls-tls",
+] }
 serde = { version = "1.0.190", features = ["derive", "rc"] }
 serde_json = "1.0.108"
 thiserror = "1.0.50"
@@ -29,4 +33,7 @@ tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 rust-embed = { version = "8.0.0", features = ["warp"] }
 mime_guess = "2.0.4"
 webbrowser = "0.8.12"
-self_update = { version = "0.39.0", features = ["rustls", "archive-zip"] }
+self_update = { version = "0.39.0", default-features = false, features = [
+    "rustls",
+    "archive-zip",
+] }
