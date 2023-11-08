@@ -6,7 +6,6 @@ import { GamesQuery, GraphQlGameStatusInner } from "@/__generated__/graphql";
 import { Button, List, Progress, Tooltip } from "antd";
 import { ClimbingBoxLoader } from "react-spinners";
 import { Icon } from "@iconify/react";
-import Image from "next/image";
 
 const GAMES_QUERY = gql(`
     query Games {
