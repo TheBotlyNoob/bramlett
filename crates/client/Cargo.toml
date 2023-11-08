@@ -36,4 +36,5 @@ webbrowser = "0.8.12"
 self_update = { version = "0.39.0", default-features = false, features = [
     "rustls",
     "archive-zip",
+    "compression-zip-deflate"
 ] }
