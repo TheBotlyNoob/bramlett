@@ -21,7 +21,7 @@ jobs:
         strategy:
             matrix:
                 include:
-                    - target: aarch64-unknown-linux-gnu
+                    - target: aarch64-unknown-linux-musl
                       os: ubuntu-latest
                     - target: aarch64-apple-darwin
                       os: macos-latest
@@ -63,6 +63,7 @@ jobs:
                   #     - $tag    - Tag of this release.
                   # When multiple binary names are specified, default archive name or $bin variable cannot be used.
                   archive: bramlett-$target
+                  target: ${{ matrix.target }}
                   tar: none
                   zip: all
                   # (required) GitHub token for uploading assets to GitHub Releases.
