@@ -57,7 +57,11 @@ export default function GamesList() {
     const [runGame] = useMutation(RUN_GAME);
     const [updateGameList] = useMutation(UPDATE_GAME_LIST);
 
-    setInterval(refetch, 1000);
+    setInterval(() => {
+        if (document.visibilityState === "visible") {
+            refetch();
+        }
+    }, 1500);
 
     const gameStatus = (game: GamesQuery["games"][0]) => {
         switch (game.status.status) {
