@@ -44,3 +44,5 @@ self_update = { version = "0.39.0", default-features = false, features = [
     "archive-zip",
     "compression-zip-deflate",
 ] }
+wry = { version = "0.34.2", features = ["tao"], default-features = false }
+tao = "0.23.0"

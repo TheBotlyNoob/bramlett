@@ -107,13 +107,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .allow_methods(["OPTIONS", "GET", "POST", "DELETE"]),
     );
 
-    if cfg!(not(debug_assertions)) {
-        std::thread::spawn(move || {
-            std::thread::sleep(std::time::Duration::from_secs(1)); // open web browser after server starts
-            let _ = webbrowser::open(&format!("http://localhost:{port}"));
-        });
-    }
-
     if let Err(e) = update_game_list(&config, true).await {
         tracing::warn!("failed to update game list: {e:#} -- is the server running?");
     } else {
@@ -124,8 +117,42 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("games dir: {:#?}", config.games_dir());
     tracing::info!("{} games", config.games().len());
 
-    #[cfg(debug_assertions)]
-    tracing::warn!("running in debug mode. use http://localhost:3000 for web interface.");
+    // open web browser after server starts
+    std::thread::spawn(move || {
+        use wry::{
+            application::{
+                event::{Event, StartCause, WindowEvent},
+                event_loop::{ControlFlow, EventLoop},
+                window::WindowBuilder,
+            },
+            webview::WebViewBuilder,
+        };
+
+        std::thread::sleep(std::time::Duration::from_secs(1000));
+
+        let event_loop = EventLoop::new();
+        let window = WindowBuilder::new()
+            .with_title("Bramlett's Games")
+            .build(&event_loop)?;
+        let port = if cfg!(debug_assertions) { 3000 } else { port };
+        let _webview = WebViewBuilder::new(window)?
+            .with_url(format!("http://localhost:{port}"))?
+            .build()?;
+
+        event_loop.run(move |event, _, control_flow| {
+            *control_flow = ControlFlow::Wait;
+
+            match event {
+                Event::NewEvents(StartCause::Init) => tracing::info!("wry has started!"),
+                Event::WindowEvent {
+                    event: WindowEvent::CloseRequested,
+                    ..
+                } => *control_flow = ControlFlow::Exit,
+                _ => (),
+            }
+        });
+    });
+
     warp::serve(routes).run(([127, 0, 0, 1], port)).await;
 
     Ok(())
