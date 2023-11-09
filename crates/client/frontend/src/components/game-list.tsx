@@ -58,7 +58,10 @@ export default function GamesList() {
     const [updateGameList] = useMutation(UPDATE_GAME_LIST);
 
     setInterval(() => {
-        if (document.visibilityState === "visible") {
+        if (
+            typeof window !== "undefined" &&
+            document.visibilityState === "visible"
+        ) {
             refetch();
         }
     }, 1500);

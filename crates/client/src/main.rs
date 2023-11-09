@@ -2,16 +2,24 @@
 
 use bramlett::{update_game_list, Config, Ctx};
 use std::sync::Arc;
+use tokio::sync::oneshot;
 use tracing_subscriber::{filter::filter_fn, layer::SubscriberExt, util::SubscriberInitExt, Layer};
 use warp::Filter;
+use wry::{
+    application::{
+        event::{Event, StartCause, WindowEvent},
+        event_loop::{ControlFlow, EventLoop},
+        window::WindowBuilder,
+    },
+    webview::WebViewBuilder,
+};
 
 mod gql;
 
 const DEFAULT_PORT: u16 = 8635;
 
-#[tokio::main]
-#[allow(clippy::too_many_lines)]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::fmt::layer()
@@ -56,6 +64,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         config.save()?;
         config
     };
+
+    tracing::info!("save dir: {:#?}", config.saves_dir());
+    tracing::info!("games dir: {:#?}", config.games_dir());
 
     let ctx = Ctx {
         config: config.clone(),
@@ -107,55 +118,47 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .allow_methods(["OPTIONS", "GET", "POST", "DELETE"]),
     );
 
-    if let Err(e) = update_game_list(&config, true).await {
-        tracing::warn!("failed to update game list: {e:#} -- is the server running?");
-    } else {
-        config.save()?;
-    };
+    let (tx, rx) = oneshot::channel();
 
-    tracing::info!("save dir: {:#?}", config.saves_dir());
-    tracing::info!("games dir: {:#?}", config.games_dir());
-    tracing::info!("{} games", config.games().len());
-
-    // open web browser after server starts
-    std::thread::spawn(move || {
-        use wry::{
-            application::{
-                event::{Event, StartCause, WindowEvent},
-                event_loop::{ControlFlow, EventLoop},
-                window::WindowBuilder,
-            },
-            webview::WebViewBuilder,
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?; // the below future doesn't run if this isn't put in it's own variable. maybe a lifetime issue?
+    rt.spawn(async move {
+        if let Err(e) = update_game_list(&config, true).await {
+            tracing::warn!("failed to update game list: {e:#} -- is the server running?");
+        } else {
+            config.save().unwrap();
         };
+        tracing::info!("{} games", config.games().len());
 
-        std::thread::sleep(std::time::Duration::from_secs(1000));
+        let _ = tx.send(());
 
-        let event_loop = EventLoop::new();
-        let window = WindowBuilder::new()
-            .with_title("Bramlett's Games")
-            .build(&event_loop)?;
-        let port = if cfg!(debug_assertions) { 3000 } else { port };
-        let _webview = WebViewBuilder::new(window)?
-            .with_url(format!("http://localhost:{port}"))?
-            .build()?;
-
-        event_loop.run(move |event, _, control_flow| {
-            *control_flow = ControlFlow::Wait;
-
-            match event {
-                Event::NewEvents(StartCause::Init) => tracing::info!("wry has started!"),
-                Event::WindowEvent {
-                    event: WindowEvent::CloseRequested,
-                    ..
-                } => *control_flow = ControlFlow::Exit,
-                _ => (),
-            }
-        });
+        warp::serve(routes).run(([127, 0, 0, 1], port)).await;
     });
 
-    warp::serve(routes).run(([127, 0, 0, 1], port)).await;
+    rx.blocking_recv()?;
 
-    Ok(())
+    let event_loop = EventLoop::new();
+    let window = WindowBuilder::new()
+        .with_title("Bramlett's Games")
+        .build(&event_loop)?;
+    let port = if cfg!(debug_assertions) { 3000 } else { port };
+    let _webview = WebViewBuilder::new(window)?
+        .with_url(&format!("http://localhost:{port}"))?
+        .build()?;
+
+    event_loop.run(move |event, _, control_flow| {
+        *control_flow = ControlFlow::Wait;
+
+        match event {
+            Event::NewEvents(StartCause::Init) => tracing::info!("wry has started!"),
+            Event::WindowEvent {
+                event: WindowEvent::CloseRequested,
+                ..
+            } => *control_flow = ControlFlow::Exit,
+            _ => (),
+        }
+    });
 }
 
 #[cfg(not(debug_assertions))]

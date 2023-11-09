@@ -127,26 +127,26 @@ fn games() -> Vec<GameInfo> {
             name: "Call of Duty".into(),
             icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/d50024a382b0bbae0ba02d1ef479b927.jpg".into(),
             id: GameId(14),
-            gdrive_id: "1GtNsZggdQkyLK8Seiem7KGhRIyFHFP7C".into(), // fix this 
+            gdrive_id: "1Dxxdcj7sDNgNcPfcqI_-5ZBYK-lNCywI".into(), // fix this 
             exe: "CoDSP.exe".into(), // fix this
             hooks: script!("cod"),
         },
-        GameInfo {
-            name: "Call of Duty 4: Modern Warfare".into(),
-            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/b3049ee4f30b41fa9f41d88a0068f65c.png".into(),
-            id: GameId(15),
-            gdrive_id: "1GtNsZggdQkyLK8Seiem7KGhRIyFHFP7C".into(), // fix this
-            exe: "iw3sp.exe".into(), // fix this
-            hooks: script!("cod4"),
-        },
-        GameInfo {
-            name: "Call of Duty: World at War".into(),
-            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/c9aa2f73002e81f5e059ed1184113a44.png".into(),
-            id: GameId(16),
-            gdrive_id: "1GtNsZggdQkyLK8Seiem7KGhRIyFHFP7C".into(), // fix this
-            exe: "CoDWaW.exe".into(), // fix this
-            hooks: script!("cod_waw"),
-        }
+        // GameInfo {
+        //     name: "Call of Duty 4: Modern Warfare".into(),
+        //     icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/b3049ee4f30b41fa9f41d88a0068f65c.png".into(),
+        //     id: GameId(15),
+        //     gdrive_id: "1GtNsZggdQkyLK8Seiem7KGhRIyFHFP7C".into(), // fix this
+        //     exe: "iw3sp.exe".into(), // fix this
+        //     hooks: script!("cod4"),
+        // },
+        // GameInfo {
+        //     name: "Call of Duty: World at War".into(),
+        //     icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/c9aa2f73002e81f5e059ed1184113a44.png".into(),
+        //     id: GameId(16),
+        //     gdrive_id: "1GtNsZggdQkyLK8Seiem7KGhRIyFHFP7C".into(), // fix this
+        //     exe: "CoDWaW.exe".into(), // fix this
+        //     hooks: script!("cod_waw"),
+        // }
     ]
 }
 
