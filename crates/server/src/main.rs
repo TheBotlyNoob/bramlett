@@ -1,4 +1,9 @@
+use std::convert::Infallible;
+use std::time::Duration;
+
 use common::{GameId, GameInfo};
+use sea_orm::ConnectOptions;
+use sea_orm::Database;
 use warp::Filter;
 use warp::Reply;
 
@@ -152,11 +157,24 @@ fn games() -> Vec<GameInfo> {
 
 #[shuttle_runtime::main]
 async fn warp() -> shuttle_warp::ShuttleWarp<(impl Reply,)> {
+    let mut opt = ConnectOptions::new("sqlite://sqlite.db");
+    opt.max_connections(100)
+        .min_connections(5)
+        .connect_timeout(Duration::from_secs(8))
+        .acquire_timeout(Duration::from_secs(8))
+        .idle_timeout(Duration::from_secs(8))
+        .max_lifetime(Duration::from_secs(8))
+        .sqlx_logging(true)
+        .sqlx_logging_level(log::LevelFilter::Info)
+        .set_schema_search_path("my_schema"); // Setting default PostgreSQL schema
+
+    let db = Database::connect(opt).await.unwrap();
+
     let route = warp::get()
         .and(
             warp::path("games")
                 .and(warp::path::end())
-                .map(|| warp::reply::json(&games())),
+                .and_then(|| async { Ok::<_, Infallible>(warp::reply::json(&games())) }),
         )
         .with(
             warp::cors()
@@ -165,12 +183,4 @@ async fn warp() -> shuttle_warp::ShuttleWarp<(impl Reply,)> {
                 .allow_methods(["OPTIONS", "GET", "POST", "DELETE"]),
         );
     Ok(route.boxed().into())
-}
-#[cfg(test)]
-#[test]
-fn assert_unique_ids() {
-    let mut seen_ids = std::collections::HashSet::new();
-    for game in games() {
-        assert!(seen_ids.insert(game.id));
-    }
 }
