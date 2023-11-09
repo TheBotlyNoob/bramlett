@@ -8,9 +8,11 @@ use tokio::{process::Command, sync::watch};
 #[derive(Debug, Copy, Clone, thiserror::Error)]
 pub enum GraphQLError {
     #[error("game not found")]
-    GameNotFound,
+    NotFound,
     #[error("game already downloaded, downloading or installing")]
-    GameAlreadyDownloaded,
+    AlreadyDownloaded,
+    #[error("game running, downloading, installing, or not downloaded")]
+    NotDeleted,
 }
 
 pub struct GraphQLGame(pub GameId, Arc<DashMap<GameId, Game>>);
@@ -31,7 +33,7 @@ impl GraphQLGame {
         self.1
             .get(&self.0)
             .map(|g| g.value().clone())
-            .ok_or_else(|| GraphQLError::GameNotFound.into())
+            .ok_or_else(|| GraphQLError::NotFound.into())
     }
 }
 
@@ -156,12 +158,12 @@ impl Mutation {
         let games = ctx.config.games();
         let (tx, rx) = watch::channel((0, 0));
         let game = {
-            let mut game = games.get_mut(&game).ok_or(GraphQLError::GameNotFound)?;
+            let mut game = games.get_mut(&game).ok_or(GraphQLError::NotFound)?;
             if matches!(
                 game.status,
                 GameStatus::Downloading(_) | GameStatus::Installing(_)
             ) {
-                return Err(GraphQLError::GameAlreadyDownloaded.into());
+                return Err(GraphQLError::AlreadyDownloaded.into());
             }
             game.status = GameStatus::Downloading(rx);
             game.clone()
@@ -196,7 +198,7 @@ impl Mutation {
     pub fn run(ctx: &Ctx, game: GameId) -> FieldResult<Void> {
         let games = ctx.config.games();
         let game = {
-            let mut game = games.get_mut(&game).ok_or(GraphQLError::GameNotFound)?;
+            let mut game = games.get_mut(&game).ok_or(GraphQLError::NotFound)?;
             game.status = GameStatus::Running;
             game.clone()
         };
@@ -216,6 +218,24 @@ impl Mutation {
             let mut game = games.get_mut(&game.info.id).unwrap();
             game.status = GameStatus::Stopped;
         });
+        Ok(Void)
+    }
+
+    pub async fn delete(ctx: &Ctx, game: GameId) -> FieldResult<Void> {
+        let games = ctx.config.games();
+
+        {
+            let mut game = games.get_mut(&game).ok_or(GraphQLError::NotFound)?;
+            if !matches!(game.status, GameStatus::Stopped) {
+                return Err(GraphQLError::NotDeleted.into());
+            }
+
+            tracing::info!("deleting game: {game:?}");
+
+            tokio::fs::remove_dir_all(ctx.config.game_dir(game.info.id)).await?;
+            game.status = GameStatus::NotDownloaded;
+        }
+
         Ok(Void)
     }
 

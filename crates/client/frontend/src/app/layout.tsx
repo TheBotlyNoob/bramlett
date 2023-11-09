@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import ApolloProvider from "@/components/apollo-provider";
 import "@/styles/globals.css";
+import { ConfigProvider, theme } from "antd";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,7 +19,13 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={inter.className}>
-                <ApolloProvider>{children}</ApolloProvider>
+                <ConfigProvider
+                    theme={{
+                        algorithm: theme.darkAlgorithm,
+                    }}
+                >
+                    <ApolloProvider>{children}</ApolloProvider>
+                </ConfigProvider>
             </body>
         </html>
     );

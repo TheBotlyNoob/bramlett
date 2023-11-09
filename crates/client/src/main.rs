@@ -1,4 +1,5 @@
 #![warn(clippy::pedantic, clippy::nursery)]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use bramlett::{update_game_list, Config, Ctx};
 use std::sync::Arc;

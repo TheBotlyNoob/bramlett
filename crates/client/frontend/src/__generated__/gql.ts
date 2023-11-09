@@ -15,6 +15,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
 const documents = {
     "\n    query Games {\n        games {\n            id\n            name\n            icon\n            status {\n                status\n                progress\n            }\n        }\n    }\n": types.GamesDocument,
     "\n    mutation DownloadGame($game: GameId!) {\n        download(game: $game) {\n            void {\n                __typename\n            }\n        }\n    }\n": types.DownloadGameDocument,
+    "\n    mutation DeleteGame($game: GameId!) {\n        delete(game: $game) {\n            void {\n                __typename\n            }\n        }\n    }\n": types.DeleteGameDocument,
     "\n    mutation RunGame($game: GameId!) {\n        run(game: $game) {\n            void {\n                __typename\n            }\n        }\n    }\n": types.RunGameDocument,
     "\n    mutation UpdateGames {\n        updateGameList {\n            void {\n                __typename\n            }\n        }\n    }\n": types.UpdateGamesDocument,
 };
@@ -41,6 +42,10 @@ export function gql(source: "\n    query Games {\n        games {\n            i
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n    mutation DownloadGame($game: GameId!) {\n        download(game: $game) {\n            void {\n                __typename\n            }\n        }\n    }\n"): (typeof documents)["\n    mutation DownloadGame($game: GameId!) {\n        download(game: $game) {\n            void {\n                __typename\n            }\n        }\n    }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n    mutation DeleteGame($game: GameId!) {\n        delete(game: $game) {\n            void {\n                __typename\n            }\n        }\n    }\n"): (typeof documents)["\n    mutation DeleteGame($game: GameId!) {\n        delete(game: $game) {\n            void {\n                __typename\n            }\n        }\n    }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
