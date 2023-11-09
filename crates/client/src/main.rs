@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     #[cfg(not(debug_assertions))]
-    self_update::backends::github::Update::configure()
+    let _ = self_update::backends::github::Update::configure()
         .repo_owner("TheBotlyNoob")
         .repo_name("bramletts-games")
         .bin_name("bramlett")
@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .current_version(self_update::cargo_crate_version!())
         .no_confirm(true)
         .build()?
-        .update()?;
+        .update();
 
     let config_file = Config::file();
 
