@@ -127,8 +127,8 @@ fn games() -> Vec<GameInfo> {
             name: "Call of Duty".into(),
             icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/d50024a382b0bbae0ba02d1ef479b927.jpg".into(),
             id: GameId(14),
-            gdrive_id: "1Dxxdcj7sDNgNcPfcqI_-5ZBYK-lNCywI".into(), // fix this 
-            exe: "CoDSP.exe".into(), // fix this
+            gdrive_id: "1Dxxdcj7sDNgNcPfcqI_-5ZBYK-lNCywI".into(), 
+            exe: "CoDSP.exe".into(),
             hooks: script!("cod"),
         },
         // GameInfo {
@@ -146,7 +146,23 @@ fn games() -> Vec<GameInfo> {
         //     gdrive_id: "1GtNsZggdQkyLK8Seiem7KGhRIyFHFP7C".into(), // fix this
         //     exe: "CoDWaW.exe".into(), // fix this
         //     hooks: script!("cod_waw"),
-        // }
+        // } 
+        GameInfo {
+            name: "Grand Theft Auto: San Andreas".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/f024cb7f6d25f950416a23b64a6b0b72.png".into(),
+            id: GameId(17),
+            gdrive_id: "14k2cdhdigdgB3mDSSveOJmTBLVCtwfpD".into(),
+            exe: "gta_sa.exe".into(), // fix this
+            hooks: script!("gta_sa"),
+        },
+        GameInfo {
+            name: "Grand Theft Auto: Vice City".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/4eb6720c6cd70ee9e67ca6e4dc12e3df.png".into(),
+            id: GameId(18),
+            gdrive_id: "1M4DlCIqeOvevPZ7aLUNLDiiGAqyxa5ct".into(),
+            exe: "gta-vc.exe".into(), // fix this
+            hooks: script!("gta_vc"),
+        }
     ]
 }
 
