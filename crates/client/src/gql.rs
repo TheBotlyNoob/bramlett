@@ -145,7 +145,7 @@ impl Query {
             .iter()
             .map(|k| GraphQLGame(*k.key(), context.config.games())) // we don't call GraphQLGame::new here because we know the game exists
             .collect::<Vec<_>>();
-        games.sort_unstable_by_key(|g| g.0);
+        games.sort_unstable_by_key(|g| g.0); // needed b/c DashMap doesn't guarantee order
         games
     }
 }
