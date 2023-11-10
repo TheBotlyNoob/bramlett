@@ -205,10 +205,12 @@ impl Mutation {
         tracing::info!("running game: {game:?}");
         let ctx = ctx.clone();
         tokio::spawn(async move {
-            if let Ok(mut child) =
-                Command::new(ctx.config.game_dir(game.info.id).join(&game.info.exe))
-                    .current_dir(ctx.config.game_dir(game.info.id))
-                    .spawn()
+            let game_dir = ctx.config.game_dir(game.info.id);
+            let exe = game_dir.join(&game.info.exe);
+
+            if let Ok(mut child) = Command::new(&exe)
+                .current_dir(exe.parent().unwrap_or(&game_dir))
+                .spawn()
             {
                 let _ = child.wait().await;
             }

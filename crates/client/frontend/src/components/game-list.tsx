@@ -3,7 +3,21 @@
 import { useMutation, useQuery } from "@apollo/client";
 import { gql } from "@/__generated__";
 import { GamesQuery, GraphQlGameStatusInner } from "@/__generated__/graphql";
-import { Button, Card, Col, List, Progress, Row, Tooltip } from "antd";
+import {
+    Button,
+    ButtonGroup,
+    Card,
+    CircularProgress,
+    Tooltip,
+    CircularProgressLabel,
+    IconButton,
+    Image,
+    CardBody,
+    Divider,
+    CardFooter,
+    Heading,
+    SimpleGrid,
+} from "@chakra-ui/react";
 import { ClimbingBoxLoader } from "react-spinners";
 import { Icon } from "@iconify/react";
 
@@ -80,44 +94,46 @@ export default function GamesList() {
     const gameStatus = (game: GamesQuery["games"][0]) => {
         switch (game.status.status) {
             case GraphQlGameStatusInner.Downloading:
-                let downloadProgress =
-                    game.status.progress![0] / game.status.progress![1];
+                let downloadProgress = Math.round(
+                    (game.status.progress![0] / game.status.progress![1]) * 100,
+                );
                 return (
                     <Tooltip
-                        placement="topRight"
-                        title={`Downloading... (${
+                        label={`Downloading... (${
                             game.status.progress![0] / 1000
                         }GB out of ${game.status.progress![1] / 1000}GB)`}
                     >
-                        <Progress
-                            percent={Math.round(downloadProgress * 100)}
-                        ></Progress>
+                        <CircularProgress value={downloadProgress}>
+                            <CircularProgressLabel>
+                                {downloadProgress}%
+                            </CircularProgressLabel>
+                        </CircularProgress>
                     </Tooltip>
                 );
             case GraphQlGameStatusInner.Installing:
-                let installProgress =
-                    game.status.progress![0] / game.status.progress![1];
+                let installProgress = Math.round(
+                    (game.status.progress![0] / game.status.progress![1]) * 100,
+                );
                 return (
                     <Tooltip
-                        placement="topRight"
-                        title={`Installing... (${
+                        label={`Downloading... (${
                             game.status.progress![0]
                         } files out of ${game.status.progress![1]})`}
                     >
-                        <Progress
-                            strokeColor="#50C878"
-                            percent={Math.round(installProgress * 100)}
-                        ></Progress>
+                        <CircularProgress value={installProgress}>
+                            <CircularProgressLabel>
+                                {installProgress}%
+                            </CircularProgressLabel>
+                        </CircularProgress>
                     </Tooltip>
                 );
             case GraphQlGameStatusInner.NotDownloaded:
                 return (
                     <Button
-                        type="default"
-                        size="middle"
-                        onClick={() => {
-                            downloadGame({ variables: { game: game.id } });
-                        }}
+                        colorScheme="blue"
+                        onClick={() =>
+                            downloadGame({ variables: { game: game.id } })
+                        }
                     >
                         Download
                     </Button>
@@ -126,26 +142,24 @@ export default function GamesList() {
                 return <h3>Running...</h3>;
             case GraphQlGameStatusInner.Stopped:
                 return (
-                    <>
+                    <ButtonGroup isAttached>
                         <Button
-                            danger
-                            size="small"
-                            onClick={() => {
-                                deleteGame({ variables: { game: game.id } });
-                            }}
+                            colorScheme="red"
+                            onClick={() =>
+                                deleteGame({ variables: { game: game.id } })
+                            }
                         >
                             Delete
                         </Button>
                         <Button
-                            type="primary"
-                            size="middle"
-                            onClick={() => {
-                                runGame({ variables: { game: game.id } });
-                            }}
+                            colorScheme="green"
+                            onClick={() =>
+                                runGame({ variables: { game: game.id } })
+                            }
                         >
                             Start
                         </Button>
-                    </>
+                    </ButtonGroup>
                 );
         }
     };
@@ -157,55 +171,32 @@ export default function GamesList() {
             {data && !error && (
                 <>
                     {process.env.NODE_ENV === "development" && (
-                        <Tooltip title="refresh game list">
-                            <Button
-                                onClick={() => {
-                                    updateGameList();
-                                }}
-                            >
-                                <Icon icon="mdi:refresh" />
-                            </Button>
-                        </Tooltip>
+                        <IconButton
+                            aria-label="Refresh game list"
+                            icon={<Icon icon="mdi:refresh" />}
+                            onClick={() => updateGameList()}
+                        />
                     )}
-                    {Object.values(data.games)
-                        .reduce(
-                            (acc: GamesQuery["games"][], _, i, original) => {
-                                if (i % 3 === 0) {
-                                    acc.push(original.slice(i, i + 3));
-                                }
-                                return acc;
-                            },
-                            [],
-                        )
-                        .map((row, key) => (
-                            <Row
-                                key={key}
-                                gutter={[16, { xs: 8, sm: 16, md: 24, lg: 32 }]}
-                                style={{ marginTop: "1em" }}
-                                justify="space-evenly"
-                            >
-                                {row.map((game, key) => (
-                                    <Col key={key} span={6}>
-                                        <Card
-                                            title={game.name}
-                                            extra={gameStatus(game)}
-                                        >
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={game.icon}
-                                                alt={`${game.name}'s icon`}
-                                                width="100%"
-                                                style={{
-                                                    borderRadius: "1em",
-                                                    // gray border of 2px
-                                                    border: "2px solid #808080",
-                                                }}
-                                            />
-                                        </Card>
-                                    </Col>
-                                ))}
-                            </Row>
+                    <SimpleGrid columns={3} spacing={4}>
+                        {Object.values(data.games).map((game, key) => (
+                            <Card key={key}>
+                                <CardBody>
+                                    <Image
+                                        src={game.icon}
+                                        alt={`${game.name}'s icon`}
+                                        borderRadius="15px"
+                                        border="1px"
+                                        borderColor="gray.200"
+                                    />
+                                    <Heading mt={6} size="md">
+                                        {game.name}
+                                    </Heading>
+                                </CardBody>
+                                <Divider />
+                                <CardFooter>{gameStatus(game)}</CardFooter>
+                            </Card>
                         ))}
+                    </SimpleGrid>
                 </>
             )}
 
