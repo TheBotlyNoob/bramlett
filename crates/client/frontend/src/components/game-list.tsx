@@ -89,7 +89,7 @@ export default function GamesList() {
         ) {
             refetch();
         }
-    }, 1500);
+    }, 1000); // TODO: use subscriptions; this makes the website feel unresponsive
 
     const gameStatus = (game: GamesQuery["games"][0]) => {
         switch (game.status.status) {
