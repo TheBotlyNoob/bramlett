@@ -94,9 +94,11 @@ export default function GamesList() {
     const gameStatus = (game: GamesQuery["games"][0]) => {
         switch (game.status.status) {
             case GraphQlGameStatusInner.Downloading:
-                let downloadProgress = Math.round(
-                    (game.status.progress![0] / game.status.progress![1]) * 100,
-                );
+                let downloadProgress =
+                    Math.round(
+                        (game.status.progress![0] / game.status.progress![1]) *
+                            100,
+                    ) || 0;
                 return (
                     <Tooltip
                         label={`Downloading... (${
@@ -111,9 +113,11 @@ export default function GamesList() {
                     </Tooltip>
                 );
             case GraphQlGameStatusInner.Installing:
-                let installProgress = Math.round(
-                    (game.status.progress![0] / game.status.progress![1]) * 100,
-                );
+                let installProgress =
+                    Math.round(
+                        (game.status.progress![0] / game.status.progress![1]) *
+                            100,
+                    ) || 0;
                 return (
                     <Tooltip
                         label={`Downloading... (${
