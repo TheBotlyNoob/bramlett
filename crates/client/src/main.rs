@@ -1,9 +1,9 @@
 #![warn(clippy::pedantic, clippy::nursery)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use bramlett::{update_game_list, Config, Ctx};
+use bramlett::{py::py_loop, update_game_list, Config, Ctx};
 use std::sync::Arc;
-use tokio::sync::oneshot;
+use tokio::sync::{mpsc, oneshot};
 use tracing_subscriber::{filter::filter_fn, layer::SubscriberExt, util::SubscriberInitExt, Layer};
 use warp::Filter;
 use wry::{
@@ -69,9 +69,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("save dir: {:#?}", config.saves_dir());
     tracing::info!("games dir: {:#?}", config.games_dir());
 
+    let (py_tx, py_rx) = mpsc::unbounded_channel();
+
     let ctx = Ctx {
         config: config.clone(),
         client: reqwest::Client::new(),
+        py_tx,
     };
 
     let schema = Arc::new(gql::schema());
@@ -88,7 +91,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let routes = warp::path("graphql").and(
         (warp::post().and(juniper_warp::make_graphql_filter(
             schema.clone(),
-            warp::any().map(move || ctx.clone()).boxed(),
+            warp::any()
+                .map({
+                    let ctx = ctx.clone();
+                    move || ctx.clone()
+                })
+                .boxed(),
         )))
         .or(warp::get()
             .and(warp::path("playground"))
@@ -133,6 +141,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         tracing::info!("{} games", config.games().len());
 
         let _ = tx.send(());
+
+        tokio::task::spawn_blocking(|| py_loop(py_rx, ctx));
 
         warp::serve(routes).run(([127, 0, 0, 1], port)).await;
     });

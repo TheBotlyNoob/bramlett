@@ -1,0 +1,1 @@
+EXE = "PapersPlease.exe"

@@ -7,17 +7,14 @@ import {
     Button,
     ButtonGroup,
     Card,
-    CircularProgress,
+    Progress,
     Tooltip,
-    CircularProgressLabel,
-    IconButton,
     Image,
     CardBody,
     Divider,
     CardFooter,
-    Heading,
-    SimpleGrid,
-} from "@chakra-ui/react";
+    CardHeader,
+} from "@nextui-org/react";
 import { ClimbingBoxLoader } from "react-spinners";
 import { Icon } from "@iconify/react";
 
@@ -76,20 +73,13 @@ const UPDATE_GAME_LIST = gql(`
 `);
 
 export default function GamesList() {
-    const { loading, data, error, refetch } = useQuery(GAMES_QUERY);
+    const { loading, data, error } = useQuery(GAMES_QUERY, {
+        pollInterval: 3000,
+    });
     const [downloadGame] = useMutation(DOWNLOAD_GAME);
     const [runGame] = useMutation(RUN_GAME);
     const [updateGameList] = useMutation(UPDATE_GAME_LIST);
     const [deleteGame] = useMutation(DELETE_GAME);
-
-    setInterval(() => {
-        if (
-            typeof window !== "undefined" &&
-            document.visibilityState === "visible"
-        ) {
-            refetch();
-        }
-    }, 1000); // TODO: use subscriptions; this makes the website feel unresponsive
 
     const gameStatus = (game: GamesQuery["games"][0]) => {
         switch (game.status.status) {
@@ -101,15 +91,12 @@ export default function GamesList() {
                     ) || 0;
                 return (
                     <Tooltip
-                        label={`Downloading... (${
+                        showArrow
+                        content={`Downloading... (${
                             game.status.progress![0] / 1000
                         }GB out of ${game.status.progress![1] / 1000}GB)`}
                     >
-                        <CircularProgress value={downloadProgress}>
-                            <CircularProgressLabel>
-                                {downloadProgress}%
-                            </CircularProgressLabel>
-                        </CircularProgress>
+                        <Progress value={downloadProgress} />
                     </Tooltip>
                 );
             case GraphQlGameStatusInner.Installing:
@@ -120,21 +107,18 @@ export default function GamesList() {
                     ) || 0;
                 return (
                     <Tooltip
-                        label={`Downloading... (${
+                        showArrow
+                        content={`Installing... (${
                             game.status.progress![0]
                         } files out of ${game.status.progress![1]})`}
                     >
-                        <CircularProgress value={installProgress}>
-                            <CircularProgressLabel>
-                                {installProgress}%
-                            </CircularProgressLabel>
-                        </CircularProgress>
+                        <Progress color="success" value={installProgress} />
                     </Tooltip>
                 );
             case GraphQlGameStatusInner.NotDownloaded:
                 return (
                     <Button
-                        colorScheme="blue"
+                        color="primary"
                         onClick={() =>
                             downloadGame({ variables: { game: game.id } })
                         }
@@ -146,17 +130,18 @@ export default function GamesList() {
                 return <h3>Running...</h3>;
             case GraphQlGameStatusInner.Stopped:
                 return (
-                    <ButtonGroup isAttached>
+                    <ButtonGroup>
                         <Button
-                            colorScheme="red"
+                            color="danger"
                             onClick={() =>
                                 deleteGame({ variables: { game: game.id } })
                             }
                         >
                             Delete
                         </Button>
+                        <Divider orientation="vertical" />
                         <Button
-                            colorScheme="green"
+                            color="success"
                             onClick={() =>
                                 runGame({ variables: { game: game.id } })
                             }
@@ -175,32 +160,36 @@ export default function GamesList() {
             {data && !error && (
                 <>
                     {process.env.NODE_ENV === "development" && (
-                        <IconButton
+                        <Button
+                            isIconOnly
                             aria-label="Refresh game list"
-                            icon={<Icon icon="mdi:refresh" />}
                             onClick={() => updateGameList()}
-                        />
+                        >
+                            <Icon icon="mdi:refresh" />
+                        </Button>
                     )}
-                    <SimpleGrid columns={3} spacing={4}>
+                    <div className="grid grid-cols-4 gap-4">
                         {Object.values(data.games).map((game, key) => (
-                            <Card key={key}>
+                            <Card key={key} className="max-w-xs">
+                                <CardHeader className="whitespace-nowrap overflow-scroll">
+                                    <span className="text-xl font-bold m-auto">
+                                        {game.name}
+                                    </span>
+                                </CardHeader>
                                 <CardBody>
                                     <Image
                                         src={game.icon}
                                         alt={`${game.name}'s icon`}
-                                        borderRadius="15px"
-                                        border="1px"
-                                        borderColor="gray.200"
+                                        className="m-0"
                                     />
-                                    <Heading mt={6} size="md">
-                                        {game.name}
-                                    </Heading>
+                                    <Divider className="mt-3" />
                                 </CardBody>
-                                <Divider />
-                                <CardFooter>{gameStatus(game)}</CardFooter>
+                                <CardFooter className="flex justify-center">
+                                    {gameStatus(game)}
+                                </CardFooter>
                             </Card>
                         ))}
-                    </SimpleGrid>
+                    </div>
                 </>
             )}
 
