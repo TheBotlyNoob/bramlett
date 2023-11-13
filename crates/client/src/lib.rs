@@ -8,9 +8,10 @@ use std::{
     path::PathBuf,
     sync::{Arc, RwLock},
 };
-use tokio::sync::watch;
+use tokio::sync::{mpsc, watch};
 
 pub mod download;
+pub mod py;
 
 #[derive(thiserror::Error, Debug)]
 pub enum ClientError {
@@ -156,6 +157,7 @@ impl Config {
 pub struct Ctx {
     pub config: Config,
     pub client: reqwest::Client,
+    pub py_tx: mpsc::UnboundedSender<py::Request>,
 }
 
 impl juniper::Context for Ctx {}
@@ -188,9 +190,6 @@ pub async fn update_game_list(config: &Config, update_existing: bool) -> Result<
         let game = Game {
             info: game_info,
             status: existing_status.unwrap_or(GameStatus::NotDownloaded),
-            // py_interp: vm::Interpreter::with_init(Default::default(), |vm| {
-            //     vm.add_native_modules(vm::stdlib::get_module_inits());
-            // }),
         };
 
         config.games.insert(game.info.id, game);

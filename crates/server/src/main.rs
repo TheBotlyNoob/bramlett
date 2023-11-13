@@ -149,7 +149,7 @@ fn games() -> Vec<GameInfo> {
         // } 
         GameInfo {
             name: "Grand Theft Auto: San Andreas".into(),
-            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/f024cb7f6d25f950416a23b64a6b0b72.png".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/4b7890d268495230ee3f9bcd05ce3365.png".into(),
             id: GameId(17),
             gdrive_id: "14k2cdhdigdgB3mDSSveOJmTBLVCtwfpD".into(),
             exe: "gta_sa.exe".into(), // fix this

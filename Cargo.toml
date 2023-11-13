@@ -16,3 +16,7 @@ opt-level = 1
 members = ["crates/client", "crates/server", "crates/common"]
 
 resolver = "2"
+
+[patch.crates-io]
+# the regular version restricts time to v <0.3.21 which doesn't play well with other packages
+unicode_names2 = { git = "https://github.com/TheBotlyNoob/unicode_names2" }

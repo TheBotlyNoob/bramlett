@@ -83,9 +83,6 @@ pub async fn download_game(
 ///
 /// # Errors
 /// Returns an error if the 7zip file is invalid or the directory can't be written to.
-///
-/// # Panics
-/// Panics if the 7zip file contains invalid paths (see [`ZipFile::enclosed_name`]).
 #[allow(clippy::needless_pass_by_value, clippy::cognitive_complexity)]
 pub fn extract_zip_with_password(
     bytes: &[u8],

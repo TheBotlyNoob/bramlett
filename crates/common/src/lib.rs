@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use juniper::{GraphQLObject, GraphQLScalar};
 
 // / The ID of a game.
@@ -17,6 +19,12 @@ use juniper::{GraphQLObject, GraphQLScalar};
 #[serde(transparent)]
 #[graphql(transparent)]
 pub struct GameId(pub i32);
+
+impl Display for GameId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 #[derive(
     Debug,
