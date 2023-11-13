@@ -39,12 +39,6 @@ pub struct Request {
 pub fn py_loop(mut rx: mpsc::UnboundedReceiver<Request>, ctx: Ctx) -> ! {
     let interp = vm::Interpreter::with_init(vm::Settings::default(), |vm| {
         vm.add_native_modules(vm::stdlib::get_module_inits());
-        let platform_dirs_mod = py_compile!(
-            source = "platformdirs",
-            mode = "exec",
-            module_name = "platformdirs"
-        );
-        vm.add_native_modules(platform_dirs_mod);
     });
 
     let mut scope_map = HashMap::new();
