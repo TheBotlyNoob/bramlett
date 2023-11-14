@@ -5,6 +5,9 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+webview = ["dep:wry", "dep:tao"]
+
 [dependencies]
 ### lib ###
 common = { path = "../common" }
@@ -43,5 +46,8 @@ self_update = { version = "0.39.0", default-features = false, features = [
     "archive-zip",
     "compression-zip-deflate",
 ] }
-wry = { version = "0.34.2", features = ["tao"], default-features = false }
-tao = "0.23.0"
+wry = { version = "0.34.2", features = [
+    "tao",
+], default-features = false, optional = true }
+tao = { version = "0.23.0", optional = true }
+dialog = "0.3.0"

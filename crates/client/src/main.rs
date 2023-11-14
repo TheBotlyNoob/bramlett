@@ -2,18 +2,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use bramlett::{py::py_loop, update_game_list, Config, Ctx};
+use dialog::DialogBox;
 use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot};
 use tracing_subscriber::{filter::filter_fn, layer::SubscriberExt, util::SubscriberInitExt, Layer};
 use warp::Filter;
-use wry::{
-    application::{
-        event::{Event, StartCause, WindowEvent},
-        event_loop::{ControlFlow, EventLoop},
-        window::WindowBuilder,
-    },
-    webview::WebViewBuilder,
-};
 
 mod gql;
 
@@ -35,15 +28,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     #[cfg(not(debug_assertions))]
-    let _ = self_update::backends::github::Update::configure()
-        .repo_owner("TheBotlyNoob")
-        .repo_name("bramletts-games")
-        .bin_name("bramlett")
-        .show_download_progress(true)
-        .current_version(self_update::cargo_crate_version!())
-        .no_confirm(true)
-        .build()?
-        .update();
+    {
+        let update_res = self_update::backends::github::Update::configure()
+            .repo_owner("TheBotlyNoob")
+            .repo_name("bramletts-games")
+            .bin_name("bramlett")
+            .show_download_progress(true)
+            .current_version(self_update::cargo_crate_version!())
+            .no_confirm(true)
+            .build()
+            .and_then(|u| u.update());
+
+        match update_res {
+            Ok(u) => {
+                if u.updated() {
+                    dialog::Message::new("please reopen the app")
+                        .title("Updated Bramletts Games")
+                        .show()
+                        .expect("Could not display dialog box");
+                    std::process::exit(0);
+                }
+            }
+            Err(e) => tracing::warn!("failed to update: {e:#}"),
+        }
+    }
 
     let config_file = Config::file();
 
@@ -127,12 +135,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .allow_methods(["OPTIONS", "GET", "POST", "DELETE"]),
     );
 
-    let (tx, rx) = oneshot::channel();
+    let (tx, _rx) = oneshot::channel();
 
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()?; // the below future doesn't run if this isn't put in it's own variable. maybe a lifetime issue?
-    rt.spawn(async move {
+    let _fut = rt.spawn(async move {
         if let Err(e) = update_game_list(&config, true).await {
             tracing::warn!("failed to update game list: {e:#} -- is the server running?");
         } else {
@@ -147,29 +155,48 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         warp::serve(routes).run(([127, 0, 0, 1], port)).await;
     });
 
-    rx.blocking_recv()?;
+    #[cfg(feature = "webview")]
+    {
+        use wry::{
+            application::{
+                event::{Event, StartCause, WindowEvent},
+                event_loop::{ControlFlow, EventLoop},
+                window::WindowBuilder,
+            },
+            webview::WebViewBuilder,
+        };
 
-    let event_loop = EventLoop::new();
-    let window = WindowBuilder::new()
-        .with_title("Bramlett's Games")
-        .build(&event_loop)?;
-    let port = if cfg!(debug_assertions) { 3000 } else { port };
-    let _webview = WebViewBuilder::new(window)?
-        .with_url(&format!("http://localhost:{port}"))?
-        .build()?;
+        _rx.blocking_recv()?;
 
-    event_loop.run(move |event, _, control_flow| {
-        *control_flow = ControlFlow::Wait;
+        let event_loop = EventLoop::new();
+        let window = WindowBuilder::new()
+            .with_title("Bramlett's Games")
+            .build(&event_loop)?;
+        let port = if cfg!(debug_assertions) { 3000 } else { port };
+        let _webview = WebViewBuilder::new(window)?
+            .with_url(&format!("http://localhost:{port}"))?
+            .build()?;
 
-        match event {
-            Event::NewEvents(StartCause::Init) => tracing::info!("wry has started!"),
-            Event::WindowEvent {
-                event: WindowEvent::CloseRequested,
-                ..
-            } => *control_flow = ControlFlow::Exit,
-            _ => (),
-        }
-    });
+        event_loop.run(move |event, _, control_flow| {
+            *control_flow = ControlFlow::Wait;
+
+            match event {
+                Event::NewEvents(StartCause::Init) => tracing::info!("wry has started!"),
+                Event::WindowEvent {
+                    event: WindowEvent::CloseRequested,
+                    ..
+                } => *control_flow = ControlFlow::Exit,
+                _ => (),
+            }
+        })
+    }
+    #[cfg(not(feature = "webview"))]
+    {
+        rt.block_on(async {
+            _fut.await.unwrap();
+        });
+        Ok(())
+    }
 }
 
 #[cfg(not(debug_assertions))]
