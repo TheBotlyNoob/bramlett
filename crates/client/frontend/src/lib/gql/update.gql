@@ -1,0 +1,7 @@
+mutation UpdateGames {
+	updateGameList {
+		void {
+			__typename
+		}
+	}
+}

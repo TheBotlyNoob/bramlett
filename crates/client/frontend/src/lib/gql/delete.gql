@@ -1,0 +1,7 @@
+mutation DeleteGame($game: GameId!) {
+	delete(game: $game) {
+		void {
+			__typename
+		}
+	}
+}

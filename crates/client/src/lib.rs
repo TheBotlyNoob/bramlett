@@ -44,7 +44,8 @@ pub enum GameStatus {
     Installing(watch::Receiver<(u64, u64)>),
     #[serde(skip)]
     Running,
-    Stopped,
+    #[serde(alias = "Stopped")]
+    Ready,
 }
 
 impl serde::Serialize for GameStatus {
@@ -56,7 +57,7 @@ impl serde::Serialize for GameStatus {
             Self::NotDownloaded | Self::Downloading(..) | Self::Installing(..) => {
                 ser.serialize_unit_variant("GameStatus", 0, "NotDownloaded")
             }
-            Self::Running | Self::Stopped => ser.serialize_unit_variant("GameStatus", 4, "Stopped"),
+            Self::Running | Self::Ready => ser.serialize_unit_variant("GameStatus", 4, "Stopped"),
         }
     }
 }

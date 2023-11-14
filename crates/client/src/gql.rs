@@ -60,7 +60,7 @@ pub enum GraphQLGameStatusInner {
     Downloading,
     Installing,
     Running,
-    Stopped,
+    Ready,
 }
 
 pub struct Void;
@@ -99,8 +99,8 @@ impl From<GameStatus> for GraphQLGameStatus {
                 status: GraphQLGameStatusInner::Running,
                 progress: None,
             },
-            GameStatus::Stopped => Self {
-                status: GraphQLGameStatusInner::Stopped,
+            GameStatus::Ready => Self {
+                status: GraphQLGameStatusInner::Ready,
                 progress: None,
             },
         }
@@ -187,7 +187,7 @@ impl Mutation {
                     )
                     .unwrap();
 
-                    games.get_mut(&game.info.id).unwrap().status = GameStatus::Stopped;
+                    games.get_mut(&game.info.id).unwrap().status = GameStatus::Ready;
                     ctx.config.save().unwrap();
                 });
             }
@@ -218,7 +218,7 @@ impl Mutation {
             tracing::info!("game stopped: {game:?}");
 
             let mut game = games.get_mut(&game.info.id).unwrap();
-            game.status = GameStatus::Stopped;
+            game.status = GameStatus::Ready;
         });
         Ok(Void)
     }
@@ -228,7 +228,7 @@ impl Mutation {
 
         {
             let mut game = games.get_mut(&game).ok_or(GraphQLError::NotFound)?;
-            if !matches!(game.status, GameStatus::Stopped) {
+            if !matches!(game.status, GameStatus::Ready) {
                 return Err(GraphQLError::NotDeleted.into());
             }
 

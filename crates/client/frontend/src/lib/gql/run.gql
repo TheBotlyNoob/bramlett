@@ -1,0 +1,7 @@
+mutation RunGame($game: GameId!) {
+	run(game: $game) {
+		void {
+			__typename
+		}
+	}
+}
