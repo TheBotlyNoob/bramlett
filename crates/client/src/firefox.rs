@@ -1,8 +1,29 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use sysinfo::{ProcessExt, SystemExt};
 use tokio::{io::AsyncWriteExt, process::Command};
 
 const PROFILE_NAME: &str = "bramlett";
+
+pub fn exe() -> Option<PathBuf> {
+    let usr = dirs::data_local_dir()?
+        .join("Mozilla Firefox")
+        .join("firefox.exe");
+    if usr.exists() {
+        return Some(usr);
+    }
+
+    let sys = Path::new("C:\\Program Files\\Mozilla Firefox\\firefox.exe");
+    if sys.exists() {
+        return Some(sys.to_path_buf());
+    }
+
+    let path = which::which("firefox").ok()?;
+    if path.exists() {
+        return Some(path);
+    }
+
+    None
+}
 
 pub fn get_profile_path() -> Option<PathBuf> {
     dirs::home_dir()
@@ -19,8 +40,10 @@ pub fn get_profile_path() -> Option<PathBuf> {
 pub async fn launch(create_new_profile: bool) -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("launching firefox");
 
+    let exe = exe().ok_or("firefox not found")?;
+
     if create_new_profile {
-        Command::new("firefox")
+        Command::new(&exe)
             .arg("-CreateProfile")
             .arg(PROFILE_NAME)
             .arg("-no-remote")
@@ -40,7 +63,7 @@ pub async fn launch(create_new_profile: bool) -> Result<(), Box<dyn std::error::
         vec![]
     };
 
-    Command::new("firefox")
+    Command::new(&exe)
         .arg("-P")
         .arg(PROFILE_NAME)
         .arg("-no-remote")
@@ -79,7 +102,7 @@ pub async fn launch(create_new_profile: bool) -> Result<(), Box<dyn std::error::
 
         prefs.write_all(conf).await?;
 
-        Command::new("firefox")
+        Command::new(exe)
             .arg("-P")
             .arg(PROFILE_NAME)
             .arg("-no-remote")

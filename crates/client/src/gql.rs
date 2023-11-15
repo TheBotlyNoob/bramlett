@@ -148,6 +148,18 @@ impl Query {
         games.sort_unstable_by_key(|g| g.0); // needed b/c DashMap doesn't guarantee order
         games
     }
+    pub fn firefox() -> FirefoxStatus {
+        if bramlett::firefox::get_profile_path().is_some() {
+            FirefoxStatus::Ready
+        } else {
+            FirefoxStatus::Downloading
+        }
+    }
+}
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, GraphQLEnum)]
+pub enum FirefoxStatus {
+    Downloading,
+    Ready,
 }
 
 pub struct Mutation;
@@ -247,10 +259,10 @@ impl Mutation {
         Ok(Void)
     }
 
-    pub async fn launch_firefox() -> FieldResult<Void> {
+    pub async fn launch_firefox() -> FieldResult<FirefoxStatus> {
         bramlett::firefox::launch(bramlett::firefox::get_profile_path().is_none()).await?;
 
-        Ok(Void)
+        Ok(FirefoxStatus::Ready)
     }
 }
 
