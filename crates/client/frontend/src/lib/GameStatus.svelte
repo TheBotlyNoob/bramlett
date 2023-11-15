@@ -4,8 +4,8 @@
 	export let game: GamesQuery['games'][0];
 
 	let progress = game.status.progress
-		? Math.round((game.status.progress[0] / game.status.progress[1]) * 100)
-		: NaN;
+		? Math.round((game.status.progress[0] / game.status.progress[1]) * 100) || 0
+		: 0;
 </script>
 
 {#if game.status.status == GraphQlGameStatusInner.NotDownloaded}
@@ -20,12 +20,24 @@
 		}}>Download</button
 	>
 {:else if game.status.status == GraphQlGameStatusInner.Downloading}
-	<div class="radial-progress text-primary" style="--value: {progress}" role="progressbar">
-		{progress}%
+	<div>
+		<div
+			class="radial-progress text-primary"
+			style="--size: 4rem; --value: {progress}"
+			role="progressbar"
+		>
+			{progress}%
+		</div>
 	</div>
 {:else if game.status.status == GraphQlGameStatusInner.Installing}
-	<div class="radial-progress text-secondary" style="--value: {progress}" role="progressbar">
-		{progress}%
+	<div>
+		<div
+			class="radial-progress text-secondary"
+			style="--size: 4rem; --value: {progress}"
+			role="progressbar"
+		>
+			{progress}%
+		</div>
 	</div>
 {:else if game.status.status == GraphQlGameStatusInner.Ready}
 	<button

@@ -246,6 +246,12 @@ impl Mutation {
         bramlett::update_game_list(&ctx.config, true).await?;
         Ok(Void)
     }
+
+    pub async fn launch_firefox() -> FieldResult<Void> {
+        bramlett::firefox::launch(bramlett::firefox::get_profile_path().is_none()).await?;
+
+        Ok(Void)
+    }
 }
 
 pub type Schema = RootNode<'static, Query, Mutation, EmptySubscription<Ctx>>;

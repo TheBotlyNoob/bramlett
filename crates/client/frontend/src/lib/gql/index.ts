@@ -49,6 +49,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   delete: Void;
   download: Void;
+  launchFirefox: Void;
   run: Void;
   updateGameList: Void;
 };
@@ -98,11 +99,6 @@ export type DownloadGameMutationVariables = Exact<{
 
 export type DownloadGameMutation = { __typename?: 'Mutation', download: { __typename?: 'Void', void: { __typename: 'Void' } } };
 
-export type GamesQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'GraphQLGame', id: number, name: string, icon: string, status: { __typename?: 'GraphQLGameStatus', status: GraphQlGameStatusInner, progress?: Array<number> | null } }> };
-
 export type RunGameMutationVariables = Exact<{
   game: Scalars['GameId']['input'];
 }>;
@@ -114,6 +110,16 @@ export type UpdateGamesMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type UpdateGamesMutation = { __typename?: 'Mutation', updateGameList: { __typename?: 'Void', void: { __typename: 'Void' } } };
+
+export type LaunchFirefoxMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LaunchFirefoxMutation = { __typename?: 'Mutation', launchFirefox: { __typename?: 'Void', void: { __typename: 'Void' } } };
+
+export type GamesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'GraphQLGame', id: number, name: string, icon: string, status: { __typename?: 'GraphQLGameStatus', status: GraphQlGameStatusInner, progress?: Array<number> | null } }> };
 
 
 export const DeleteGameDoc = gql`
@@ -134,19 +140,6 @@ export const DownloadGameDoc = gql`
   }
 }
     `;
-export const GamesDoc = gql`
-    query Games {
-  games {
-    id
-    name
-    icon
-    status {
-      status
-      progress
-    }
-  }
-}
-    `;
 export const RunGameDoc = gql`
     mutation RunGame($game: GameId!) {
   run(game: $game) {
@@ -161,6 +154,28 @@ export const UpdateGamesDoc = gql`
   updateGameList {
     void {
       __typename
+    }
+  }
+}
+    `;
+export const LaunchFirefoxDoc = gql`
+    mutation LaunchFirefox {
+  launchFirefox {
+    void {
+      __typename
+    }
+  }
+}
+    `;
+export const GamesDoc = gql`
+    query Games {
+  games {
+    id
+    name
+    icon
+    status {
+      status
+      progress
     }
   }
 }
@@ -185,6 +200,42 @@ export const DownloadGame = (
           ) => {
             const m = client.mutate<DownloadGameMutation, DownloadGameMutationVariables>({
               mutation: DownloadGameDoc,
+              ...options,
+            });
+            return m;
+          }
+export const RunGame = (
+            options: Omit<
+              MutationOptions<any, RunGameMutationVariables>, 
+              "mutation"
+            >
+          ) => {
+            const m = client.mutate<RunGameMutation, RunGameMutationVariables>({
+              mutation: RunGameDoc,
+              ...options,
+            });
+            return m;
+          }
+export const UpdateGames = (
+            options: Omit<
+              MutationOptions<any, UpdateGamesMutationVariables>, 
+              "mutation"
+            >
+          ) => {
+            const m = client.mutate<UpdateGamesMutation, UpdateGamesMutationVariables>({
+              mutation: UpdateGamesDoc,
+              ...options,
+            });
+            return m;
+          }
+export const LaunchFirefox = (
+            options: Omit<
+              MutationOptions<any, LaunchFirefoxMutationVariables>, 
+              "mutation"
+            >
+          ) => {
+            const m = client.mutate<LaunchFirefoxMutation, LaunchFirefoxMutationVariables>({
+              mutation: LaunchFirefoxDoc,
               ...options,
             });
             return m;
@@ -233,27 +284,3 @@ export const Games = (
                 return client.query<GamesQuery>({query: GamesDoc, ...options})
               }
             
-export const RunGame = (
-            options: Omit<
-              MutationOptions<any, RunGameMutationVariables>, 
-              "mutation"
-            >
-          ) => {
-            const m = client.mutate<RunGameMutation, RunGameMutationVariables>({
-              mutation: RunGameDoc,
-              ...options,
-            });
-            return m;
-          }
-export const UpdateGames = (
-            options: Omit<
-              MutationOptions<any, UpdateGamesMutationVariables>, 
-              "mutation"
-            >
-          ) => {
-            const m = client.mutate<UpdateGamesMutation, UpdateGamesMutationVariables>({
-              mutation: UpdateGamesDoc,
-              ...options,
-            });
-            return m;
-          }

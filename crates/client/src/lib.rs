@@ -1,5 +1,9 @@
 #![warn(clippy::pedantic, clippy::nursery)]
-#![allow(clippy::must_use_candidate)]
+#![allow(
+    clippy::must_use_candidate,
+    clippy::missing_panics_doc,
+    clippy::missing_errors_doc
+)]
 
 use common::{GameId, GameInfo};
 use dashmap::DashMap;
@@ -11,6 +15,7 @@ use std::{
 use tokio::sync::{mpsc, watch};
 
 pub mod download;
+pub mod firefox;
 pub mod py;
 
 #[derive(thiserror::Error, Debug)]

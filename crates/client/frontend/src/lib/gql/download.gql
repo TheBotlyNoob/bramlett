@@ -1,7 +1,0 @@
-mutation DownloadGame($game: GameId!) {
-	download(game: $game) {
-		void {
-			__typename
-		}
-	}
-}
