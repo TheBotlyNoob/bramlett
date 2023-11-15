@@ -1,19 +1,16 @@
-import { CodegenConfig } from "@graphql-codegen/cli";
+import type { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
-    schema: "http://localhost:8635/graphql",
-    // this assumes that all your source files are in a top-level `src/` directory - you might need to adjust this to your file structure
-    documents: ["src/**/*.{ts,tsx}"],
-    generates: {
-        "./src/__generated__/": {
-            preset: "client",
-            plugins: [],
-            presetConfig: {
-                gqlTagName: "gql",
-            },
-        },
-    },
-    ignoreNoDocuments: true,
+	schema: 'http://localhost:8635/graphql',
+	documents: './src/lib/gql/*.gql',
+	generates: {
+		'./src/lib/gql/index.ts': {
+			plugins: ['typescript', 'typescript-operations', 'graphql-codegen-svelte-apollo'],
+			config: {
+				clientPath: '$lib/apolloClient.ts',
+				asyncQuery: true
+			}
+		}
+	}
 };
-
 export default config;

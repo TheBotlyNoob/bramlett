@@ -1,0 +1,11 @@
+query Games {
+	games {
+		id
+		name
+		icon
+		status {
+			status
+			progress
+		}
+	}
+}

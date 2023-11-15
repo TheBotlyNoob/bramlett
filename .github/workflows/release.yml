@@ -68,6 +68,7 @@ jobs:
                   #     - $tag    - Tag of this release.
                   # When multiple binary names are specified, default archive name or $bin variable cannot be used.
                   archive: bramlett-$target
+                  features: webview
                   target: ${{ matrix.target }}
                   tar: none
                   zip: all

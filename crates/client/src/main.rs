@@ -1,23 +1,19 @@
 #![warn(clippy::pedantic, clippy::nursery)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use bramlett::{py::py_loop, update_game_list, Config, Ctx};
-use std::sync::Arc;
+use bramlett::{update_game_list, Config, Ctx};
+use std::{sync::Arc, time::Duration};
 use tokio::sync::{mpsc, oneshot};
 use tracing_subscriber::{filter::filter_fn, layer::SubscriberExt, util::SubscriberInitExt, Layer};
 use warp::Filter;
-use wry::{
-    application::{
-        event::{Event, StartCause, WindowEvent},
-        event_loop::{ControlFlow, EventLoop},
-        window::WindowBuilder,
-    },
-    webview::WebViewBuilder,
-};
+
+use crate::socks5::AuthMethods;
 
 mod gql;
+mod socks5;
 
-const DEFAULT_PORT: u16 = 8635;
+const WEB_PORT: u16 = 8635;
+const SOCKS_PORT: u16 = 8636;
 
 #[allow(clippy::too_many_lines, clippy::cognitive_complexity)]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -35,15 +31,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     #[cfg(not(debug_assertions))]
-    let _ = self_update::backends::github::Update::configure()
-        .repo_owner("TheBotlyNoob")
-        .repo_name("bramletts-games")
-        .bin_name("bramlett")
-        .show_download_progress(true)
-        .current_version(self_update::cargo_crate_version!())
-        .no_confirm(true)
-        .build()?
-        .update();
+    {
+        use dialog::DialogBox;
+
+        let update_res = self_update::backends::github::Update::configure()
+            .repo_owner("TheBotlyNoob")
+            .repo_name("bramletts-games")
+            .bin_name("bramlett")
+            .show_download_progress(true)
+            .current_version(self_update::cargo_crate_version!())
+            .no_confirm(true)
+            .build()
+            .and_then(|u| u.update());
+
+        match update_res {
+            Ok(u) => {
+                if u.updated() {
+                    dialog::Message::new("please reopen the app")
+                        .title("Updated Bramletts Games")
+                        .show()
+                        .expect("Could not display dialog box");
+                    std::process::exit(0);
+                }
+            }
+            Err(e) => tracing::warn!("failed to update: {e:#}"),
+        }
+    }
 
     let config_file = Config::file();
 
@@ -69,6 +82,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::info!("save dir: {:#?}", config.saves_dir());
     tracing::info!("games dir: {:#?}", config.games_dir());
 
+    #[allow(unused_variables)]
     let (py_tx, py_rx) = mpsc::unbounded_channel();
 
     let ctx = Ctx {
@@ -79,20 +93,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let schema = Arc::new(gql::schema());
 
-    let port = std::env::var("PORT")
+    let web_port = std::env::var("PORT")
         .map(|p| {
             tracing::warn!(
                 "using port from env var: make sure to change the port on the frontend as well."
             );
             p.parse().expect("invalid port")
         })
-        .unwrap_or(DEFAULT_PORT);
+        .unwrap_or(WEB_PORT);
 
     let routes = warp::path("graphql").and(
         (warp::post().and(juniper_warp::make_graphql_filter(
             schema.clone(),
             warp::any()
                 .map({
+                    #[allow(clippy::redundant_clone)]
                     let ctx = ctx.clone();
                     move || ctx.clone()
                 })
@@ -122,17 +137,37 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let routes = routes.with(
         warp::cors()
             .allow_origin("http://localhost:3000")
-            .allow_origin(&*format!("http://localhost:{port}"))
+            .allow_origin(&*format!("http://localhost:{web_port}"))
             .allow_headers(["Content-Type", "User-Agent"])
             .allow_methods(["OPTIONS", "GET", "POST", "DELETE"]),
     );
 
+    #[allow(unused_variables)]
     let (tx, rx) = oneshot::channel();
 
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()?; // the below future doesn't run if this isn't put in it's own variable. maybe a lifetime issue?
-    rt.spawn(async move {
+
+    #[allow(unused_variables)]
+    let socks_fut = rt.spawn(async move {
+        socks5::Merino::new(
+            SOCKS_PORT,
+            "127.0.0.1",
+            vec![AuthMethods::NoAuth as u8],
+            vec![],
+            Duration::from_secs(60),
+        )
+        .await
+        .unwrap()
+        .serve()
+        .await;
+    });
+
+    // std::thread::spawn(move || py_loop(py_rx, ctx)); // ugly panic rn
+
+    #[allow(unused_variables)]
+    let server_fut = rt.spawn(async move {
         if let Err(e) = update_game_list(&config, true).await {
             tracing::warn!("failed to update game list: {e:#} -- is the server running?");
         } else {
@@ -142,34 +177,55 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let _ = tx.send(());
 
-        tokio::task::spawn_blocking(|| py_loop(py_rx, ctx));
-
-        warp::serve(routes).run(([127, 0, 0, 1], port)).await;
+        warp::serve(routes).run(([127, 0, 0, 1], web_port)).await;
     });
 
-    rx.blocking_recv()?;
+    #[cfg(feature = "webview")]
+    {
+        use wry::{
+            application::{
+                event::{Event, StartCause, WindowEvent},
+                event_loop::{ControlFlow, EventLoop},
+                window::WindowBuilder,
+            },
+            webview::WebViewBuilder,
+        };
 
-    let event_loop = EventLoop::new();
-    let window = WindowBuilder::new()
-        .with_title("Bramlett's Games")
-        .build(&event_loop)?;
-    let port = if cfg!(debug_assertions) { 3000 } else { port };
-    let _webview = WebViewBuilder::new(window)?
-        .with_url(&format!("http://localhost:{port}"))?
-        .build()?;
+        rx.blocking_recv()?;
 
-    event_loop.run(move |event, _, control_flow| {
-        *control_flow = ControlFlow::Wait;
+        let event_loop = EventLoop::new();
+        let window = WindowBuilder::new()
+            .with_title("Bramlett's Games")
+            .build(&event_loop)?;
+        let port = if cfg!(debug_assertions) {
+            3000
+        } else {
+            web_port
+        };
+        let _webview = WebViewBuilder::new(window)?
+            .with_url(&format!("http://localhost:{port}"))?
+            .build()?;
 
-        match event {
-            Event::NewEvents(StartCause::Init) => tracing::info!("wry has started!"),
-            Event::WindowEvent {
-                event: WindowEvent::CloseRequested,
-                ..
-            } => *control_flow = ControlFlow::Exit,
-            _ => (),
-        }
-    });
+        event_loop.run(move |event, _, control_flow| {
+            *control_flow = ControlFlow::Wait;
+
+            match event {
+                Event::NewEvents(StartCause::Init) => tracing::info!("wry has started!"),
+                Event::WindowEvent {
+                    event: WindowEvent::CloseRequested,
+                    ..
+                } => *control_flow = ControlFlow::Exit,
+                _ => (),
+            }
+        })
+    }
+    #[cfg(not(feature = "webview"))]
+    {
+        rt.block_on(async {
+            server_fut.await.unwrap();
+        });
+        Ok(())
+    }
 }
 
 #[cfg(not(debug_assertions))]

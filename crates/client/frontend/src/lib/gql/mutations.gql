@@ -1,0 +1,39 @@
+mutation DeleteGame($game: GameId!) {
+	delete(game: $game) {
+		void {
+			__typename
+		}
+	}
+}
+
+mutation DownloadGame($game: GameId!) {
+	download(game: $game) {
+		void {
+			__typename
+		}
+	}
+}
+
+mutation RunGame($game: GameId!) {
+	run(game: $game) {
+		void {
+			__typename
+		}
+	}
+}
+
+mutation UpdateGames {
+	updateGameList {
+		void {
+			__typename
+		}
+	}
+}
+
+mutation LaunchFirefox {
+	launchFirefox {
+		void {
+			__typename
+		}
+	}
+}
