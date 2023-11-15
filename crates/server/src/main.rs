@@ -152,7 +152,7 @@ fn games() -> Vec<GameInfo> {
             icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/4b7890d268495230ee3f9bcd05ce3365.png".into(),
             id: GameId(17),
             gdrive_id: "14k2cdhdigdgB3mDSSveOJmTBLVCtwfpD".into(),
-            exe: "gta_sa.exe".into(), // fix this
+            exe: "gta_sa.exe".into(),
             hooks: script!("gta_sa"),
         },
         GameInfo {
@@ -160,8 +160,16 @@ fn games() -> Vec<GameInfo> {
             icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/4eb6720c6cd70ee9e67ca6e4dc12e3df.png".into(),
             id: GameId(18),
             gdrive_id: "1M4DlCIqeOvevPZ7aLUNLDiiGAqyxa5ct".into(),
-            exe: "gta-vc.exe".into(), // fix this
+            exe: "gta-vc.exe".into(),
             hooks: script!("gta_vc"),
+        },
+        GameInfo {
+            name: "Getting Over It".into(),
+            icon: "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/8d3c5c9e20f9162501d14594445a7150.png".into(),
+            id: GameId(19),
+            gdrive_id: "13feVmY99R_xQIQtFPRnyUIFgIjcHoWKP".into(),
+            exe: "GettingOverIt.exe".into(), // fix this
+            hooks: script!("getting_over_it"),
         }
     ]
 }

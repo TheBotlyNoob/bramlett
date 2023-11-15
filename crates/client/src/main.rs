@@ -234,7 +234,7 @@ mod frontend {
     use warp::{http::header::HeaderValue, path::Tail, reply::Response, Rejection, Reply};
 
     #[derive(RustEmbed)]
-    #[folder = "frontend/out"]
+    #[folder = "frontend/build"]
     struct Frontend;
 
     pub async fn serve_index() -> Result<impl Reply, Rejection> {

@@ -18,7 +18,7 @@
 		"@graphql-codegen/typescript": "^4.0.1",
 		"@graphql-codegen/typescript-operations": "^4.0.1",
 		"@parcel/watcher": "^2.3.0",
-		"@sveltejs/adapter-auto": "^2.0.0",
+		"@sveltejs/adapter-static": "^2.0.0",
 		"@sveltejs/kit": "^1.27.4",
 		"@typescript-eslint/eslint-plugin": "^6.0.0",
 		"@typescript-eslint/parser": "^6.0.0",
