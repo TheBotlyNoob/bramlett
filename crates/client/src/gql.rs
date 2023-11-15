@@ -63,15 +63,11 @@ pub enum GraphQLGameStatusInner {
     Ready,
 }
 
-pub struct Void;
-
-#[graphql_object]
-impl Void {
-    #[allow(clippy::self_named_constructors)]
-    const fn void() -> Self {
-        Self
-    }
+#[derive(GraphQLEnum)]
+pub enum VoidEnum {
+    Void
 }
+use VoidEnum::Void;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct GraphQLGameStatus {
@@ -166,7 +162,7 @@ pub struct Mutation;
 
 #[graphql_object(context = Ctx)]
 impl Mutation {
-    pub fn download(ctx: &Ctx, game: GameId) -> FieldResult<Void> {
+    pub fn download(ctx: &Ctx, game: GameId) -> FieldResult<VoidEnum> {
         let games = ctx.config.games();
         let (tx, rx) = watch::channel((0, 0));
         let game = {
@@ -207,7 +203,7 @@ impl Mutation {
         Ok(Void)
     }
 
-    pub fn run(ctx: &Ctx, game: GameId) -> FieldResult<Void> {
+    pub fn run(ctx: &Ctx, game: GameId) -> FieldResult<VoidEnum> {
         let games = ctx.config.games();
         let game = {
             let mut game = games.get_mut(&game).ok_or(GraphQLError::NotFound)?;
@@ -235,7 +231,7 @@ impl Mutation {
         Ok(Void)
     }
 
-    pub async fn delete(ctx: &Ctx, game: GameId) -> FieldResult<Void> {
+    pub async fn delete(ctx: &Ctx, game: GameId) -> FieldResult<VoidEnum> {
         let games = ctx.config.games();
 
         {
@@ -253,7 +249,7 @@ impl Mutation {
         Ok(Void)
     }
 
-    pub async fn update_game_list(ctx: &Ctx) -> FieldResult<Void> {
+    pub async fn update_game_list(ctx: &Ctx) -> FieldResult<VoidEnum> {
         let ctx = ctx.clone();
         bramlett::update_game_list(&ctx.config, true).await?;
         Ok(Void)

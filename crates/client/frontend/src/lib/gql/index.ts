@@ -22,6 +22,11 @@ export type Scalars = {
   GameId: { input: any; output: any; }
 };
 
+export enum FirefoxStatus {
+  Downloading = 'DOWNLOADING',
+  Ready = 'READY'
+}
+
 export type GraphQlGame = {
   __typename?: 'GraphQLGame';
   icon: Scalars['String']['output'];
@@ -47,11 +52,11 @@ export enum GraphQlGameStatusInner {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  delete: Void;
-  download: Void;
-  launchFirefox: Void;
-  run: Void;
-  updateGameList: Void;
+  delete: VoidEnum;
+  download: VoidEnum;
+  launchFirefox: FirefoxStatus;
+  run: VoidEnum;
+  updateGameList: VoidEnum;
 };
 
 
@@ -71,6 +76,7 @@ export type MutationRunArgs = {
 
 export type Query = {
   __typename?: 'Query';
+  firefox: FirefoxStatus;
   game?: Maybe<GraphQlGame>;
   games: Array<GraphQlGame>;
 };
@@ -80,41 +86,40 @@ export type QueryGameArgs = {
   id: Scalars['Int']['input'];
 };
 
-export type Void = {
-  __typename?: 'Void';
-  void: Void;
-};
+export enum VoidEnum {
+  Void = 'VOID'
+}
 
 export type DeleteGameMutationVariables = Exact<{
   game: Scalars['GameId']['input'];
 }>;
 
 
-export type DeleteGameMutation = { __typename?: 'Mutation', delete: { __typename?: 'Void', void: { __typename: 'Void' } } };
+export type DeleteGameMutation = { __typename?: 'Mutation', delete: VoidEnum };
 
 export type DownloadGameMutationVariables = Exact<{
   game: Scalars['GameId']['input'];
 }>;
 
 
-export type DownloadGameMutation = { __typename?: 'Mutation', download: { __typename?: 'Void', void: { __typename: 'Void' } } };
+export type DownloadGameMutation = { __typename?: 'Mutation', download: VoidEnum };
 
 export type RunGameMutationVariables = Exact<{
   game: Scalars['GameId']['input'];
 }>;
 
 
-export type RunGameMutation = { __typename?: 'Mutation', run: { __typename?: 'Void', void: { __typename: 'Void' } } };
+export type RunGameMutation = { __typename?: 'Mutation', run: VoidEnum };
 
 export type UpdateGamesMutationVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UpdateGamesMutation = { __typename?: 'Mutation', updateGameList: { __typename?: 'Void', void: { __typename: 'Void' } } };
+export type UpdateGamesMutation = { __typename?: 'Mutation', updateGameList: VoidEnum };
 
 export type LaunchFirefoxMutationVariables = Exact<{ [key: string]: never; }>;
 
 
-export type LaunchFirefoxMutation = { __typename?: 'Mutation', launchFirefox: { __typename?: 'Void', void: { __typename: 'Void' } } };
+export type LaunchFirefoxMutation = { __typename?: 'Mutation', launchFirefox: FirefoxStatus };
 
 export type GamesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -124,47 +129,27 @@ export type GamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'Gr
 
 export const DeleteGameDoc = gql`
     mutation DeleteGame($game: GameId!) {
-  delete(game: $game) {
-    void {
-      __typename
-    }
-  }
+  delete(game: $game)
 }
     `;
 export const DownloadGameDoc = gql`
     mutation DownloadGame($game: GameId!) {
-  download(game: $game) {
-    void {
-      __typename
-    }
-  }
+  download(game: $game)
 }
     `;
 export const RunGameDoc = gql`
     mutation RunGame($game: GameId!) {
-  run(game: $game) {
-    void {
-      __typename
-    }
-  }
+  run(game: $game)
 }
     `;
 export const UpdateGamesDoc = gql`
     mutation UpdateGames {
-  updateGameList {
-    void {
-      __typename
-    }
-  }
+  updateGameList
 }
     `;
 export const LaunchFirefoxDoc = gql`
     mutation LaunchFirefox {
-  launchFirefox {
-    void {
-      __typename
-    }
-  }
+  launchFirefox
 }
     `;
 export const GamesDoc = gql`

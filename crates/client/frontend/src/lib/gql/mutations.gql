@@ -1,39 +1,19 @@
 mutation DeleteGame($game: GameId!) {
-	delete(game: $game) {
-		void {
-			__typename
-		}
-	}
+	delete(game: $game)
 }
 
 mutation DownloadGame($game: GameId!) {
-	download(game: $game) {
-		void {
-			__typename
-		}
-	}
+	download(game: $game)
 }
 
 mutation RunGame($game: GameId!) {
-	run(game: $game) {
-		void {
-			__typename
-		}
-	}
+	run(game: $game)
 }
 
 mutation UpdateGames {
-	updateGameList {
-		void {
-			__typename
-		}
-	}
+	updateGameList
 }
 
 mutation LaunchFirefox {
-	launchFirefox {
-		void {
-			__typename
-		}
-	}
+	launchFirefox
 }
