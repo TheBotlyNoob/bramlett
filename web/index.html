@@ -1,145 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <link
-            href="https://unpkg.com/nes.css@latest/css/nes.min.css"
-            rel="stylesheet"
-        />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
-            rel="stylesheet"
-        />
-        <style>
-            body,
-            html {
-                background-color: #212529;
-                color: white;
-                width: 100%;
-                height: 100%;
-                padding: 0;
-                margin: 0;
-                font-family: "Press Start 2P", "Lucida Sans",
-                    "Lucida Sans Regular", "Lucida Grande",
-                    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
-            }
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
 
-            .container {
-                display: flex;
-                flex-direction: column;
-                min-height: 100vh;
-            }
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
 
-            main {
-                flex: 1;
-                display: flex;
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
 
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-            }
-            footer {
-                display: flex;
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
 
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-            }
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
 
-            mark {
-                background-color: #212529;
-                color: #2ecc71;
-            }
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="bramletts_games">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-            .nes-table.is-dark::before {
-                display: none !important;
-            }
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
 
-            #games > tr > td:first-child {
-                padding: 0;
-            }
-        </style>
-        <script>
-            (async () => {
-                await fetch("https://bramletts-games.shuttleapp.rs/games")
-                    .then((r) => r.json())
-                    .then((r) => {
-                        const update = () => {
-                            for (const game of r) {
-                                // icons are always 600x900
-                                document.getElementById("games").innerHTML += `
-                                <tr>
-                                    <td>
-                                        <img
-                                            src="${game.icon}"
-                                            alt="${game.name} icon"
-                                            width="225"
-                                        />
-                                    </td>
-                                    <td style="text-align: center;">${game.name}</td>
-                                </tr>
-                                `;
-                            }
-                        };
-                        if (document.readyState === "loading") {
-                            document.addEventListener(
-                                "DOMContentLoaded",
-                                update
-                            );
-                        } else {
-                            update();
-                        }
-                    });
-            })();
-        </script>
-    </head>
-    <body>
-        <div class="container">
-            <main>
-                <h1>Bramlett's Game Launcher</h1>
-                <p>
-                    the ultimate game library
-                    <mark style="text-decoration: underline">for school</mark>.
-                </p>
-                <a
-                    href="https://github.com/TheBotlyNoob/bramletts-games/releases/latest/download/bramlett-x86_64-pc-windows-msvc.zip"
-                    class="nes-btn is-primary"
-                    >Download for Windows</a
-                >
-                <a
-                    href="https://github.com/TheBotlyNoob/bramletts-games/releases/latest"
-                    style="font-size: 14px; margin-bottom: 25px"
-                    class="nes-text is-success"
-                    >Download for Others</a
-                >
+  <title>bramletts_games</title>
+  <link rel="manifest" href="manifest.json">
 
-                <details>
-                    <summary class="nes-btn">Game List</summary>
-
-                    <div class="nes-table-responsive">
-                        <table class="nes-table is-bordered is-dark">
-                            <thead>
-                                <tr>
-                                    <th style="text-align: center">Icon</th>
-                                    <th style="text-align: center">Name</th>
-                                </tr>
-                            </thead>
-                            <tbody id="games"></tbody>
-                        </table>
-                    </div>
-                </details>
-            </main>
-
-            <footer>
-                <p>
-                    made with <i class="nes-icon heart"></i> by Jay (<mark
-                        >the smart one</mark
-                    >)
-                </p>
-            </footer>
-        </div>
-    </body>
+  <script>
+    // The value below is injected by flutter build, do not touch.
+    const serviceWorkerVersion = null;
+  </script>
+  <!-- This script adds the flutter initialization JS code -->
+  <script src="flutter.js" defer></script>
+</head>
+<body>
+  <script>
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
+</body>
 </html>
