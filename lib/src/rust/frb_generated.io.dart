@@ -3,7 +3,7 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables
 
-import 'api/simple.dart';
+import 'api/games.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
@@ -18,29 +18,41 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     required super.portManager,
   });
 
-  @protected
-  String dco_decode_String(dynamic raw);
+  CrossPlatformFinalizerArg
+      get rust_arc_decrement_strong_count_ClientErrorPtr => wire
+          ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientErrorPtr;
 
   @protected
-  Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+  ClientError
+      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          dynamic raw);
 
   @protected
-  int dco_decode_u_8(dynamic raw);
+  ClientError
+      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          dynamic raw);
 
   @protected
   void dco_decode_unit(dynamic raw);
 
   @protected
-  String sse_decode_String(SseDeserializer deserializer);
+  int dco_decode_usize(dynamic raw);
 
   @protected
-  Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+  ClientError
+      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          SseDeserializer deserializer);
 
   @protected
-  int sse_decode_u_8(SseDeserializer deserializer);
+  ClientError
+      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          SseDeserializer deserializer);
 
   @protected
   void sse_decode_unit(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_usize(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -49,36 +61,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
-  ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_encode_String(String raw) {
-    return cst_encode_list_prim_u_8_strict(utf8.encoder.convert(raw));
-  }
+  PlatformPointer
+      cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError raw);
 
   @protected
-  ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_encode_list_prim_u_8_strict(
-      Uint8List raw) {
-    final ans = wire.cst_new_list_prim_u_8_strict(raw.length);
-    ans.ref.ptr.asTypedList(raw.length).setAll(0, raw);
-    return ans;
-  }
-
-  @protected
-  int cst_encode_u_8(int raw);
+  PlatformPointer
+      cst_encode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError raw);
 
   @protected
   void cst_encode_unit(void raw);
 
   @protected
-  void sse_encode_String(String self, SseSerializer serializer);
+  int cst_encode_usize(int raw);
 
   @protected
-  void sse_encode_list_prim_u_8_strict(
-      Uint8List self, SseSerializer serializer);
+  void
+      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError self, SseSerializer serializer);
 
   @protected
-  void sse_encode_u_8(int self, SseSerializer serializer);
+  void
+      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError self, SseSerializer serializer);
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_usize(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -135,22 +147,19 @@ class RustLibWire implements BaseWire {
   late final _dart_fn_deliver_output = _dart_fn_deliver_outputPtr
       .asFunction<void Function(int, ffi.Pointer<ffi.Uint8>, int, int)>();
 
-  WireSyncRust2DartDco wire_greet(
-    ffi.Pointer<wire_cst_list_prim_u_8_strict> name,
+  void wire_fetch_games(
+    int port_,
   ) {
-    return _wire_greet(
-      name,
+    return _wire_fetch_games(
+      port_,
     );
   }
 
-  late final _wire_greetPtr = _lookup<
-          ffi.NativeFunction<
-              WireSyncRust2DartDco Function(
-                  ffi.Pointer<wire_cst_list_prim_u_8_strict>)>>(
-      'frbgen_bramletts_games_wire_greet');
-  late final _wire_greet = _wire_greetPtr.asFunction<
-      WireSyncRust2DartDco Function(
-          ffi.Pointer<wire_cst_list_prim_u_8_strict>)>();
+  late final _wire_fetch_gamesPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'frbgen_bramletts_games_wire_fetch_games');
+  late final _wire_fetch_games =
+      _wire_fetch_gamesPtr.asFunction<void Function(int)>();
 
   void wire_init_app(
     int port_,
@@ -166,20 +175,37 @@ class RustLibWire implements BaseWire {
   late final _wire_init_app =
       _wire_init_appPtr.asFunction<void Function(int)>();
 
-  ffi.Pointer<wire_cst_list_prim_u_8_strict> cst_new_list_prim_u_8_strict(
-    int len,
+  void
+      rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+    ffi.Pointer<ffi.Void> ptr,
   ) {
-    return _cst_new_list_prim_u_8_strict(
-      len,
+    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+      ptr,
     );
   }
 
-  late final _cst_new_list_prim_u_8_strictPtr = _lookup<
-          ffi.NativeFunction<
-              ffi.Pointer<wire_cst_list_prim_u_8_strict> Function(ffi.Int32)>>(
-      'frbgen_bramletts_games_cst_new_list_prim_u_8_strict');
-  late final _cst_new_list_prim_u_8_strict = _cst_new_list_prim_u_8_strictPtr
-      .asFunction<ffi.Pointer<wire_cst_list_prim_u_8_strict> Function(int)>();
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientErrorPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'frbgen_bramletts_games_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError');
+  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError =
+      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientErrorPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  void
+      rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+    ffi.Pointer<ffi.Void> ptr,
+  ) {
+    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+      ptr,
+    );
+  }
+
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientErrorPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'frbgen_bramletts_games_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError');
+  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError =
+      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientErrorPtr
+          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   int dummy_method_to_enforce_bundling() {
     return _dummy_method_to_enforce_bundling();
@@ -190,11 +216,4 @@ class RustLibWire implements BaseWire {
           'dummy_method_to_enforce_bundling');
   late final _dummy_method_to_enforce_bundling =
       _dummy_method_to_enforce_bundlingPtr.asFunction<int Function()>();
-}
-
-final class wire_cst_list_prim_u_8_strict extends ffi.Struct {
-  external ffi.Pointer<ffi.Uint8> ptr;
-
-  @ffi.Int32()
-  external int len;
 }

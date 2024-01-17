@@ -3,7 +3,7 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables
 
-import 'api/simple.dart';
+import 'api/games.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
@@ -17,29 +17,41 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     required super.portManager,
   });
 
-  @protected
-  String dco_decode_String(dynamic raw);
+  CrossPlatformFinalizerArg
+      get rust_arc_decrement_strong_count_ClientErrorPtr => wire
+          .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError;
 
   @protected
-  Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+  ClientError
+      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          dynamic raw);
 
   @protected
-  int dco_decode_u_8(dynamic raw);
+  ClientError
+      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          dynamic raw);
 
   @protected
   void dco_decode_unit(dynamic raw);
 
   @protected
-  String sse_decode_String(SseDeserializer deserializer);
+  int dco_decode_usize(dynamic raw);
 
   @protected
-  Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+  ClientError
+      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          SseDeserializer deserializer);
 
   @protected
-  int sse_decode_u_8(SseDeserializer deserializer);
+  ClientError
+      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          SseDeserializer deserializer);
 
   @protected
   void sse_decode_unit(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_usize(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -48,33 +60,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
-  String cst_encode_String(String raw) {
-    return raw;
-  }
+  PlatformPointer
+      cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError raw);
 
   @protected
-  Uint8List cst_encode_list_prim_u_8_strict(Uint8List raw) {
-    return raw;
-  }
-
-  @protected
-  int cst_encode_u_8(int raw);
+  PlatformPointer
+      cst_encode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError raw);
 
   @protected
   void cst_encode_unit(void raw);
 
   @protected
-  void sse_encode_String(String self, SseSerializer serializer);
+  int cst_encode_usize(int raw);
 
   @protected
-  void sse_encode_list_prim_u_8_strict(
-      Uint8List self, SseSerializer serializer);
+  void
+      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError self, SseSerializer serializer);
 
   @protected
-  void sse_encode_u_8(int self, SseSerializer serializer);
+  void
+      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError self, SseSerializer serializer);
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_usize(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -93,10 +108,22 @@ class RustLibWire extends BaseWire {
       wasmModule.dart_fn_deliver_output(
           call_id, ptr_, rust_vec_len_, data_len_);
 
-  dynamic /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-      wire_greet(String name) => wasmModule.wire_greet(name);
+  void wire_fetch_games(NativePortType port_) =>
+      wasmModule.wire_fetch_games(port_);
 
   void wire_init_app(NativePortType port_) => wasmModule.wire_init_app(port_);
+
+  void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          dynamic ptr) =>
+      wasmModule
+          .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+              ptr);
+
+  void rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          dynamic ptr) =>
+      wasmModule
+          .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+              ptr);
 }
 
 @JS('wasm_bindgen')
@@ -114,8 +141,15 @@ class RustLibWasmModule implements WasmModule {
   external void dart_fn_deliver_output(int call_id,
       PlatformGeneralizedUint8ListPtr ptr_, int rust_vec_len_, int data_len_);
 
-  external dynamic /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
-      wire_greet(String name);
+  external void wire_fetch_games(NativePortType port_);
 
   external void wire_init_app(NativePortType port_);
+
+  external void
+      rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          dynamic ptr);
+
+  external void
+      rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          dynamic ptr);
 }

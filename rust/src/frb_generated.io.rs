@@ -4,24 +4,26 @@
 // Section: imports
 
 use super::*;
+use crate::api::games::*;
 use flutter_rust_bridge::for_generated::byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 use flutter_rust_bridge::for_generated::transform_result_dco;
 use flutter_rust_bridge::{Handler, IntoIntoDart};
 
 // Section: dart2rust
 
-impl CstDecode<String> for *mut wire_cst_list_prim_u_8_strict {
-    fn cst_decode(self) -> String {
-        let vec: Vec<u8> = self.cst_decode();
-        String::from_utf8(vec).unwrap()
-    }
-}
-impl CstDecode<Vec<u8>> for *mut wire_cst_list_prim_u_8_strict {
-    fn cst_decode(self) -> Vec<u8> {
-        unsafe {
-            let wrap = flutter_rust_bridge::for_generated::box_from_leak_ptr(self);
-            flutter_rust_bridge::for_generated::vec_from_leak_ptr(wrap.ptr, wrap.len)
-        }
+impl
+    CstDecode<
+        flutter_rust_bridge::RustOpaque<
+            flutter_rust_bridge::for_generated::rust_async::RwLock<ClientError>,
+        >,
+    > for *const std::ffi::c_void
+{
+    fn cst_decode(
+        self,
+    ) -> flutter_rust_bridge::RustOpaque<
+        flutter_rust_bridge::for_generated::rust_async::RwLock<ClientError>,
+    > {
+        unsafe { flutter_rust_bridge::for_generated::cst_decode_rust_opaque(self) }
     }
 }
 pub trait NewWithNullPtr {
@@ -52,10 +54,8 @@ pub extern "C" fn frbgen_bramletts_games_dart_fn_deliver_output(
 }
 
 #[no_mangle]
-pub extern "C" fn frbgen_bramletts_games_wire_greet(
-    name: *mut wire_cst_list_prim_u_8_strict,
-) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
-    wire_greet_impl(name)
+pub extern "C" fn frbgen_bramletts_games_wire_fetch_games(port_: i64) {
+    wire_fetch_games_impl(port_)
 }
 
 #[no_mangle]
@@ -64,19 +64,23 @@ pub extern "C" fn frbgen_bramletts_games_wire_init_app(port_: i64) {
 }
 
 #[no_mangle]
-pub extern "C" fn frbgen_bramletts_games_cst_new_list_prim_u_8_strict(
-    len: i32,
-) -> *mut wire_cst_list_prim_u_8_strict {
-    let ans = wire_cst_list_prim_u_8_strict {
-        ptr: flutter_rust_bridge::for_generated::new_leak_vec_ptr(Default::default(), len),
-        len,
-    };
-    flutter_rust_bridge::for_generated::new_leak_box_ptr(ans)
+pub extern "C" fn frbgen_bramletts_games_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+    ptr: *const std::ffi::c_void,
+) {
+    unsafe {
+        flutter_rust_bridge::for_generated::rust_arc_increment_strong_count::<
+            flutter_rust_bridge::for_generated::rust_async::RwLock<ClientError>,
+        >(ptr);
+    }
 }
 
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct wire_cst_list_prim_u_8_strict {
-    ptr: *mut u8,
-    len: i32,
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+    ptr: *const std::ffi::c_void,
+) {
+    unsafe {
+        flutter_rust_bridge::for_generated::rust_arc_decrement_strong_count::<
+            flutter_rust_bridge::for_generated::rust_async::RwLock<ClientError>,
+        >(ptr);
+    }
 }

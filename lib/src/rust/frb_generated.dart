@@ -3,7 +3,7 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables
 
-import 'api/simple.dart';
+import 'api/games.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.io.dart' if (dart.library.html) 'frb_generated.web.dart';
@@ -61,9 +61,17 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  String greet({required String name, dynamic hint});
+  Future<void> fetchGames({dynamic hint});
 
   Future<void> initApp({dynamic hint});
+
+  RustArcIncrementStrongCountFnType
+      get rust_arc_increment_strong_count_ClientError;
+
+  RustArcDecrementStrongCountFnType
+      get rust_arc_decrement_strong_count_ClientError;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ClientErrorPtr;
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -75,26 +83,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  String greet({required String name, dynamic hint}) {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        var arg0 = cst_encode_String(name);
-        return wire.wire_greet(arg0);
+  Future<void> fetchGames({dynamic hint}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        return wire.wire_fetch_games(port_);
       },
       codec: DcoCodec(
-        decodeSuccessData: dco_decode_String,
-        decodeErrorData: null,
+        decodeSuccessData: dco_decode_unit,
+        decodeErrorData:
+            dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError,
       ),
-      constMeta: kGreetConstMeta,
-      argValues: [name],
+      constMeta: kFetchGamesConstMeta,
+      argValues: [],
       apiImpl: this,
       hint: hint,
     ));
   }
 
-  TaskConstMeta get kGreetConstMeta => const TaskConstMeta(
-        debugName: "greet",
-        argNames: ["name"],
+  TaskConstMeta get kFetchGamesConstMeta => const TaskConstMeta(
+        debugName: "fetch_games",
+        argNames: [],
       );
 
   @override
@@ -119,19 +127,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         argNames: [],
       );
 
+  RustArcIncrementStrongCountFnType
+      get rust_arc_increment_strong_count_ClientError => wire
+          .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError;
+
+  RustArcDecrementStrongCountFnType
+      get rust_arc_decrement_strong_count_ClientError => wire
+          .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError;
+
   @protected
-  String dco_decode_String(dynamic raw) {
-    return raw as String;
+  ClientError
+      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          dynamic raw) {
+    return ClientError.dcoDecode(raw as List<dynamic>);
   }
 
   @protected
-  Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
-    return raw as Uint8List;
-  }
-
-  @protected
-  int dco_decode_u_8(dynamic raw) {
-    return raw as int;
+  ClientError
+      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          dynamic raw) {
+    return ClientError.dcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -140,24 +155,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  String sse_decode_String(SseDeserializer deserializer) {
-    var inner = sse_decode_list_prim_u_8_strict(deserializer);
-    return utf8.decoder.convert(inner);
+  int dco_decode_usize(dynamic raw) {
+    return dcoDecodeI64OrU64(raw);
   }
 
   @protected
-  Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer) {
-    var len_ = sse_decode_i_32(deserializer);
-    return deserializer.buffer.getUint8List(len_);
+  ClientError
+      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          SseDeserializer deserializer) {
+    return ClientError.sseDecode(
+        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
   }
 
   @protected
-  int sse_decode_u_8(SseDeserializer deserializer) {
-    return deserializer.buffer.getUint8();
+  ClientError
+      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          SseDeserializer deserializer) {
+    return ClientError.sseDecode(
+        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
   }
 
   @protected
   void sse_decode_unit(SseDeserializer deserializer) {}
+
+  @protected
+  int sse_decode_usize(SseDeserializer deserializer) {
+    return deserializer.buffer.getUint64();
+  }
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer) {
@@ -170,8 +194,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int cst_encode_u_8(int raw) {
-    return raw;
+  PlatformPointer
+      cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError raw) {
+    // ignore: invalid_use_of_internal_member
+    return raw.cstEncode(move: true);
+  }
+
+  @protected
+  PlatformPointer
+      cst_encode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError raw) {
+    // ignore: invalid_use_of_internal_member
+    return raw.cstEncode();
   }
 
   @protected
@@ -180,24 +215,31 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_String(String self, SseSerializer serializer) {
-    sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
+  int cst_encode_usize(int raw) {
+    return raw;
   }
 
   @protected
-  void sse_encode_list_prim_u_8_strict(
-      Uint8List self, SseSerializer serializer) {
-    sse_encode_i_32(self.length, serializer);
-    serializer.buffer.putUint8List(self);
+  void
+      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError self, SseSerializer serializer) {
+    sse_encode_usize(self.sseEncode(move: true), serializer);
   }
 
   @protected
-  void sse_encode_u_8(int self, SseSerializer serializer) {
-    serializer.buffer.putUint8(self);
+  void
+      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockClientError(
+          ClientError self, SseSerializer serializer) {
+    sse_encode_usize(self.sseEncode(move: null), serializer);
   }
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer) {}
+
+  @protected
+  void sse_encode_usize(int self, SseSerializer serializer) {
+    serializer.buffer.putUint64(self);
+  }
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer) {
