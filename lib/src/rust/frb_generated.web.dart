@@ -24,6 +24,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  Games dco_decode_games(dynamic raw);
+
+  @protected
+  List<Games> dco_decode_list_games(dynamic raw);
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
@@ -37,6 +43,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   String sse_decode_String(SseDeserializer deserializer);
+
+  @protected
+  Games sse_decode_games(SseDeserializer deserializer);
+
+  @protected
+  List<Games> sse_decode_list_games(SseDeserializer deserializer);
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
@@ -59,6 +71,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_games(Games self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_games(List<Games> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_prim_u_8_strict(

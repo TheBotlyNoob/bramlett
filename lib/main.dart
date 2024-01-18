@@ -59,7 +59,7 @@ class GameList extends StatefulWidget {
 }
 
 class _GameListState extends State<GameList> {
-  late Future<void> futureGames;
+  late Future<Games> futureGames;
 
   @override
   void initState() {
@@ -69,36 +69,34 @@ class _GameListState extends State<GameList> {
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldPage.scrollable(
-        header: const PageHeader(title: Text('Download Games')),
-        // children: FutureBuilder<Games>(
-          future: futureGames,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return [Text(snapshot.data!.title)];
-            } else if (snapshot.hasError) {
-              return <Widget>[Text('${snapshot.error}')];
-            }
+    return FutureBuilder<Games>(
+      future: futureGames,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return ScaffoldPage.scrollable(children: [Text('a')]);
+        } else if (snapshot.hasError) {
+          return Text('${snapshot.error}');
+        }
 
-            // By default, show a loading spinner.
-            return [const CircularProgressIndicator()];
-          },
-        )
-        // [
-        //     Wrap(spacing: 10.0, runSpacing: 10.0, children: <Widget>[
-        //       SizedBox(
-        //           width: 250,
-        //           height: 200,
-        //           child: Card(
-        //               child: Column(children: <Widget>[
-        //             Text(
-        //               'Long Long Long Game Name',
-        //               style: FluentTheme.of(context).typography.subtitle!,
-        //             ),
-        //             Text('Desc'),
-        //           ]))),
-        //     ])
-        //   ]
-        );
+        // By default, show a loading spinner.
+        return const ProgressRing();
+      },
+
+      // [
+      //     Wrap(spacing: 10.0, runSpacing: 10.0, children: <Widget>[
+      //       SizedBox(
+      //           width: 250,
+      //           height: 200,
+      //           child: Card(
+      //               child: Column(children: <Widget>[
+      //             Text(
+      //               'Long Long Long Game Name',
+      //               style: FluentTheme.of(context).typography.subtitle!,
+      //             ),
+      //             Text('Desc'),
+      //           ]))),
+      //     ])
+      //   ]
+    );
   }
 }
