@@ -5,12 +5,48 @@
 
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:uuid/uuid.dart';
 
 Future<Games> fetchGames({dynamic hint}) =>
     RustLib.instance.api.fetchGames(hint: hint);
 
+class Game {
+  final String name;
+  final String exe;
+  final String icon;
+  final String url;
+  final UuidValue uuid;
+
+  const Game({
+    required this.name,
+    required this.exe,
+    required this.icon,
+    required this.url,
+    required this.uuid,
+  });
+
+  @override
+  int get hashCode =>
+      name.hashCode ^
+      exe.hashCode ^
+      icon.hashCode ^
+      url.hashCode ^
+      uuid.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Game &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          exe == other.exe &&
+          icon == other.icon &&
+          url == other.url &&
+          uuid == other.uuid;
+}
+
 class Games {
-  final List<Games> games;
+  final List<Game> games;
 
   const Games({
     required this.games,

@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'dart:ffi' as ffi;
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
+import 'package:uuid/uuid.dart';
 
 abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   RustLibApiImplPlatform({
@@ -25,10 +26,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  UuidValue dco_decode_Uuid(dynamic raw);
+
+  @protected
+  Game dco_decode_game(dynamic raw);
+
+  @protected
   Games dco_decode_games(dynamic raw);
 
   @protected
-  List<Games> dco_decode_list_games(dynamic raw);
+  List<Game> dco_decode_list_game(dynamic raw);
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
@@ -46,10 +53,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
+  UuidValue sse_decode_Uuid(SseDeserializer deserializer);
+
+  @protected
+  Game sse_decode_game(SseDeserializer deserializer);
+
+  @protected
   Games sse_decode_games(SseDeserializer deserializer);
 
   @protected
-  List<Games> sse_decode_list_games(SseDeserializer deserializer);
+  List<Game> sse_decode_list_game(SseDeserializer deserializer);
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
@@ -74,10 +87,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_Uuid(UuidValue self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_game(Game self, SseSerializer serializer);
+
+  @protected
   void sse_encode_games(Games self, SseSerializer serializer);
 
   @protected
-  void sse_encode_list_games(List<Games> self, SseSerializer serializer);
+  void sse_encode_list_game(List<Game> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_prim_u_8_strict(

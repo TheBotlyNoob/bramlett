@@ -26,13 +26,23 @@ pub struct Game {
 
 #[derive(serde::Deserialize, Clone, Debug)]
 pub struct Games {
-    pub games: Vec<Games>,
+    pub games: Vec<Game>,
 }
 
 pub async fn fetch_games() -> Result<Games> {
     Ok(
-        if let Ok(games) = tokio::fs::read_to_string("games.json").await {
-            serde_json::from_str(&games)?
+        if let Ok(games) = tokio::fs::read_to_string("games.json")
+            .await
+            .map_err(anyhow::Error::from)
+            .and_then(|g| {
+                log::info!("{g}");
+                serde_json::from_str(&g).map_err(|e| {
+                    log::warn!("invalid syntax in games.json: {e:#?}");
+                    e.into()
+                })
+            })
+        {
+            games
         } else {
             // TODO: make sure to change this once PR is merged
             reqwest::get("https://raw.githubusercontent.com/TheBotlyNoob/bramletts-games/chore/flutter/games.json").await?.json().await?
@@ -42,6 +52,9 @@ pub async fn fetch_games() -> Result<Games> {
 
 #[frb(init)]
 pub fn init_app() {
+    env_logger::builder()
+        .target(env_logger::Target::Stdout)
+        .init();
     // Default utilities - feel free to customize
     flutter_rust_bridge::setup_default_user_utils();
 }

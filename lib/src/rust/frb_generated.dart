@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.io.dart' if (dart.library.html) 'frb_generated.web.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:uuid/uuid.dart';
 
 /// Main entrypoint of the Rust API
 class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
@@ -138,20 +139,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  UuidValue dco_decode_Uuid(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return UuidValue.fromByteList(dco_decode_list_prim_u_8_strict(raw));
+  }
+
+  @protected
+  Game dco_decode_game(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return Game(
+      name: dco_decode_String(arr[0]),
+      exe: dco_decode_String(arr[1]),
+      icon: dco_decode_String(arr[2]),
+      url: dco_decode_String(arr[3]),
+      uuid: dco_decode_Uuid(arr[4]),
+    );
+  }
+
+  @protected
   Games dco_decode_games(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
     if (arr.length != 1)
       throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
     return Games(
-      games: dco_decode_list_games(arr[0]),
+      games: dco_decode_list_game(arr[0]),
     );
   }
 
   @protected
-  List<Games> dco_decode_list_games(dynamic raw) {
+  List<Game> dco_decode_list_game(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return (raw as List<dynamic>).map(dco_decode_games).toList();
+    return (raw as List<dynamic>).map(dco_decode_game).toList();
   }
 
   @protected
@@ -187,20 +209,43 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  UuidValue sse_decode_Uuid(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    throw UnimplementedError(
+        'The type Delegate(Uuid) is not yet supported in serialized mode, please use full_dep mode, and feel free to create an issue');
+  }
+
+  @protected
+  Game sse_decode_game(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_exe = sse_decode_String(deserializer);
+    var var_icon = sse_decode_String(deserializer);
+    var var_url = sse_decode_String(deserializer);
+    var var_uuid = sse_decode_Uuid(deserializer);
+    return Game(
+        name: var_name,
+        exe: var_exe,
+        icon: var_icon,
+        url: var_url,
+        uuid: var_uuid);
+  }
+
+  @protected
   Games sse_decode_games(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_games = sse_decode_list_games(deserializer);
+    var var_games = sse_decode_list_game(deserializer);
     return Games(games: var_games);
   }
 
   @protected
-  List<Games> sse_decode_list_games(SseDeserializer deserializer) {
+  List<Game> sse_decode_list_game(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     var len_ = sse_decode_i_32(deserializer);
-    var ans_ = <Games>[];
+    var ans_ = <Game>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
-      ans_.add(sse_decode_games(deserializer));
+      ans_.add(sse_decode_game(deserializer));
     }
     return ans_;
   }
@@ -250,17 +295,34 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_games(Games self, SseSerializer serializer) {
+  void sse_encode_Uuid(UuidValue self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_list_games(self.games, serializer);
+    throw UnimplementedError(
+        'The type Delegate(Uuid) is not yet supported in serialized mode, please use full_dep mode, and feel free to create an issue');
   }
 
   @protected
-  void sse_encode_list_games(List<Games> self, SseSerializer serializer) {
+  void sse_encode_game(Game self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.exe, serializer);
+    sse_encode_String(self.icon, serializer);
+    sse_encode_String(self.url, serializer);
+    sse_encode_Uuid(self.uuid, serializer);
+  }
+
+  @protected
+  void sse_encode_games(Games self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_game(self.games, serializer);
+  }
+
+  @protected
+  void sse_encode_list_game(List<Game> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
-      sse_encode_games(item, serializer);
+      sse_encode_game(item, serializer);
     }
   }
 

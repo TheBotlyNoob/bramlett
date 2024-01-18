@@ -115,21 +115,46 @@ impl SseDecode for String {
     }
 }
 
+impl SseDecode for uuid::Uuid {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        unimplemented!("The type Delegate(Uuid) is not yet supported in serialized mode, please use full_dep mode, and feel free to create an issue");
+    }
+}
+
+impl SseDecode for crate::api::games::Game {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_exe = <String>::sse_decode(deserializer);
+        let mut var_icon = <String>::sse_decode(deserializer);
+        let mut var_url = <String>::sse_decode(deserializer);
+        let mut var_uuid = <uuid::Uuid>::sse_decode(deserializer);
+        return crate::api::games::Game {
+            name: var_name,
+            exe: var_exe,
+            icon: var_icon,
+            url: var_url,
+            uuid: var_uuid,
+        };
+    }
+}
+
 impl SseDecode for crate::api::games::Games {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut var_games = <Vec<crate::api::games::Games>>::sse_decode(deserializer);
+        let mut var_games = <Vec<crate::api::games::Game>>::sse_decode(deserializer);
         return crate::api::games::Games { games: var_games };
     }
 }
 
-impl SseDecode for Vec<crate::api::games::Games> {
+impl SseDecode for Vec<crate::api::games::Game> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut len_ = <i32>::sse_decode(deserializer);
         let mut ans_ = vec![];
         for idx_ in 0..len_ {
-            ans_.push(<crate::api::games::Games>::sse_decode(deserializer));
+            ans_.push(<crate::api::games::Game>::sse_decode(deserializer));
         }
         return ans_;
     }
@@ -201,6 +226,25 @@ fn pde_ffi_dispatcher_sync_impl(
 // Section: rust2dart
 
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::games::Game {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.exe.into_into_dart().into_dart(),
+            self.icon.into_into_dart().into_dart(),
+            self.url.into_into_dart().into_dart(),
+            self.uuid.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::games::Game {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::games::Game> for crate::api::games::Game {
+    fn into_into_dart(self) -> crate::api::games::Game {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::games::Games {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [self.games.into_into_dart().into_dart()].into_dart()
@@ -227,19 +271,37 @@ impl SseEncode for String {
     }
 }
 
-impl SseEncode for crate::api::games::Games {
+impl SseEncode for uuid::Uuid {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <Vec<crate::api::games::Games>>::sse_encode(self.games, serializer);
+        unimplemented!("The type Delegate(Uuid) is not yet supported in serialized mode, please use full_dep mode, and feel free to create an issue");
     }
 }
 
-impl SseEncode for Vec<crate::api::games::Games> {
+impl SseEncode for crate::api::games::Game {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.exe, serializer);
+        <String>::sse_encode(self.icon, serializer);
+        <String>::sse_encode(self.url, serializer);
+        <uuid::Uuid>::sse_encode(self.uuid, serializer);
+    }
+}
+
+impl SseEncode for crate::api::games::Games {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<crate::api::games::Game>>::sse_encode(self.games, serializer);
+    }
+}
+
+impl SseEncode for Vec<crate::api::games::Game> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
-            <crate::api::games::Games>::sse_encode(item, serializer);
+            <crate::api::games::Game>::sse_encode(item, serializer);
         }
     }
 }
