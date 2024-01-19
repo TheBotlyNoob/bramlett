@@ -4,6 +4,7 @@
 // Section: imports
 
 use super::*;
+use crate::api::games::*;
 use flutter_rust_bridge::for_generated::byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 use flutter_rust_bridge::for_generated::transform_result_dco;
 use flutter_rust_bridge::{Handler, IntoIntoDart};
@@ -22,6 +23,22 @@ impl CstDecode<flutter_rust_bridge::for_generated::anyhow::Error>
         unimplemented!()
     }
 }
+impl
+    CstDecode<
+        RustOpaqueNom<
+            flutter_rust_bridge::for_generated::rust_async::RwLock<crate::api::games::FlutterWatch>,
+        >,
+    > for usize
+{
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(
+        self,
+    ) -> RustOpaqueNom<
+        flutter_rust_bridge::for_generated::rust_async::RwLock<crate::api::games::FlutterWatch>,
+    > {
+        unsafe { decode_rust_opaque_nom(self as _) }
+    }
+}
 impl CstDecode<String> for *mut wire_cst_list_prim_u_8_strict {
     // Codec=Cst (C-struct based), see doc to use other codecs
     fn cst_decode(self) -> String {
@@ -34,6 +51,13 @@ impl CstDecode<uuid::Uuid> for *mut wire_cst_list_prim_u_8_strict {
     fn cst_decode(self) -> uuid::Uuid {
         let single: Vec<u8> = self.cst_decode();
         flutter_rust_bridge::for_generated::decode_uuid(single)
+    }
+}
+impl CstDecode<crate::api::games::Game> for *mut wire_cst_game {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> crate::api::games::Game {
+        let wrap = unsafe { flutter_rust_bridge::for_generated::box_from_leak_ptr(self) };
+        CstDecode::<crate::api::games::Game>::cst_decode(*wrap).into()
     }
 }
 impl CstDecode<crate::api::games::Game> for wire_cst_game {
@@ -66,6 +90,15 @@ impl CstDecode<Vec<crate::api::games::Game>> for *mut wire_cst_list_game {
         vec.into_iter().map(CstDecode::cst_decode).collect()
     }
 }
+impl CstDecode<Vec<u8>> for *mut wire_cst_list_prim_u_8_loose {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> Vec<u8> {
+        unsafe {
+            let wrap = flutter_rust_bridge::for_generated::box_from_leak_ptr(self);
+            flutter_rust_bridge::for_generated::vec_from_leak_ptr(wrap.ptr, wrap.len)
+        }
+    }
+}
 impl CstDecode<Vec<u8>> for *mut wire_cst_list_prim_u_8_strict {
     // Codec=Cst (C-struct based), see doc to use other codecs
     fn cst_decode(self) -> Vec<u8> {
@@ -73,6 +106,12 @@ impl CstDecode<Vec<u8>> for *mut wire_cst_list_prim_u_8_strict {
             let wrap = flutter_rust_bridge::for_generated::box_from_leak_ptr(self);
             flutter_rust_bridge::for_generated::vec_from_leak_ptr(wrap.ptr, wrap.len)
         }
+    }
+}
+impl CstDecode<(u64, u64)> for wire_cst_record_u_64_u_64 {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> (u64, u64) {
+        (self.field0.cst_decode(), self.field1.cst_decode())
     }
 }
 impl NewWithNullPtr for wire_cst_game {
@@ -103,6 +142,28 @@ impl Default for wire_cst_games {
         Self::new_with_null_ptr()
     }
 }
+impl NewWithNullPtr for wire_cst_record_u_64_u_64 {
+    fn new_with_null_ptr() -> Self {
+        Self {
+            field0: Default::default(),
+            field1: Default::default(),
+        }
+    }
+}
+impl Default for wire_cst_record_u_64_u_64 {
+    fn default() -> Self {
+        Self::new_with_null_ptr()
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_wire_extract_zip(
+    port_: i64,
+    bytes: *mut wire_cst_list_prim_u_8_loose,
+    game: *mut wire_cst_game,
+) {
+    wire_extract_zip_impl(port_, bytes, game)
+}
 
 #[no_mangle]
 pub extern "C" fn frbgen_bramletts_games_wire_fetch_games(port_: i64) {
@@ -110,8 +171,42 @@ pub extern "C" fn frbgen_bramletts_games_wire_fetch_games(port_: i64) {
 }
 
 #[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_wire_get_watcher(
+    obj: usize,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartDco {
+    wire_get_watcher_impl(obj)
+}
+
+#[no_mangle]
 pub extern "C" fn frbgen_bramletts_games_wire_init_app(port_: i64) {
     wire_init_app_impl(port_)
+}
+
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+    ptr: *const std::ffi::c_void,
+) {
+    unsafe {
+        StdArc::<
+            flutter_rust_bridge::for_generated::rust_async::RwLock<crate::api::games::FlutterWatch>,
+        >::increment_strong_count(ptr as _);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+    ptr: *const std::ffi::c_void,
+) {
+    unsafe {
+        StdArc::<
+            flutter_rust_bridge::for_generated::rust_async::RwLock<crate::api::games::FlutterWatch>,
+        >::decrement_strong_count(ptr as _);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_cst_new_box_autoadd_game() -> *mut wire_cst_game {
+    flutter_rust_bridge::for_generated::new_leak_box_ptr(wire_cst_game::new_with_null_ptr())
 }
 
 #[no_mangle]
@@ -124,6 +219,17 @@ pub extern "C" fn frbgen_bramletts_games_cst_new_list_game(len: i32) -> *mut wir
         len,
     };
     flutter_rust_bridge::for_generated::new_leak_box_ptr(wrap)
+}
+
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_cst_new_list_prim_u_8_loose(
+    len: i32,
+) -> *mut wire_cst_list_prim_u_8_loose {
+    let ans = wire_cst_list_prim_u_8_loose {
+        ptr: flutter_rust_bridge::for_generated::new_leak_vec_ptr(Default::default(), len),
+        len,
+    };
+    flutter_rust_bridge::for_generated::new_leak_box_ptr(ans)
 }
 
 #[no_mangle]
@@ -159,7 +265,19 @@ pub struct wire_cst_list_game {
 }
 #[repr(C)]
 #[derive(Clone, Copy)]
+pub struct wire_cst_list_prim_u_8_loose {
+    ptr: *mut u8,
+    len: i32,
+}
+#[repr(C)]
+#[derive(Clone, Copy)]
 pub struct wire_cst_list_prim_u_8_strict {
     ptr: *mut u8,
     len: i32,
+}
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct wire_cst_record_u_64_u_64 {
+    field0: u64,
+    field1: u64,
 }

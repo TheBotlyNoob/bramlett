@@ -18,14 +18,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     required super.portManager,
   });
 
+  CrossPlatformFinalizerArg
+      get rust_arc_decrement_strong_count_FlutterWatchPtr => wire
+          .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch;
+
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw);
+
+  @protected
+  FlutterWatch
+      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          dynamic raw);
+
+  @protected
+  FlutterWatch
+      dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          dynamic raw);
+
+  @protected
+  FlutterWatch
+      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          dynamic raw);
 
   @protected
   String dco_decode_String(dynamic raw);
 
   @protected
   UuidValue dco_decode_Uuid(dynamic raw);
+
+  @protected
+  Game dco_decode_box_autoadd_game(dynamic raw);
 
   @protected
   Game dco_decode_game(dynamic raw);
@@ -37,7 +59,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Game> dco_decode_list_game(dynamic raw);
 
   @protected
+  List<int> dco_decode_list_prim_u_8_loose(dynamic raw);
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  (int, int) dco_decode_record_u_64_u_64(dynamic raw);
+
+  @protected
+  int dco_decode_u_64(dynamic raw);
 
   @protected
   int dco_decode_u_8(dynamic raw);
@@ -46,13 +77,34 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void dco_decode_unit(dynamic raw);
 
   @protected
+  int dco_decode_usize(dynamic raw);
+
+  @protected
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+
+  @protected
+  FlutterWatch
+      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          SseDeserializer deserializer);
+
+  @protected
+  FlutterWatch
+      sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          SseDeserializer deserializer);
+
+  @protected
+  FlutterWatch
+      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          SseDeserializer deserializer);
 
   @protected
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
   UuidValue sse_decode_Uuid(SseDeserializer deserializer);
+
+  @protected
+  Game sse_decode_box_autoadd_game(SseDeserializer deserializer);
 
   @protected
   Game sse_decode_game(SseDeserializer deserializer);
@@ -64,13 +116,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Game> sse_decode_list_game(SseDeserializer deserializer);
 
   @protected
+  List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer);
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  (int, int) sse_decode_record_u_64_u_64(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_u_64(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_8(SseDeserializer deserializer);
 
   @protected
   void sse_decode_unit(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_usize(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -94,6 +158,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List cst_encode_Uuid(UuidValue raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return cst_encode_list_prim_u_8_strict(raw.toBytes());
+  }
+
+  @protected
+  List<dynamic> cst_encode_box_autoadd_game(Game raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return cst_encode_game(raw);
   }
 
   @protected
@@ -121,10 +191,40 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
+  List<int> cst_encode_list_prim_u_8_loose(List<int> raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return raw;
+  }
+
+  @protected
   Uint8List cst_encode_list_prim_u_8_strict(Uint8List raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return raw;
   }
+
+  @protected
+  List<dynamic> cst_encode_record_u_64_u_64((int, int) raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return [cst_encode_u_64(raw.$1), cst_encode_u_64(raw.$2)];
+  }
+
+  @protected
+  Object cst_encode_u_64(int raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return castNativeBigInt(raw);
+  }
+
+  @protected
+  int cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+      FlutterWatch raw);
+
+  @protected
+  int cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+      FlutterWatch raw);
+
+  @protected
+  int cst_encode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+      FlutterWatch raw);
 
   @protected
   int cst_encode_u_8(int raw);
@@ -133,14 +233,35 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void cst_encode_unit(void raw);
 
   @protected
+  int cst_encode_usize(int raw);
+
+  @protected
   void sse_encode_AnyhowException(
       AnyhowException self, SseSerializer serializer);
+
+  @protected
+  void
+      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          FlutterWatch self, SseSerializer serializer);
+
+  @protected
+  void
+      sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          FlutterWatch self, SseSerializer serializer);
+
+  @protected
+  void
+      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          FlutterWatch self, SseSerializer serializer);
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
   void sse_encode_Uuid(UuidValue self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_game(Game self, SseSerializer serializer);
 
   @protected
   void sse_encode_game(Game self, SseSerializer serializer);
@@ -152,14 +273,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_game(List<Game> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_prim_u_8_loose(List<int> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
       Uint8List self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_record_u_64_u_64((int, int) self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_u_64(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_8(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_usize(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -173,10 +306,29 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 class RustLibWire implements BaseWire {
   RustLibWire.fromExternalLibrary(ExternalLibrary lib);
 
+  void wire_extract_zip(
+          NativePortType port_, List<int> bytes, List<dynamic> game) =>
+      wasmModule.wire_extract_zip(port_, bytes, game);
+
   void wire_fetch_games(NativePortType port_) =>
       wasmModule.wire_fetch_games(port_);
 
+  dynamic /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
+      wire_get_watcher(Object obj) => wasmModule.wire_get_watcher(obj);
+
   void wire_init_app(NativePortType port_) => wasmModule.wire_init_app(port_);
+
+  void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          dynamic ptr) =>
+      wasmModule
+          .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+              ptr);
+
+  void rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          dynamic ptr) =>
+      wasmModule
+          .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+              ptr);
 }
 
 @JS('wasm_bindgen')
@@ -191,7 +343,21 @@ class RustLibWasmModule implements WasmModule {
   @override
   external RustLibWasmModule bind(dynamic thisArg, String moduleName);
 
+  external void wire_extract_zip(
+      NativePortType port_, List<int> bytes, List<dynamic> game);
+
   external void wire_fetch_games(NativePortType port_);
 
+  external dynamic /* flutter_rust_bridge::for_generated::WireSyncRust2DartDco */
+      wire_get_watcher(Object obj);
+
   external void wire_init_app(NativePortType port_);
+
+  external void
+      rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          dynamic ptr);
+
+  external void
+      rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockcrateapigamesFlutterWatch(
+          dynamic ptr);
 }

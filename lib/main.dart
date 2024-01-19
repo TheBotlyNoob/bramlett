@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:stroke_text/stroke_text.dart';
 import 'package:bramletts_games/src/rust/api/games.dart';
@@ -104,6 +107,9 @@ class GameWidget extends StatefulWidget {
 }
 
 class _GameWidgetState extends State<GameWidget> {
+  Timer? progressPoll;
+  (int, int)? progress;
+
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
@@ -122,10 +128,18 @@ class _GameWidgetState extends State<GameWidget> {
                   textStyle: theme.typography.subtitle,
                   strokeColor: theme.inactiveBackgroundColor,
                   strokeWidth: 10),
-              FilledButton(
-                  child: const Text("Download"),
-                  onPressed: () => showDownloadDialog(context))
+              progress == null
+                  ? FilledButton(
+                      child: const Text("Download"),
+                      onPressed: () => showDownloadDialog(context))
+                  : ProgressBar(value: (progress!.$1 / progress!.$2) * 100)
             ]))));
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    progressPoll?.cancel();
   }
 
   void showDownloadDialog(BuildContext context) async {
@@ -155,7 +169,31 @@ CLOSE ANY NEW TABS IF THEY OPEN. These are advertisements and may contain viruse
                           onPressed: followLink,
                           child: const Text("Download"))),
                   FilledButton(
-                      onPressed: () => {}, child: const Text("Choose File"))
+                      onPressed: () => filePicker(context),
+                      child: const Text("Choose File"))
                 ]));
+  }
+
+  void filePicker(BuildContext context) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom, allowedExtensions: ["7z"], withData: true);
+
+    if (result != null) {
+      PlatformFile file = result.files.first;
+
+      var watcher = await extractZip(bytes: file.bytes!, game: widget.game);
+
+      progressPoll = Timer.periodic(const Duration(seconds: 1), (timer) {
+        progress = getWatcher(obj: watcher);
+
+        // if (progress != null) {
+        //   if (progress!.$1 == progress!.$2) {
+        //     progressPoll?.cancel();
+        //   }
+
+        //   progress = null;
+        // }
+      });
+    }
   }
 }

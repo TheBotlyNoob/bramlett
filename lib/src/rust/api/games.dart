@@ -10,6 +10,32 @@ import 'package:uuid/uuid.dart';
 Future<Games> fetchGames({dynamic hint}) =>
     RustLib.instance.api.fetchGames(hint: hint);
 
+(int, int) getWatcher({required FlutterWatch obj, dynamic hint}) =>
+    RustLib.instance.api.getWatcher(obj: obj, hint: hint);
+
+Future<FlutterWatch> extractZip(
+        {required List<int> bytes, required Game game, dynamic hint}) =>
+    RustLib.instance.api.extractZip(bytes: bytes, game: game, hint: hint);
+
+// Rust type: RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<crate::api::games::FlutterWatch>>
+@sealed
+class FlutterWatch extends RustOpaque {
+  FlutterWatch.dcoDecode(List<dynamic> wire)
+      : super.dcoDecode(wire, _kStaticData);
+
+  FlutterWatch.sseDecode(int ptr, int externalSizeOnNative)
+      : super.sseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_FlutterWatch,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_FlutterWatch,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_FlutterWatchPtr,
+  );
+}
+
 class Game {
   final String name;
   final String exe;
