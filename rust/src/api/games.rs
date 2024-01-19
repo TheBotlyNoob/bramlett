@@ -52,9 +52,10 @@ pub async fn fetch_games() -> Result<Games> {
 
 #[frb(init)]
 pub fn init_app() {
-    env_logger::builder()
-        .target(env_logger::Target::Stdout)
-        .init();
     // Default utilities - feel free to customize
     flutter_rust_bridge::setup_default_user_utils();
+
+    let _ = env_logger::builder()
+        .target(env_logger::Target::Stdout)
+        .try_init();
 }

@@ -11,3 +11,155 @@ use flutter_rust_bridge::{Handler, IntoIntoDart};
 // Section: boilerplate
 
 flutter_rust_bridge::frb_generated_boilerplate_io!();
+
+// Section: dart2rust
+
+impl CstDecode<flutter_rust_bridge::for_generated::anyhow::Error>
+    for *mut wire_cst_list_prim_u_8_strict
+{
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> flutter_rust_bridge::for_generated::anyhow::Error {
+        unimplemented!()
+    }
+}
+impl CstDecode<String> for *mut wire_cst_list_prim_u_8_strict {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> String {
+        let vec: Vec<u8> = self.cst_decode();
+        String::from_utf8(vec).unwrap()
+    }
+}
+impl CstDecode<uuid::Uuid> for *mut wire_cst_list_prim_u_8_strict {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> uuid::Uuid {
+        let single: Vec<u8> = self.cst_decode();
+        flutter_rust_bridge::for_generated::decode_uuid(single)
+    }
+}
+impl CstDecode<crate::api::games::Game> for wire_cst_game {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> crate::api::games::Game {
+        crate::api::games::Game {
+            name: self.name.cst_decode(),
+            exe: self.exe.cst_decode(),
+            icon: self.icon.cst_decode(),
+            url: self.url.cst_decode(),
+            uuid: self.uuid.cst_decode(),
+        }
+    }
+}
+impl CstDecode<crate::api::games::Games> for wire_cst_games {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> crate::api::games::Games {
+        crate::api::games::Games {
+            games: self.games.cst_decode(),
+        }
+    }
+}
+impl CstDecode<Vec<crate::api::games::Game>> for *mut wire_cst_list_game {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> Vec<crate::api::games::Game> {
+        let vec = unsafe {
+            let wrap = flutter_rust_bridge::for_generated::box_from_leak_ptr(self);
+            flutter_rust_bridge::for_generated::vec_from_leak_ptr(wrap.ptr, wrap.len)
+        };
+        vec.into_iter().map(CstDecode::cst_decode).collect()
+    }
+}
+impl CstDecode<Vec<u8>> for *mut wire_cst_list_prim_u_8_strict {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> Vec<u8> {
+        unsafe {
+            let wrap = flutter_rust_bridge::for_generated::box_from_leak_ptr(self);
+            flutter_rust_bridge::for_generated::vec_from_leak_ptr(wrap.ptr, wrap.len)
+        }
+    }
+}
+impl NewWithNullPtr for wire_cst_game {
+    fn new_with_null_ptr() -> Self {
+        Self {
+            name: core::ptr::null_mut(),
+            exe: core::ptr::null_mut(),
+            icon: core::ptr::null_mut(),
+            url: core::ptr::null_mut(),
+            uuid: core::ptr::null_mut(),
+        }
+    }
+}
+impl Default for wire_cst_game {
+    fn default() -> Self {
+        Self::new_with_null_ptr()
+    }
+}
+impl NewWithNullPtr for wire_cst_games {
+    fn new_with_null_ptr() -> Self {
+        Self {
+            games: core::ptr::null_mut(),
+        }
+    }
+}
+impl Default for wire_cst_games {
+    fn default() -> Self {
+        Self::new_with_null_ptr()
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_wire_fetch_games(port_: i64) {
+    wire_fetch_games_impl(port_)
+}
+
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_wire_init_app(port_: i64) {
+    wire_init_app_impl(port_)
+}
+
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_cst_new_list_game(len: i32) -> *mut wire_cst_list_game {
+    let wrap = wire_cst_list_game {
+        ptr: flutter_rust_bridge::for_generated::new_leak_vec_ptr(
+            <wire_cst_game>::new_with_null_ptr(),
+            len,
+        ),
+        len,
+    };
+    flutter_rust_bridge::for_generated::new_leak_box_ptr(wrap)
+}
+
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_cst_new_list_prim_u_8_strict(
+    len: i32,
+) -> *mut wire_cst_list_prim_u_8_strict {
+    let ans = wire_cst_list_prim_u_8_strict {
+        ptr: flutter_rust_bridge::for_generated::new_leak_vec_ptr(Default::default(), len),
+        len,
+    };
+    flutter_rust_bridge::for_generated::new_leak_box_ptr(ans)
+}
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct wire_cst_game {
+    name: *mut wire_cst_list_prim_u_8_strict,
+    exe: *mut wire_cst_list_prim_u_8_strict,
+    icon: *mut wire_cst_list_prim_u_8_strict,
+    url: *mut wire_cst_list_prim_u_8_strict,
+    uuid: *mut wire_cst_list_prim_u_8_strict,
+}
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct wire_cst_games {
+    games: *mut wire_cst_list_game,
+}
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct wire_cst_list_game {
+    ptr: *mut wire_cst_game,
+    len: i32,
+}
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct wire_cst_list_prim_u_8_strict {
+    ptr: *mut u8,
+    len: i32,
+}

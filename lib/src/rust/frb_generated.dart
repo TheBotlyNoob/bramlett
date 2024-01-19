@@ -82,13 +82,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<Games> fetchGames({dynamic hint}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 1, port: port_);
+        return wire.wire_fetch_games(port_);
       },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_games,
-        decodeErrorData: sse_decode_AnyhowException,
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_games,
+        decodeErrorData: dco_decode_AnyhowException,
       ),
       constMeta: kFetchGamesConstMeta,
       argValues: [],
@@ -106,12 +104,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<void> initApp({dynamic hint}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 2, port: port_);
+        return wire.wire_init_app(port_);
       },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_unit,
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_unit,
         decodeErrorData: null,
       ),
       constMeta: kInitAppConstMeta,
@@ -278,6 +274,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   bool sse_decode_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
+  int cst_encode_u_8(int raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return raw;
+  }
+
+  @protected
+  void cst_encode_unit(void raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return raw;
   }
 
   @protected

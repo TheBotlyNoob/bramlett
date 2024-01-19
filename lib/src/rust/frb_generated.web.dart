@@ -79,6 +79,60 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
+  String cst_encode_AnyhowException(AnyhowException raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
+  String cst_encode_String(String raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return raw;
+  }
+
+  @protected
+  Uint8List cst_encode_Uuid(UuidValue raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return cst_encode_list_prim_u_8_strict(raw.toBytes());
+  }
+
+  @protected
+  List<dynamic> cst_encode_game(Game raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return [
+      cst_encode_String(raw.name),
+      cst_encode_String(raw.exe),
+      cst_encode_String(raw.icon),
+      cst_encode_String(raw.url),
+      cst_encode_Uuid(raw.uuid)
+    ];
+  }
+
+  @protected
+  List<dynamic> cst_encode_games(Games raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return [cst_encode_list_game(raw.games)];
+  }
+
+  @protected
+  List<dynamic> cst_encode_list_game(List<Game> raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return raw.map(cst_encode_game).toList();
+  }
+
+  @protected
+  Uint8List cst_encode_list_prim_u_8_strict(Uint8List raw) {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    return raw;
+  }
+
+  @protected
+  int cst_encode_u_8(int raw);
+
+  @protected
+  void cst_encode_unit(void raw);
+
+  @protected
   void sse_encode_AnyhowException(
       AnyhowException self, SseSerializer serializer);
 
@@ -118,6 +172,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
 class RustLibWire implements BaseWire {
   RustLibWire.fromExternalLibrary(ExternalLibrary lib);
+
+  void wire_fetch_games(NativePortType port_) =>
+      wasmModule.wire_fetch_games(port_);
+
+  void wire_init_app(NativePortType port_) => wasmModule.wire_init_app(port_);
 }
 
 @JS('wasm_bindgen')
@@ -131,4 +190,8 @@ class RustLibWasmModule implements WasmModule {
 
   @override
   external RustLibWasmModule bind(dynamic thisArg, String moduleName);
+
+  external void wire_fetch_games(NativePortType port_);
+
+  external void wire_init_app(NativePortType port_);
 }

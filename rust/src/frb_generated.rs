@@ -26,8 +26,8 @@ use flutter_rust_bridge::{Handler, IntoIntoDart};
 // Section: boilerplate
 
 flutter_rust_bridge::frb_generated_boilerplate!(
-    default_stream_sink_codec = SseCodec,
-    default_rust_opaque = RustOpaqueMoi
+    default_stream_sink_codec = DcoCodec,
+    default_rust_opaque = RustOpaqueNom
 );
 const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.0.0-dev.20";
 
@@ -37,62 +37,32 @@ flutter_rust_bridge::frb_generated_default_handler!();
 
 // Section: wire_funcs
 
-fn wire_fetch_games_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+fn wire_fetch_games_impl(port_: flutter_rust_bridge::for_generated::MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "fetch_games",
             port: Some(port_),
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
         },
         move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            deserializer.end();
             move |context| async move {
-                transform_result_sse(
+                transform_result_dco(
                     (move || async move { crate::api::games::fetch_games().await })().await,
                 )
             }
         },
     )
 }
-fn wire_init_app_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+fn wire_init_app_impl(port_: flutter_rust_bridge::for_generated::MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::DcoCodec, _, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "init_app",
             port: Some(port_),
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
         },
         move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            deserializer.end();
             move |context| {
-                transform_result_sse((move || Result::<_, ()>::Ok(crate::api::games::init_app()))())
+                transform_result_dco((move || Result::<_, ()>::Ok(crate::api::games::init_app()))())
             }
         },
     )
@@ -100,6 +70,12 @@ fn wire_init_app_impl(
 
 // Section: dart2rust
 
+impl CstDecode<u8> for u8 {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> u8 {
+        self
+    }
+}
 impl SseDecode for flutter_rust_bridge::for_generated::anyhow::Error {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -206,8 +182,6 @@ fn pde_ffi_dispatcher_primary_impl(
     data_len: i32,
 ) {
     match func_id {
-        1 => wire_fetch_games_impl(port, ptr, rust_vec_len, data_len),
-        2 => wire_init_app_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }

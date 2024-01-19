@@ -13,3 +13,132 @@ use flutter_rust_bridge::{Handler, IntoIntoDart};
 // Section: boilerplate
 
 flutter_rust_bridge::frb_generated_boilerplate_web!();
+
+// Section: dart2rust
+
+impl CstDecode<flutter_rust_bridge::for_generated::anyhow::Error> for String {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> flutter_rust_bridge::for_generated::anyhow::Error {
+        unimplemented!()
+    }
+}
+impl CstDecode<String> for String {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> String {
+        self
+    }
+}
+impl CstDecode<uuid::Uuid> for Box<[u8]> {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> uuid::Uuid {
+        let single: Vec<u8> = self.cst_decode();
+        flutter_rust_bridge::for_generated::decode_uuid(single)
+    }
+}
+impl CstDecode<crate::api::games::Game>
+    for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+{
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> crate::api::games::Game {
+        let self_ = self
+            .dyn_into::<flutter_rust_bridge::for_generated::js_sys::Array>()
+            .unwrap();
+        assert_eq!(
+            self_.length(),
+            5,
+            "Expected 5 elements, got {}",
+            self_.length()
+        );
+        crate::api::games::Game {
+            name: self_.get(0).cst_decode(),
+            exe: self_.get(1).cst_decode(),
+            icon: self_.get(2).cst_decode(),
+            url: self_.get(3).cst_decode(),
+            uuid: self_.get(4).cst_decode(),
+        }
+    }
+}
+impl CstDecode<crate::api::games::Games>
+    for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+{
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> crate::api::games::Games {
+        let self_ = self
+            .dyn_into::<flutter_rust_bridge::for_generated::js_sys::Array>()
+            .unwrap();
+        assert_eq!(
+            self_.length(),
+            1,
+            "Expected 1 elements, got {}",
+            self_.length()
+        );
+        crate::api::games::Games {
+            games: self_.get(0).cst_decode(),
+        }
+    }
+}
+impl CstDecode<Vec<crate::api::games::Game>>
+    for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+{
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> Vec<crate::api::games::Game> {
+        self.dyn_into::<flutter_rust_bridge::for_generated::js_sys::Array>()
+            .unwrap()
+            .iter()
+            .map(CstDecode::cst_decode)
+            .collect()
+    }
+}
+impl CstDecode<Vec<u8>> for Box<[u8]> {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> Vec<u8> {
+        self.into_vec()
+    }
+}
+impl CstDecode<flutter_rust_bridge::for_generated::anyhow::Error>
+    for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+{
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> flutter_rust_bridge::for_generated::anyhow::Error {
+        unimplemented!()
+    }
+}
+impl CstDecode<String> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> String {
+        self.as_string().expect("non-UTF-8 string, or not a string")
+    }
+}
+impl CstDecode<uuid::Uuid> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> uuid::Uuid {
+        self.unchecked_into::<flutter_rust_bridge::for_generated::js_sys::Uint8Array>()
+            .to_vec()
+            .into_boxed_slice()
+            .cst_decode()
+    }
+}
+impl CstDecode<Vec<u8>> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> Vec<u8> {
+        self.unchecked_into::<flutter_rust_bridge::for_generated::js_sys::Uint8Array>()
+            .to_vec()
+            .into()
+    }
+}
+impl CstDecode<u8> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> u8 {
+        self.unchecked_into_f64() as _
+    }
+}
+
+#[wasm_bindgen]
+pub fn wire_fetch_games(port_: flutter_rust_bridge::for_generated::MessagePort) {
+    wire_fetch_games_impl(port_)
+}
+
+#[wasm_bindgen]
+pub fn wire_init_app(port_: flutter_rust_bridge::for_generated::MessagePort) {
+    wire_init_app_impl(port_)
+}

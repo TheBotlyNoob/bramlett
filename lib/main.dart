@@ -1,6 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:stroke_text/stroke_text.dart';
 import 'package:bramletts_games/src/rust/api/games.dart';
 import 'package:bramletts_games/src/rust/frb_generated.dart';
+import 'package:url_launcher/link.dart';
 
 Future<void> main() async {
   await RustLib.init();
@@ -38,7 +40,7 @@ class _AppState extends State<App> {
             displayMode: PaneDisplayMode.auto,
             items: [
               PaneItem(
-                  body: GameList(),
+                  body: const GameList(),
                   icon: const Icon(FluentIcons.download),
                   title: const Text("Download Games")),
               PaneItem(
@@ -73,7 +75,14 @@ class _GameListState extends State<GameList> {
       future: futureGames,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return ScaffoldPage.scrollable(children: [Text('a')]);
+          return ScaffoldPage.scrollable(children: [
+            Wrap(
+                spacing: 10.0,
+                runSpacing: 10.0,
+                children: snapshot.data!.games
+                    .map((game) => GameWidget(game: game))
+                    .toList(growable: false))
+          ]);
         } else if (snapshot.hasError) {
           return Text('${snapshot.error}');
         }
@@ -81,22 +90,72 @@ class _GameListState extends State<GameList> {
         // By default, show a loading spinner.
         return const ProgressRing();
       },
-
-      // [
-      //     Wrap(spacing: 10.0, runSpacing: 10.0, children: <Widget>[
-      //       SizedBox(
-      //           width: 250,
-      //           height: 200,
-      //           child: Card(
-      //               child: Column(children: <Widget>[
-      //             Text(
-      //               'Long Long Long Game Name',
-      //               style: FluentTheme.of(context).typography.subtitle!,
-      //             ),
-      //             Text('Desc'),
-      //           ]))),
-      //     ])
-      //   ]
     );
+  }
+}
+
+class GameWidget extends StatefulWidget {
+  const GameWidget({super.key, required this.game});
+
+  final Game game;
+
+  @override
+  State<GameWidget> createState() => _GameWidgetState();
+}
+
+class _GameWidgetState extends State<GameWidget> {
+  @override
+  Widget build(BuildContext context) {
+    final theme = FluentTheme.of(context);
+
+    return SizedBox(
+        width: 200,
+        height: 300,
+        child: Container(
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: NetworkImage(widget.game.icon), fit: BoxFit.cover)),
+            child: Card(
+                child: Column(children: [
+              StrokeText(
+                  text: widget.game.name,
+                  textStyle: theme.typography.subtitle,
+                  strokeColor: theme.inactiveBackgroundColor,
+                  strokeWidth: 10),
+              FilledButton(
+                  child: const Text("Download"),
+                  onPressed: () => showDownloadDialog(context))
+            ]))));
+  }
+
+  void showDownloadDialog(BuildContext context) async {
+    await showDialog<String>(
+        context: context,
+        builder: (context) => ContentDialog(
+                title: Text('Download ${widget.game.name}'),
+                content: const Text("""
+1. Click the download button below. A browser should open.
+
+2. Click the "Click here to unlock" button until the download button appears.
+
+CLOSE ANY NEW TABS IF THEY OPEN. These are advertisements and may contain viruses.
+
+3. Click the "DOWNLOAD" button.
+
+4. Once the file has downloaded, click the "Choose File" button below.
+          """),
+                actions: [
+                  Button(
+                      child: const Text("Close"),
+                      onPressed: () => Navigator.pop(context)),
+                  Link(
+                      uri: Uri.parse(widget.game.url),
+                      target: LinkTarget.blank,
+                      builder: (context, followLink) => FilledButton(
+                          onPressed: followLink,
+                          child: const Text("Download"))),
+                  FilledButton(
+                      onPressed: () => {}, child: const Text("Choose File"))
+                ]));
   }
 }

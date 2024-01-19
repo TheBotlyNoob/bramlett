@@ -35,6 +35,7 @@ dependencies = [
  "anyhow",
  "atomic",
  "backtrace",
+ "uuid",
 ]
 
 [[package]]
@@ -382,6 +383,7 @@ dependencies = [
  "oslog",
  "threadpool",
  "tokio",
+ "uuid",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
