@@ -184,7 +184,9 @@ CLOSE ANY NEW TABS IF THEY OPEN. These are advertisements and may contain viruse
       var watcher = await extractZip(bytes: file.bytes!, game: widget.game);
 
       progressPoll = Timer.periodic(const Duration(seconds: 1), (timer) {
-        progress = getWatcher(obj: watcher);
+        setState(() {
+          progress = getWatcher(obj: watcher);
+        });
 
         // if (progress != null) {
         //   if (progress!.$1 == progress!.$2) {
