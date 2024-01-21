@@ -164,10 +164,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_rust_bridge
-      sha256: "3df894cf265ea22f565405d84156e134052f26d8f4a8f431534a9203b07c09f9"
+      sha256: "4a0a13aa56e491985ea06bdf8b0fbfefc87606470259892a453c32ccda965508"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0-dev.20"
+    version: "2.0.0-dev.21"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -276,6 +276,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.3"
+  pausable_timer:
+    dependency: "direct main"
+    description:
+      name: pausable_timer
+      sha256: "6ef1a95441ec3439de6fb63f39a011b67e693198e7dae14e20675c3c00e86074"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0+3"
   platform:
     dependency: transitive
     description:

@@ -1,165 +1,132 @@
-use std::{
-    fs::File,
-    io::{Cursor, Write},
-    path::Path,
+use super::error::Result;
+use crate::{
+    core::{
+        db::{init_conn, CONNECTION},
+        dirs, download,
+        extract::extract_zip_with_password,
+        game,
+    },
+    frb_generated::FLUTTER_RUST_BRIDGE_HANDLER,
+};
+use flutter_rust_bridge::for_generated::BaseThreadPool;
+use flutter_rust_bridge::*;
+use sqlx::Executor;
+use std::sync::{
+    atomic::{AtomicU64, Ordering},
+    Arc,
 };
 
-use anyhow::Result;
-use flutter_rust_bridge::*;
-use for_generated::BaseThreadPool;
-use tokio::sync::watch;
-
-use crate::frb_generated::FLUTTER_RUST_BRIDGE_HANDLER;
-
-#[derive(thiserror::Error, Debug)]
-pub enum ClientError {
-    #[error("network error: {0}")]
-    Network(#[from] reqwest::Error),
-    #[error("i/o error: {0}")]
-    Io(#[from] std::io::Error),
-    #[error("json error: {0}")]
-    Json(#[from] serde_json::Error),
-    #[error("zip error: {0}")]
-    Zip(#[from] sevenz_rust::Error),
-    #[error("incorrect zip password")]
-    BadZipPassword,
+#[derive(sqlx::Type)]
+#[repr(u8)]
+#[derive(serde::Serialize, serde::Deserialize, Copy, Clone, Default, Debug)]
+pub enum GameState {
+    #[default]
+    NotInstalled,
+    Installed,
 }
 
-#[derive(serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, sqlx::FromRow, Clone, Debug)]
 pub struct Game {
     pub name: String,
     pub exe: String,
+    #[sqlx(json)]
+    pub args: Vec<String>,
     pub icon: String,
     pub url: String,
-    pub uuid: uuid::Uuid,
+    pub uuid: String,
+    pub sha256: String,
+    #[serde(default)]
+    pub state: GameState,
 }
 
-#[derive(serde::Deserialize, Clone, Debug)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct Games {
     pub games: Vec<Game>,
 }
 
 pub async fn fetch_games() -> Result<Games> {
-    Ok(
-        if let Ok(games) = tokio::fs::read_to_string("games.json")
-            .await
-            .map_err(anyhow::Error::from)
-            .and_then(|g| {
-                log::info!("{g}");
-                serde_json::from_str(&g).map_err(|e| {
-                    log::warn!("invalid syntax in games.json: {e:#?}");
-                    e.into()
-                })
-            })
-        {
-            games
-        } else {
-            // TODO: make sure to change this once PR is merged
-            reqwest::get("https://raw.githubusercontent.com/TheBotlyNoob/bramletts-games/chore/flutter/games.json").await?.json().await?
-        },
-    )
+    game::fetch_games().await
 }
 
-pub struct FlutterWatch(watch::Receiver<(u64, u64)>);
-#[frb(sync)]
-pub fn get_watcher(obj: &FlutterWatch) -> (u64, u64) {
-    *obj.0.borrow()
+pub async fn download_game(game: Game, progress: &Progress) -> Result<Vec<u8>> {
+    download::download_game(game, progress).await
 }
 
-pub fn extract_zip(bytes: Vec<u8>, game: Game) -> Result<FlutterWatch> {
-    let (tx, rx) = watch::channel((0, 0));
+// #[frb(ignore)]
+#[derive(Default, Clone)]
+#[frb(opaque)]
+pub struct Progress(Arc<(AtomicU64, AtomicU64)>);
+impl Progress {
+    #[frb(sync)]
+    pub fn new() -> Progress {
+        Self::default()
+    }
 
+    #[frb(sync)]
+    pub fn increment_numerator(&self) {
+        self.0 .1.fetch_add(1, Ordering::Relaxed);
+    }
+    #[frb(sync)]
+    pub fn set_numerator(&self, numerator: u64) {
+        self.0 .1.swap(numerator, Ordering::Relaxed);
+    }
+    #[frb(sync)]
+    pub fn get_numerator(&self) -> u64 {
+        self.0 .1.load(Ordering::Relaxed)
+    }
+
+    #[frb(sync)]
+    pub fn increment_denominator(&self) {
+        self.0 .0.fetch_add(1, Ordering::Relaxed);
+    }
+    #[frb(sync)]
+    pub fn set_denominator(&self, denominator: u64) {
+        self.0 .0.swap(denominator, Ordering::Relaxed);
+    }
+    #[frb(sync)]
+    pub fn get_denominator(&self) -> u64 {
+        self.0 .0.load(Ordering::Relaxed)
+    }
+
+    #[frb(sync)]
+    pub fn is_full(&self) -> bool {
+        self.get_numerator() == self.get_denominator()
+    }
+    #[frb(sync)]
+    pub fn is_empty(&self) -> bool {
+        (self.get_numerator(), self.get_denominator()) == (0, 0)
+    }
+}
+
+// #[frb(sync)]
+pub async fn extract_zip(bytes: Vec<u8>, game: Game, progress: &Progress) -> Result<()> {
     log::info!("unzip {}", game.name);
 
-    FLUTTER_RUST_BRIDGE_HANDLER
-        .thread_pool()
-        .execute(transfer!(|| {
-            extract_zip_with_password(&bytes, &std::env::home_dir().unwrap().join("a"), "game", tx)
-                .unwrap();
-        }));
+    let progress = progress.clone();
+    let game_ = game.clone();
+    tokio::task::spawn_blocking(move || {
+        extract_zip_with_password(&bytes, &dirs::game_dir(&game_), "game", progress)
+    })
+    .await
+    .unwrap()?;
 
-    Ok(FlutterWatch(rx))
-}
+    sqlx::query("UPDATE games SET state = ? WHERE uuid = ?")
+        .bind(GameState::Installed)
+        .bind(&game.uuid)
+        .execute(CONNECTION.get().unwrap())
+        .await?;
 
-/// Extracts a 7zip file to a directory.
-///
-/// # Errors
-/// Returns an error if the 7zip file is invalid or the directory can't be written to.
-///
-/// # Panics
-/// Panics if a the 7zip file doesn't have a single root directory.
-#[allow(
-    clippy::needless_pass_by_value,
-    clippy::cognitive_complexity,
-    clippy::non_octal_unix_permissions
-)]
-pub fn extract_zip_with_password(
-    bytes: &[u8],
-    dest: &Path,
-    password: &str,
-    progress: watch::Sender<(u64, u64)>,
-) -> Result<()> {
-    let mut sz =
-        sevenz_rust::SevenZReader::new(Cursor::new(bytes), bytes.len() as u64, password.into())?;
-    let total_files = sz.archive().files.len();
-    let mut files = 0;
-    macro_rules! push_progress {
-        () => {
-            if progress.send((files, total_files as u64)).is_err() {
-                log::warn!("progress receiver dropped");
-            };
-        };
-    }
-    sz.for_each_entries(|entry, reader| {
-        if entry.is_directory() {
-            files += 1;
-            return Ok(true); // we create the directory before creating files; removing this will cause an error with `File::create`
-        }
-
-        let path = Path::new(entry.name()); // TODO: handle invalid paths; we don't really need to worry about this but it's a good habit
-        let mut components = path.components();
-        components.next();
-        let path = components.as_path();
-        let path = dest.join(path);
-
-        let mut buf = [0u8; 1024];
-        std::fs::create_dir_all(path.parent().unwrap())?;
-        let mut file = File::create(path)?;
-        let res = loop {
-            let read_size = reader.read(&mut buf)?;
-            if read_size == 0 {
-                break Ok(true);
-            }
-            file.write_all(&buf[..read_size])?;
-        };
-
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            let mut perms = file.metadata()?.permissions();
-            perms.set_mode(0o755);
-            file.set_permissions(perms)?;
-        }
-
-        files += 1;
-
-        push_progress!();
-
-        res
-    })?;
-
-    push_progress!();
-
-    log::warn!("DONE!! {files} / {total_files}");
     Ok(())
 }
 
 #[frb(init)]
-pub fn init_app() {
+pub async fn init_app() {
     // Default utilities - feel free to customize
     flutter_rust_bridge::setup_default_user_utils();
 
     let _ = env_logger::builder()
         .target(env_logger::Target::Stdout)
         .try_init();
+
+    init_conn().await;
 }

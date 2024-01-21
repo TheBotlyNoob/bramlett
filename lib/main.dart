@@ -1,11 +1,10 @@
 import 'dart:async';
+import 'dart:typed_data';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:stroke_text/stroke_text.dart';
 import 'package:bramletts_games/src/rust/api/games.dart';
 import 'package:bramletts_games/src/rust/frb_generated.dart';
-import 'package:url_launcher/link.dart';
 
 Future<void> main() async {
   await RustLib.init();
@@ -107,8 +106,8 @@ class GameWidget extends StatefulWidget {
 }
 
 class _GameWidgetState extends State<GameWidget> {
-  Timer? progressPoll;
-  (int, int)? progress;
+  Progress? progress;
+  bool downloaded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -129,73 +128,63 @@ class _GameWidgetState extends State<GameWidget> {
                   strokeColor: theme.inactiveBackgroundColor,
                   strokeWidth: 10),
               progress == null
-                  ? FilledButton(
-                      child: const Text("Download"),
-                      onPressed: () => showDownloadDialog(context))
-                  : ProgressBar(value: (progress!.$1 / progress!.$2) * 100)
+                  ? widget.game.state == GameState.notInstalled
+                      ? FilledButton(
+                          onPressed: () => dlGame(),
+                          child: const Text("Download"))
+                      : FilledButton(
+                          onPressed: () => {}, child: const Text("Run"))
+                  : ProgressBarWidget(
+                      color: downloaded ? Colors.blue : Colors.green,
+                      progress: progress!),
             ]))));
+  }
+
+  void dlGame() async {
+    setState(() => progress = Progress.newProgress());
+    final bytes = await downloadGame(game: widget.game, progress: progress!);
+    progress = null;
+    downloaded = true;
+
+    setState(() => progress = Progress.newProgress());
+    extractZip(bytes: bytes, game: widget.game, progress: progress!);
+    progress = null;
+  }
+}
+
+class ProgressBarWidget extends StatefulWidget {
+  const ProgressBarWidget({super.key, this.color, required this.progress});
+
+  final Color? color;
+  final Progress progress;
+
+  @override
+  State<ProgressBarWidget> createState() => _ProgressBarWidgetState();
+}
+
+class _ProgressBarWidgetState extends State<ProgressBarWidget> {
+  late Timer poll;
+
+  @override
+  void initState() {
+    super.initState();
+    poll = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {});
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
-    progressPoll?.cancel();
+    poll.cancel();
   }
 
-  void showDownloadDialog(BuildContext context) async {
-    await showDialog<String>(
-        context: context,
-        builder: (context) => ContentDialog(
-                title: Text('Download ${widget.game.name}'),
-                content: const Text("""
-1. Click the download button below. A browser should open.
-
-2. Click the "Click here to unlock" button until the download button appears.
-
-CLOSE ANY NEW TABS IF THEY OPEN. These are advertisements and may contain viruses.
-
-3. Click the "DOWNLOAD" button.
-
-4. Once the file has downloaded, click the "Choose File" button below.
-          """),
-                actions: [
-                  Button(
-                      child: const Text("Close"),
-                      onPressed: () => Navigator.pop(context)),
-                  Link(
-                      uri: Uri.parse(widget.game.url),
-                      target: LinkTarget.blank,
-                      builder: (context, followLink) => FilledButton(
-                          onPressed: followLink,
-                          child: const Text("Download"))),
-                  FilledButton(
-                      onPressed: () => filePicker(context),
-                      child: const Text("Choose File"))
-                ]));
-  }
-
-  void filePicker(BuildContext context) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom, allowedExtensions: ["7z"], withData: true);
-
-    if (result != null) {
-      PlatformFile file = result.files.first;
-
-      var watcher = await extractZip(bytes: file.bytes!, game: widget.game);
-
-      progressPoll = Timer.periodic(const Duration(seconds: 1), (timer) {
-        setState(() {
-          progress = getWatcher(obj: watcher);
-        });
-
-        // if (progress != null) {
-        //   if (progress!.$1 == progress!.$2) {
-        //     progressPoll?.cancel();
-        //   }
-
-        //   progress = null;
-        // }
-      });
-    }
+  @override
+  Widget build(BuildContext context) {
+    return ProgressBar(
+        activeColor: widget.color,
+        value: (widget.progress.getNumerator() /
+                widget.progress.getDenominator()) *
+            100);
   }
 }

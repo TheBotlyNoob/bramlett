@@ -33,12 +33,9 @@ dependencies:
 
   rust_builder:
     path: rust_builder
-  flutter_rust_bridge: 2.0.0-dev.20
+  flutter_rust_bridge: 2.0.0-dev.21
   fluent_ui: ^4.4.0
-  uuid: ^4.3.3
   stroke_text: ^0.0.2
-  url_launcher: ^6.2.3
-  file_picker: ^6.1.1
 
 dev_dependencies:
   flutter_test:
