@@ -147,7 +147,7 @@ class _GameWidgetState extends State<GameWidget> {
     downloaded = true;
 
     setState(() => progress = Progress.newProgress());
-    extractZip(bytes: bytes, game: widget.game, progress: progress!);
+    await extractZip(bytes: bytes, game: widget.game, progress: progress!);
     progress = null;
   }
 }
