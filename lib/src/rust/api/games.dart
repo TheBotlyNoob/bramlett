@@ -14,6 +14,9 @@ Future<Uint8List> downloadGame(
     RustLib.instance.api
         .downloadGame(game: game, progress: progress, hint: hint);
 
+Future<void> runGame({required Game game, dynamic hint}) =>
+    RustLib.instance.api.runGame(game: game, hint: hint);
+
 Future<void> extractZip(
         {required List<int> bytes,
         required Game game,

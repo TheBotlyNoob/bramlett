@@ -315,6 +315,26 @@ fn wire_init_app_impl(port_: flutter_rust_bridge::for_generated::MessagePort) {
         },
     )
 }
+fn wire_run_game_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    game: impl CstDecode<crate::api::games::Game>,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::DcoCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "run_game",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let api_game = game.cst_decode();
+            move |context| async move {
+                transform_result_dco(
+                    (move || async move { crate::api::games::run_game(api_game).await })().await,
+                )
+            }
+        },
+    )
+}
 
 // Section: dart2rust
 

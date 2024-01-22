@@ -1,16 +1,11 @@
 use super::error::Result;
-use crate::{
-    core::{
-        db::{init_conn, CONNECTION},
-        dirs, download,
-        extract::extract_zip_with_password,
-        game,
-    },
-    frb_generated::FLUTTER_RUST_BRIDGE_HANDLER,
+use crate::core::{
+    db::{init_conn, CONNECTION},
+    dirs, download,
+    extract::extract_zip_with_password,
+    game,
 };
-use flutter_rust_bridge::for_generated::BaseThreadPool;
 use flutter_rust_bridge::*;
-use sqlx::Executor;
 use std::sync::{
     atomic::{AtomicU64, Ordering},
     Arc,
@@ -52,7 +47,10 @@ pub async fn download_game(game: Game, progress: &Progress) -> Result<Vec<u8>> {
     download::download_game(game, progress).await
 }
 
-// #[frb(ignore)]
+pub async fn run_game(game: Game) -> Result<()> {
+    game::run_game(game).await
+}
+
 #[derive(Default, Clone)]
 #[frb(opaque)]
 pub struct Progress(Arc<(AtomicU64, AtomicU64)>);

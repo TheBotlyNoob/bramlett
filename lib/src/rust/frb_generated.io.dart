@@ -560,6 +560,23 @@ class RustLibWire implements BaseWire {
   late final _wire_init_app =
       _wire_init_appPtr.asFunction<void Function(int)>();
 
+  void wire_run_game(
+    int port_,
+    ffi.Pointer<wire_cst_game> game,
+  ) {
+    return _wire_run_game(
+      port_,
+      game,
+    );
+  }
+
+  late final _wire_run_gamePtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Void Function(ffi.Int64, ffi.Pointer<wire_cst_game>)>>(
+      'frbgen_bramletts_games_wire_run_game');
+  late final _wire_run_game = _wire_run_gamePtr
+      .asFunction<void Function(int, ffi.Pointer<wire_cst_game>)>();
+
   void
       rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
     ffi.Pointer<ffi.Void> ptr,

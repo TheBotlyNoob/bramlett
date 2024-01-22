@@ -8,9 +8,9 @@ use std::sync::OnceLock;
 pub static CONNECTION: OnceLock<SqlitePool> = OnceLock::new();
 
 pub async fn init_conn() {
-    // #[cfg(debug_assertions)]
-    // let db_path = PathBuf::from("games.db");
-    // #[cfg(not(debug_assertions))]
+    #[cfg(debug_assertions)]
+    let db_path = std::path::PathBuf::from("games.db");
+    #[cfg(not(debug_assertions))]
     let db_path = dirs::config_dir().join("games.db");
 
     let _ = tokio::fs::create_dir_all(db_path.parent().unwrap()).await;

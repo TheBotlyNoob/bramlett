@@ -364,6 +364,9 @@ class RustLibWire implements BaseWire {
 
   void wire_init_app(NativePortType port_) => wasmModule.wire_init_app(port_);
 
+  void wire_run_game(NativePortType port_, List<dynamic> game) =>
+      wasmModule.wire_run_game(port_, game);
+
   void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
           dynamic ptr) =>
       wasmModule
@@ -425,6 +428,8 @@ class RustLibWasmModule implements WasmModule {
   external void wire_fetch_games(NativePortType port_);
 
   external void wire_init_app(NativePortType port_);
+
+  external void wire_run_game(NativePortType port_, List<dynamic> game);
 
   external void
       rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(

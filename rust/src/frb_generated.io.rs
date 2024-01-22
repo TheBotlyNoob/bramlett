@@ -240,6 +240,11 @@ pub extern "C" fn frbgen_bramletts_games_wire_init_app(port_: i64) {
 }
 
 #[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_wire_run_game(port_: i64, game: *mut wire_cst_game) {
+    wire_run_game_impl(port_, game)
+}
+
+#[no_mangle]
 pub extern "C" fn frbgen_bramletts_games_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
     ptr: *const std::ffi::c_void,
 ) {

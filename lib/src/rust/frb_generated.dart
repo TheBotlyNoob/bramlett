@@ -97,6 +97,8 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> initApp({dynamic hint});
 
+  Future<void> runGame({required Game game, dynamic hint});
+
   RustArcIncrementStrongCountFnType
       get rust_arc_increment_strong_count_Progress;
 
@@ -442,6 +444,29 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kInitAppConstMeta => const TaskConstMeta(
         debugName: "init_app",
         argNames: [],
+      );
+
+  @override
+  Future<void> runGame({required Game game, dynamic hint}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        var arg0 = cst_encode_box_autoadd_game(game);
+        return wire.wire_run_game(port_, arg0);
+      },
+      codec: DcoCodec(
+        decodeSuccessData: dco_decode_unit,
+        decodeErrorData: dco_decode_AnyhowException,
+      ),
+      constMeta: kRunGameConstMeta,
+      argValues: [game],
+      apiImpl: this,
+      hint: hint,
+    ));
+  }
+
+  TaskConstMeta get kRunGameConstMeta => const TaskConstMeta(
+        debugName: "run_game",
+        argNames: ["game"],
       );
 
   RustArcIncrementStrongCountFnType

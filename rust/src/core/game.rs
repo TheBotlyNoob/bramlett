@@ -1,10 +1,12 @@
-use futures::TryStreamExt;
-
 pub use crate::api::games::{Game, Games};
 use crate::{
     api::error::Result,
-    core::db::{init_db, CONNECTION},
+    core::{
+        db::{init_db, CONNECTION},
+        dirs,
+    },
 };
+use futures::TryStreamExt;
 
 pub async fn fetch_games() -> Result<Games> {
     println!("DADS");
@@ -30,4 +32,15 @@ pub async fn fetch_games() -> Result<Games> {
             Ok(games)
         }
     }
+}
+
+pub async fn run_game(game: Game) -> Result<()> {
+    let game_dir = dirs::game_dir(&game);
+    tokio::process::Command::new(game_dir.join(game.exe))
+        .current_dir(game_dir)
+        .args(game.args)
+        .spawn()?
+        .wait()
+        .await?;
+    Ok(())
 }

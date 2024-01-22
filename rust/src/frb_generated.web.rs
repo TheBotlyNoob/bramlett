@@ -280,6 +280,14 @@ pub fn wire_init_app(port_: flutter_rust_bridge::for_generated::MessagePort) {
 }
 
 #[wasm_bindgen]
+pub fn wire_run_game(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    game: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
+) {
+    wire_run_game_impl(port_, game)
+}
+
+#[wasm_bindgen]
 pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
     ptr: *const std::ffi::c_void,
 ) {

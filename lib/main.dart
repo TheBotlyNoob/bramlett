@@ -128,25 +128,30 @@ class _GameWidgetState extends State<GameWidget> {
               progress == null
                   ? widget.game.state == GameState.notInstalled
                       ? FilledButton(
-                          onPressed: () => dlGame(),
-                          child: const Text("Download"))
+                          onPressed: () => dl(), child: const Text("Download"))
                       : FilledButton(
-                          onPressed: () => {}, child: const Text("Run"))
+                          onPressed: () => run(), child: const Text("Run"))
                   : ProgressBarWidget(
                       color: downloaded ? Colors.blue : Colors.green,
                       progress: progress!),
             ]))));
   }
 
-  void dlGame() async {
+  void dl() async {
     setState(() => progress = Progress.newProgress());
     final bytes = await downloadGame(game: widget.game, progress: progress!);
-    progress = null;
+    setState(() => progress = null);
     downloaded = true;
 
     setState(() => progress = Progress.newProgress());
     await extractZip(bytes: bytes, game: widget.game, progress: progress!);
-    progress = null;
+    setState(() => progress = null);
+  }
+
+  void run() async {
+    setState(() => progress = Progress.newProgress());
+    await runGame(game: widget.game);
+    setState(() => progress = null);
   }
 }
 
@@ -179,10 +184,11 @@ class _ProgressBarWidgetState extends State<ProgressBarWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ProgressBar(
-        activeColor: widget.color,
-        value: (widget.progress.getNumerator() /
-                widget.progress.getDenominator()) *
-            100);
+    final value = widget.progress.isEmpty()
+        ? null
+        : (widget.progress.getNumerator() / widget.progress.getDenominator()) *
+            100;
+
+    return ProgressBar(activeColor: widget.color, value: value);
   }
 }
