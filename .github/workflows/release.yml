@@ -21,53 +21,46 @@ jobs:
         strategy:
             matrix:
                 include:
-                    # - target: aarch64-unknown-linux-gnu
-                    #   os: ubuntu-latest
-                    - target: aarch64-apple-darwin
-                      os: macos-latest
                     - target: x86_64-unknown-linux-gnu
+                      flutter: linux
                       os: ubuntu-latest
                     - target: x86_64-apple-darwin
-                      os: macos-latest
-                    # Universal macOS binary is supported as universal-apple-darwin.
-                    - target: universal-apple-darwin
+                      flutter: macos
                       os: macos-latest
                     - target: x86_64-pc-windows-msvc
+                      flutter: windows
                       os: windows-latest
 
         runs-on: ${{ matrix.os }}
         steps:
             - name: Checkout
               uses: actions/checkout@v3
-            - name: Setup Pages
-              uses: actions/configure-pages@v3
             - uses: dtolnay/rust-toolchain@stable
-            - run: |
-                  sudo apt update
-                  sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev # deps of wry and tao
-              # if aarch64-unknown-linux-gnu or x86_64-unknown-linux-gnu:
-              if: matrix.target == 'aarch64-unknown-linux-gnu' || matrix.target == 'x86_64-unknown-linux-gnu'
-            - run: |
-                  cd crates/client/frontend
-                  npm ci
-                  npm run build
-            - uses: taiki-e/upload-rust-binary-action@v1
+            - uses: subosito/flutter-action@v2
               with:
-                  # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
-                  # Note that glob pattern is not supported yet.
-                  bin: bramlett
-                  # (optional) Archive name (non-extension portion of filename) to be uploaded.
-                  # [default value: $bin-$target]
-                  # [possible values: the following variables and any string]
-                  #   variables:
-                  #     - $bin    - Binary name (non-extension portion of filename).
-                  #     - $target - Target triple.
-                  #     - $tag    - Tag of this release.
-                  # When multiple binary names are specified, default archive name or $bin variable cannot be used.
-                  archive: bramlett-$target
-                  features: webview
-                  target: ${{ matrix.target }}
-                  tar: none
-                  zip: all
-                  # (required) GitHub token for uploading assets to GitHub Releases.
-                  token: ${{ secrets.GITHUB_TOKEN }}
+                channel: 'stable'
+                architecture: x64
+            - run: |
+                sudo apt-get update -y
+                sudo apt-get install -y ninja-build libgtk-3-dev
+              if: matrix.flutter == 'linux'
+            - run: flutter config --enable-${{ matrix.flutter }}-desktop
+            - run: flutter build ${{ matrix.flutter }}
+            - run: flutter pub get
+            - name: zip windows
+              run: Compress-Archive -Path build/windows/x64/Release/* -DestinationPath bramlett-${{ matrix.target }}.zip
+              if: matrix.flutter == 'windows'
+            - name: zip linux/mac
+              run: zip -r bramlett-${{ matrix.target }}.zip build/${{ matrix.flutter }}/x64/release/bundle/*
+              if: matrix.flutter == 'linux' || matrix.flutter == 'macos'
+            - name: Upload binaries to release
+              uses: svenstaro/upload-release-action@v2
+              with:
+                repo_token: ${{ secrets.GITHUB_TOKEN }}
+                file: bramlett-*.zip
+                tag: ${{ github.ref }}
+                overwrite: true
+                file_glob: true
+            
+
+

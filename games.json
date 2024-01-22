@@ -1,0 +1,22 @@
+{
+  "games": [
+    {
+      "name": "Papers, Please",
+      "exe": "PapersPlease.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/xyBW5627-PapersPlease",
+      "icon": "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/434529ee3a4ce2b39f5bce0502c444c3.png",
+      "uuid": "db84e622-b2c4-41eb-8582-2faf8fc90159",
+      "sha256": "2fea799d9c7044163ef71adce40d3f7ecb1d87a5513f86cf4323b9db76575fa1"
+    },
+    {
+      "name": "OMORI",
+      "exe": "OMORI.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/iFzb1472-OMORI",
+      "icon": "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/1f892957b260a88f9b21ab438a520ff1.webp",
+      "uuid": "fe6ce760-3009-4fc2-b222-7380b2916a8b",
+      "sha256": "ad9b26ec2680934e240765cf7cdc423cd40257657e9bc0817f70cae658b67321"
+    }
+  ]
+}
