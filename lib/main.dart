@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
-
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:stroke_text/stroke_text.dart';
 import 'package:bramletts_games/src/rust/api/games.dart';
@@ -108,6 +106,7 @@ class GameWidget extends StatefulWidget {
 class _GameWidgetState extends State<GameWidget> {
   Progress? progress;
   bool downloaded = false;
+  late Game game = widget.game;
 
   @override
   Widget build(BuildContext context) {
@@ -119,16 +118,16 @@ class _GameWidgetState extends State<GameWidget> {
         child: Container(
             decoration: BoxDecoration(
                 image: DecorationImage(
-                    image: NetworkImage(widget.game.icon), fit: BoxFit.cover)),
+                    image: NetworkImage(game.icon), fit: BoxFit.cover)),
             child: Card(
                 child: Column(children: [
               StrokeText(
-                  text: widget.game.name,
+                  text: game.name,
                   textStyle: theme.typography.subtitle,
                   strokeColor: theme.inactiveBackgroundColor,
                   strokeWidth: 10),
               progress == null
-                  ? widget.game.state == GameState.notInstalled
+                  ? game.state == GameState.notInstalled
                       ? FilledButton(
                           onPressed: () => dlGame(),
                           child: const Text("Download"))
@@ -142,13 +141,14 @@ class _GameWidgetState extends State<GameWidget> {
 
   void dlGame() async {
     setState(() => progress = Progress.newProgress());
-    final bytes = await downloadGame(game: widget.game, progress: progress!);
+    final bytes = await downloadGame(game: game, progress: progress!);
     progress = null;
     downloaded = true;
 
     setState(() => progress = Progress.newProgress());
-    extractZip(bytes: bytes, game: widget.game, progress: progress!);
+    extractZip(bytes: bytes, game: game, progress: progress!);
     progress = null;
+    game.state = GameState.installed;
   }
 }
 
