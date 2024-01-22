@@ -22,7 +22,12 @@ pub async fn fetch_games() -> Result<Games> {
             #[cfg(debug_assertions)]
             let games = serde_json::from_str(&tokio::fs::read_to_string("games.json").await?)?;
             #[cfg(not(debug_assertions))]
-            let games = reqwest::get("https://raw.githubusercontent.com/TheBotlyNoob/bramletts-games/chore/flutter/games.json").await?.json().await?;
+            let games = reqwest::get(
+                "https://raw.githubusercontent.com/TheBotlyNoob/bramletts-games/master/games.json",
+            )
+            .await?
+            .json()
+            .await?;
 
             init_db(&games).await?;
 
