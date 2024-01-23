@@ -46,8 +46,9 @@ jobs:
               if: matrix.flutter == 'linux'
             - run: flutter config --enable-${{ matrix.flutter }}-desktop
             - run: flutter build ${{ matrix.flutter }} --verbose
+            - run: ls build/windows
             - name: zip windows
-              run: Compress-Archive -Path build/windows/runner/Release/* -DestinationPath bramlett-${{ matrix.target }}.zip
+              run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath bramlett-${{ matrix.target }}.zip
               if: matrix.flutter == 'windows'
             - name: zip linux/mac
               run: zip -r bramlett-${{ matrix.target }}.zip build/${{ matrix.flutter }}/x64/release/bundle/*
