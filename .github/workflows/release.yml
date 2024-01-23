@@ -47,6 +47,7 @@ jobs:
             - run: flutter config --enable-${{ matrix.flutter }}-desktop
             - run: flutter build ${{ matrix.flutter }} --verbose
             - run: ls build/windows
+              if: matrix.flutter == 'windows'
             - name: zip windows
               run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath bramlett-${{ matrix.target }}.zip
               if: matrix.flutter == 'windows'
