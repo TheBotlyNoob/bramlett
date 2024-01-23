@@ -17,6 +17,51 @@
       "icon": "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/1f892957b260a88f9b21ab438a520ff1.webp",
       "uuid": "fe6ce760-3009-4fc2-b222-7380b2916a8b",
       "sha256": "ad9b26ec2680934e240765cf7cdc423cd40257657e9bc0817f70cae658b67321"
+    },
+    {
+      "name": "Geometry Dash",
+      "exe": "steamapps/common/Geometry Dash/GeometryDash.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/3oBJ3372-GeometryDash",
+      "icon": "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/818d9d1eaede1c656acf1db6a10d9866.png",
+      "uuid": "fe17512b-0c3e-4f99-8190-469d730d736d",
+      "sha256": "76f02198812403951e72d812dff5c7dcfc7cb02d47dc1483569931fb723c11a1"
+    },
+    {
+      "name": "Totally Accurate Battle Simulator",
+      "exe": "TotallyAccurateBattleSimulator.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/ejWL1214-TABS",
+      "icon": "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/fdd570402b33973a780e64fdce5c391e.png",
+      "uuid": "c08c86f2-547f-4bbe-ac24-a47063defe15",
+      "sha256": "be99e999abf019175e419fdbcc31a7524a70090bafea6f52bd949d8b9e0b8b51"
+    },
+    {
+      "name": "UNDERTALE",
+      "exe": "Undertale.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/aq641932-UNDERTALE",
+      "icon": "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/49da5f75021bacfc161ee7fb005d65a6.png",
+      "uuid": "6ca6079c-a5a5-4300-9279-34b0a7505bc1",
+      "sha256": "b1ba5b1ed1e9baf29125fa5610573bbe317bed77c8e01c660fd17c9b28b7966b"
+    },
+    {
+      "name": "GTA: San Andreas",
+      "exe": "gta_sa.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/9eMJ9097-GTASanAndreas",
+      "icon": "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/4b7890d268495230ee3f9bcd05ce3365.png",
+      "uuid": "531f0db9-7b9d-4652-a395-7559e232b857",
+      "sha256": "b14ccee3c4017231e2321fd8dde17949bcbd9f3739fffd40a22fb40ea84c68b6"
+    },
+    {
+      "name": "GTA: Vice City",
+      "exe": "gta-vc.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/ukYS0547-GTAViceCity",
+      "icon": "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/4eb6720c6cd70ee9e67ca6e4dc12e3df.png",
+      "uuid": "177d236b-d764-4f39-b7db-20854e8a12a1",
+      "sha256": "07a05b3cc4e0d6055a5e4e5dbd1c1f1d65313562b129b8b8fddb191364a47ae4"
     }
   ]
 }
