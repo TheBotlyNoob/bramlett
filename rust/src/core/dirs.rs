@@ -22,5 +22,5 @@ pub fn document_dir() -> PathBuf {
 }
 
 pub fn game_dir(game: &Game) -> PathBuf {
-    data_local_dir().join(&game.uuid)
+    data_local_dir().join("games").join(&game.uuid)
 }
