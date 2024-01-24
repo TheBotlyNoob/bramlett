@@ -10,8 +10,10 @@ pub enum Error {
     Io(#[from] std::io::Error),
     #[error("json error: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("7zip error: {0}")]
+    Zip7(#[from] sevenz_rust::Error),
     #[error("zip error: {0}")]
-    Zip(#[from] sevenz_rust::Error),
+    Zip(#[from] zip::result::ZipError),
     #[error("database error: {0}")]
     Database(#[from] sqlx::Error),
     #[error("invalid file checksum")]
