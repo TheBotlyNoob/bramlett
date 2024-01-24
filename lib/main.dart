@@ -106,6 +106,7 @@ class GameWidget extends StatefulWidget {
 class _GameWidgetState extends State<GameWidget> {
   Progress? progress;
   bool downloaded = false;
+  late bool installed = widget.game.state == GameState.installed;
 
   @override
   Widget build(BuildContext context) {
@@ -126,13 +127,17 @@ class _GameWidgetState extends State<GameWidget> {
                   strokeColor: theme.inactiveBackgroundColor,
                   strokeWidth: 10),
               progress == null
-                  ? widget.game.state == GameState.notInstalled
+                  ? installed
                       ? FilledButton(
-                          onPressed: () => dl(), child: const Text("Download"))
-                      : FilledButton(
                           onPressed: () => run(), child: const Text("Run"))
+                      : FilledButton(
+                          onPressed: () => dl(), child: const Text("Download"))
                   : ProgressBarWidget(
-                      color: downloaded ? Colors.blue : Colors.green,
+                      color: widget.game.state == GameState.installed
+                          ? Colors.magenta
+                          : downloaded
+                              ? Colors.blue
+                              : Colors.yellow,
                       progress: progress!),
             ]))));
   }
@@ -145,7 +150,10 @@ class _GameWidgetState extends State<GameWidget> {
 
     setState(() => progress = Progress.newProgress());
     await extractZip(bytes: bytes, game: widget.game, progress: progress!);
-    setState(() => progress = null);
+    setState(() {
+      progress = null;
+      installed = true;
+    });
   }
 
   void run() async {
