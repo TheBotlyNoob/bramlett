@@ -62,6 +62,15 @@
       "icon": "https://cdn2.steamgriddb.com/file/sgdb-cdn/grid/4eb6720c6cd70ee9e67ca6e4dc12e3df.png",
       "uuid": "177d236b-d764-4f39-b7db-20854e8a12a1",
       "sha256": "07a05b3cc4e0d6055a5e4e5dbd1c1f1d65313562b129b8b8fddb191364a47ae4"
+    },
+    {
+      "Name": "Lethal Company",
+      "exe": "Lethal Company.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/dtib2586-LethalCompany",
+      "icon": "https://cdn2.steamgriddb.com/grid/f4d2f8309b27a4ae91d9e0a36ab8d8bf.png",
+      "uuid": "c3415704-9f4a-4a09-8291-117bddb9c88b",
+      "sha256": "282ef00ca96d8d9c8b62852f71afd42fbabf7691003f6f683348639a8b82647b"
     }
   ]
 }
