@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:bramletts_games/src/rust/api/games.dart';
+import 'package:bramletts_games/games.dart';
+import 'package:bramletts_games/unblocked.dart';
 import 'package:bramletts_games/src/rust/frb_generated.dart';
 
 Future<void> main() async {
@@ -21,7 +22,7 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return FluentApp(
-        title: 'Bramlett\'s Games',
+        title: "Bramlett's Games",
         theme: FluentThemeData(
           brightness: Brightness.dark,
           accentColor: Colors.blue,
@@ -31,11 +32,7 @@ class _AppState extends State<App> {
           appBar: const NavigationAppBar(title: Text("Bramlett's Games")),
           pane: NavigationPane(
             selected: navIdx,
-            onChanged: (newIdx) {
-              setState(() {
-                navIdx = newIdx;
-              });
-            },
+            onChanged: (newIdx) => setState(() => navIdx = newIdx),
             displayMode: PaneDisplayMode.auto,
             items: [
               PaneItem(
@@ -43,7 +40,7 @@ class _AppState extends State<App> {
                   icon: const Icon(FluentIcons.download),
                   title: const Text("Download Games")),
               PaneItem(
-                  body: const Center(child: Text('b')),
+                  body: const Unblocked(),
                   icon: const Icon(FluentIcons.blocked),
                   title: const Text("Unblocked Browser"))
             ],
