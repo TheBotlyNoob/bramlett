@@ -60,11 +60,11 @@
   </style>
   <script>
     (async () => {
-      await fetch("https://bramletts-games.shuttleapp.rs/games")
+      await fetch("https://raw.githubusercontent.com/TheBotlyNoob/bramletts-games/master/games.json")
         .then((r) => r.json())
         .then((r) => {
           const update = () => {
-            for (const game of r) {
+            for (const game of r.games) {
               // icons are always 600x900
               document.getElementById("games").innerHTML += `
                                 <tr>

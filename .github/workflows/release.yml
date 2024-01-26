@@ -57,8 +57,6 @@ jobs:
                 mv Cargo.lock Cargo.lock.orig
                 sed "s/0\\.0\\.0-git/${RELEASE_TAG##*\/v}/" Cargo.lock.orig >Cargo.lock
             - run: flutter build ${{ matrix.flutter }} --verbose
-            - run: ls build/windows
-              if: matrix.flutter == 'windows'
             - name: zip windows
               run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath bramlett-${{ matrix.target }}.zip
               if: matrix.flutter == 'windows'
