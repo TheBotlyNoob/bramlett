@@ -68,14 +68,6 @@ impl CstDecode<crate::api::games::Game> for wire_cst_game {
         }
     }
 }
-impl CstDecode<crate::api::games::Games> for wire_cst_games {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    fn cst_decode(self) -> crate::api::games::Games {
-        crate::api::games::Games {
-            games: self.games.cst_decode(),
-        }
-    }
-}
 impl CstDecode<Vec<String>> for *mut wire_cst_list_String {
     // Codec=Cst (C-struct based), see doc to use other codecs
     fn cst_decode(self) -> Vec<String> {
@@ -129,18 +121,6 @@ impl NewWithNullPtr for wire_cst_game {
     }
 }
 impl Default for wire_cst_game {
-    fn default() -> Self {
-        Self::new_with_null_ptr()
-    }
-}
-impl NewWithNullPtr for wire_cst_games {
-    fn new_with_null_ptr() -> Self {
-        Self {
-            games: core::ptr::null_mut(),
-        }
-    }
-}
-impl Default for wire_cst_games {
     fn default() -> Self {
         Self::new_with_null_ptr()
     }
@@ -326,11 +306,6 @@ pub struct wire_cst_game {
     uuid: *mut wire_cst_list_prim_u_8_strict,
     sha256: *mut wire_cst_list_prim_u_8_strict,
     state: i32,
-}
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct wire_cst_games {
-    games: *mut wire_cst_list_game,
 }
 #[repr(C)]
 #[derive(Clone, Copy)]

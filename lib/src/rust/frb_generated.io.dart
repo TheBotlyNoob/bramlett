@@ -55,9 +55,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   GameState dco_decode_game_state(dynamic raw);
 
   @protected
-  Games dco_decode_games(dynamic raw);
-
-  @protected
   int dco_decode_i_32(dynamic raw);
 
   @protected
@@ -116,9 +113,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   GameState sse_decode_game_state(SseDeserializer deserializer);
-
-  @protected
-  Games sse_decode_games(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -231,11 +225,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  void cst_api_fill_to_wire_games(Games apiObj, wire_cst_games wireObj) {
-    wireObj.games = cst_encode_list_game(apiObj.games);
-  }
-
-  @protected
   int cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
       Progress raw);
 
@@ -298,9 +287,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_game_state(GameState self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_games(Games self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -735,8 +721,4 @@ final class wire_cst_list_game extends ffi.Struct {
 
   @ffi.Int32()
   external int len;
-}
-
-final class wire_cst_games extends ffi.Struct {
-  external ffi.Pointer<wire_cst_list_game> games;
 }

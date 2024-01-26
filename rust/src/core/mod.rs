@@ -4,3 +4,4 @@ pub mod download;
 pub mod extract;
 pub mod game;
 pub mod librewolf;
+pub mod update;

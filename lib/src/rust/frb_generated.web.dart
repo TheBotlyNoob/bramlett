@@ -54,9 +54,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   GameState dco_decode_game_state(dynamic raw);
 
   @protected
-  Games dco_decode_games(dynamic raw);
-
-  @protected
   int dco_decode_i_32(dynamic raw);
 
   @protected
@@ -117,9 +114,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   GameState sse_decode_game_state(SseDeserializer deserializer);
 
   @protected
-  Games sse_decode_games(SseDeserializer deserializer);
-
-  @protected
   int sse_decode_i_32(SseDeserializer deserializer);
 
   @protected
@@ -177,12 +171,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       cst_encode_String(raw.sha256),
       cst_encode_game_state(raw.state)
     ];
-  }
-
-  @protected
-  List<dynamic> cst_encode_games(Games raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    return [cst_encode_list_game(raw.games)];
   }
 
   @protected
@@ -278,9 +266,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_game_state(GameState self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_games(Games self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);

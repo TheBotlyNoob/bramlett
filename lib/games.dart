@@ -12,7 +12,7 @@ class GameList extends StatefulWidget {
 }
 
 class _GameListState extends State<GameList> {
-  late Future<Games> futureGames;
+  late Future<List<Game>> futureGames;
 
   @override
   void initState() {
@@ -22,7 +22,7 @@ class _GameListState extends State<GameList> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Games>(
+    return FutureBuilder<List<Game>>(
       future: futureGames,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
@@ -30,7 +30,7 @@ class _GameListState extends State<GameList> {
             Wrap(
                 spacing: 10.0,
                 runSpacing: 10.0,
-                children: snapshot.data!.games
+                children: snapshot.data!
                     .map((game) => GameWidget(game: game))
                     .toList(growable: false))
           ]);

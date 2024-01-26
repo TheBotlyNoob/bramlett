@@ -55,25 +55,6 @@ impl CstDecode<crate::api::games::Game>
         }
     }
 }
-impl CstDecode<crate::api::games::Games>
-    for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
-{
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    fn cst_decode(self) -> crate::api::games::Games {
-        let self_ = self
-            .dyn_into::<flutter_rust_bridge::for_generated::js_sys::Array>()
-            .unwrap();
-        assert_eq!(
-            self_.length(),
-            1,
-            "Expected 1 elements, got {}",
-            self_.length()
-        );
-        crate::api::games::Games {
-            games: self_.get(0).cst_decode(),
-        }
-    }
-}
 impl CstDecode<Vec<String>> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
     // Codec=Cst (C-struct based), see doc to use other codecs
     fn cst_decode(self) -> Vec<String> {

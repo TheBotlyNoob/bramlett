@@ -13,14 +13,18 @@ use std::sync::{
 
 #[derive(sqlx::Type)]
 #[repr(u8)]
-#[derive(serde::Serialize, serde::Deserialize, Copy, Clone, Default, Debug)]
+#[derive(
+    serde::Serialize, serde::Deserialize, Copy, Clone, Default, Debug, PartialEq, Eq, Hash,
+)]
 pub enum GameState {
     #[default]
     NotInstalled,
     Installed,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, sqlx::FromRow, Clone, Debug)]
+#[derive(
+    serde::Serialize, serde::Deserialize, sqlx::FromRow, Clone, Debug, PartialEq, Eq, Hash,
+)]
 pub struct Game {
     pub name: String,
     pub exe: String,
@@ -39,7 +43,7 @@ pub struct Games {
     pub games: Vec<Game>,
 }
 
-pub async fn fetch_games() -> Result<Games> {
+pub async fn fetch_games() -> Result<Vec<Game>> {
     game::fetch_games().await
 }
 
@@ -127,4 +131,11 @@ pub async fn init_app() {
         .try_init();
 
     init_conn().await;
+
+    #[cfg(not(debug_assertions))]
+    tokio::spawn(async {
+        if let Err(e) = crate::core::update::check_latest_version().await {
+            log::warn!("error checking latest version: {e:#?}");
+        }
+    });
 }

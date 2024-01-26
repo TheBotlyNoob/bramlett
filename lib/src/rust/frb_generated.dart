@@ -93,7 +93,7 @@ abstract class RustLibApi extends BaseApi {
       required Progress progress,
       dynamic hint});
 
-  Future<Games> fetchGames({dynamic hint});
+  Future<List<Game>> fetchGames({dynamic hint});
 
   Future<void> initApp({dynamic hint});
 
@@ -403,13 +403,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<Games> fetchGames({dynamic hint}) {
+  Future<List<Game>> fetchGames({dynamic hint}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         return wire.wire_fetch_games(port_);
       },
       codec: DcoCodec(
-        decodeSuccessData: dco_decode_games,
+        decodeSuccessData: dco_decode_list_game,
         decodeErrorData: dco_decode_AnyhowException,
       ),
       constMeta: kFetchGamesConstMeta,
@@ -550,17 +550,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Games dco_decode_games(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    final arr = raw as List<dynamic>;
-    if (arr.length != 1)
-      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
-    return Games(
-      games: dco_decode_list_game(arr[0]),
-    );
-  }
-
-  @protected
   int dco_decode_i_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
@@ -694,13 +683,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
     return GameState.values[inner];
-  }
-
-  @protected
-  Games sse_decode_games(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_games = sse_decode_list_game(deserializer);
-    return Games(games: var_games);
   }
 
   @protected
@@ -897,12 +879,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_game_state(GameState self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
-  }
-
-  @protected
-  void sse_encode_games(Games self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_list_game(self.games, serializer);
   }
 
   @protected

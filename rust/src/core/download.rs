@@ -3,76 +3,45 @@ use crate::api::{
     error::{Error, Result},
     games::Progress,
 };
-use reqwest::Client;
+use futures::StreamExt;
+use sha2::{Digest, Sha256};
 
 pub async fn download_game(game: Game, progress: &Progress) -> Result<Vec<u8>> {
-    const NUM_CHUNKS: usize = 4;
-
     let url = format!(
         "https://qiwi.lol/{}.7z",
         game.url.rsplit_once('/').ok_or(Error::InvalidDownload)?.1
     );
-    let client = Client::new();
-    let content_len: usize = client
-        .head(&url)
-        .send()
-        .await?
-        .headers()
-        .get("content-length")
-        .ok_or(Error::InvalidDownload)?
-        .to_str()
-        .unwrap()
-        .parse()
-        .unwrap();
 
-    let (num_chunks, chunk_size) = if content_len < 1_000_000 * 10 * NUM_CHUNKS {
-        (1, content_len)
+    let downloaded = download_with_progress(&url, progress).await?;
+
+    if let Ok(expected_sha) = hex::decode(&game.sha256) {
+        let mut hasher = Sha256::new();
+        hasher.update(&downloaded);
+        if *hasher.finalize() != expected_sha {
+            return Err(Error::InvalidChecksum);
+        }
     } else {
-        (NUM_CHUNKS, content_len.div_ceil(NUM_CHUNKS))
+        log::error!("games db contains invalid SHA256 checksum.");
     };
 
-    progress.set_denominator(num_chunks as u64);
+    Ok(downloaded.to_vec())
+}
 
-    let res = futures::future::join_all((0..num_chunks).map(|i| {
-        let url = url.clone();
-        let client = client.clone();
-        let progress = progress.clone();
-        async move {
-            let res = client
-                .get(url)
-                .header(
-                    "Range",
-                    format!(
-                        "bytes={}-{}",
-                        dbg!(i * chunk_size),
-                        dbg!((i + 1) * chunk_size)
-                    ),
-                )
-                .send()
-                .await?
-                .bytes()
-                .await?;
-            progress.increment_numerator();
-            Ok(res)
-        }
-    }))
-    .await
-    .into_iter()
-    .collect::<Result<Vec<_>>>()?;
+pub async fn download_with_progress(url: &str, progress: &Progress) -> Result<Vec<u8>> {
+    let res = reqwest::get(url).await?;
 
-    progress.set_numerator(0);
-    progress.set_denominator(0); // we can't really give progress for the below stuff; just have a loading thing.
+    let content_len = res.content_length().ok_or(Error::InvalidDownload)?;
 
-    let mut collected = Vec::with_capacity(num_chunks * chunk_size);
+    progress.set_denominator(content_len);
 
-    for bytes in res {
-        collected.extend_from_slice(&bytes);
+    let mut bytes = Vec::with_capacity(content_len as usize);
+    let mut byte_stream = res.bytes_stream();
+
+    while let Some(new) = byte_stream.next().await {
+        let chunk = new?;
+        bytes.extend_from_slice(&chunk);
+        progress.set_numerator(bytes.len() as u64);
     }
 
-    // TODO: checksums
-    // if dbg!(sha256::digest(&*collected)) != dbg!(game.sha256) {
-    //     return Err(Error::InvalidChecksum);
-    // };
-
-    Ok(collected.to_vec())
+    Ok(bytes)
 }

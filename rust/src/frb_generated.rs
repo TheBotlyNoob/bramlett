@@ -454,14 +454,6 @@ impl SseDecode for crate::api::games::GameState {
     }
 }
 
-impl SseDecode for crate::api::games::Games {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut var_games = <Vec<crate::api::games::Game>>::sse_decode(deserializer);
-        return crate::api::games::Games { games: var_games };
-    }
-}
-
 impl SseDecode for i32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -624,18 +616,6 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::games::GameState>
         self
     }
 }
-// Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::api::games::Games {
-    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        [self.games.into_into_dart().into_dart()].into_dart()
-    }
-}
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::games::Games {}
-impl flutter_rust_bridge::IntoIntoDart<crate::api::games::Games> for crate::api::games::Games {
-    fn into_into_dart(self) -> crate::api::games::Games {
-        self
-    }
-}
 
 impl SseEncode for flutter_rust_bridge::for_generated::anyhow::Error {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -701,13 +681,6 @@ impl SseEncode for crate::api::games::GameState {
             },
             serializer,
         );
-    }
-}
-
-impl SseEncode for crate::api::games::Games {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <Vec<crate::api::games::Game>>::sse_encode(self.games, serializer);
     }
 }
 

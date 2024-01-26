@@ -6,7 +6,7 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-Future<Games> fetchGames({dynamic hint}) =>
+Future<List<Game>> fetchGames({dynamic hint}) =>
     RustLib.instance.api.fetchGames(hint: hint);
 
 Future<Uint8List> downloadGame(
@@ -135,22 +135,4 @@ class Game {
 enum GameState {
   notInstalled,
   installed,
-}
-
-class Games {
-  final List<Game> games;
-
-  const Games({
-    required this.games,
-  });
-
-  @override
-  int get hashCode => games.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Games &&
-          runtimeType == other.runtimeType &&
-          games == other.games;
 }
