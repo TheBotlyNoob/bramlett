@@ -73,6 +73,15 @@
       "icon": "https://cdn2.steamgriddb.com/grid/f4d2f8309b27a4ae91d9e0a36ab8d8bf.png",
       "uuid": "c3415704-9f4a-4a09-8291-117bddb9c88b",
       "sha256": "282ef00ca96d8d9c8b62852f71afd42fbabf7691003f6f683348639a8b82647b"
+    },
+    {
+      "name": "Keep Talking and Nobody Explodes",
+      "exe": "ktane.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/4wtc3704-KTANE",
+      "icon": "https://cdn2.steamgriddb.com/grid/5b26487c96a94e4c4a7565b28cd27b16.png",
+      "uuid": "67ceeeda-6c71-4f8f-9b9a-a594078201d8",
+      "sha256": "49570ef760795d3bf671a76e1ff54ce300e3654d6708b6dae778c5119761b83e"
     }
   ]
 }
