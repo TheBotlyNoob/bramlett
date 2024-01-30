@@ -12,12 +12,13 @@ pub async fn download_game(game: Game, progress: &Progress) -> Result<Vec<u8>> {
         game.url.rsplit_once('/').ok_or(Error::InvalidDownload)?.1
     );
 
-    let downloaded = download_with_progress(&url, progress).await?;
+    let mut hasher = Sha256::new();
+
+    let downloaded = download_with_progress(&url, progress, |chunk| hasher.update(chunk)).await?;
 
     if let Ok(expected_sha) = hex::decode(&game.sha256) {
-        let mut hasher = Sha256::new();
-        hasher.update(&downloaded);
         if *hasher.finalize() != expected_sha {
+            log::error!("invalid checksum for game: {:#?}", game.name);
             return Err(Error::InvalidChecksum);
         }
     } else {
@@ -27,7 +28,11 @@ pub async fn download_game(game: Game, progress: &Progress) -> Result<Vec<u8>> {
     Ok(downloaded.to_vec())
 }
 
-pub async fn download_with_progress(url: &str, progress: &Progress) -> Result<Vec<u8>> {
+pub async fn download_with_progress(
+    url: &str,
+    progress: &Progress,
+    mut cb: impl FnMut(&[u8]),
+) -> Result<Vec<u8>> {
     let res = reqwest::get(url).await?;
 
     let content_len = res.content_length().ok_or(Error::InvalidDownload)?;
@@ -39,9 +44,12 @@ pub async fn download_with_progress(url: &str, progress: &Progress) -> Result<Ve
 
     while let Some(new) = byte_stream.next().await {
         let chunk = new?;
+        cb(&chunk);
         bytes.extend_from_slice(&chunk);
         progress.set_numerator(bytes.len() as u64);
     }
+
+    log::info!("UPDATE: {} / {content_len}", bytes.len());
 
     Ok(bytes)
 }

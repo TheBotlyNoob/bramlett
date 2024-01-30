@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:stroke_text/stroke_text.dart';
 import 'package:bramletts_games/src/rust/api/games.dart';
@@ -69,7 +70,8 @@ class _GameWidgetState extends State<GameWidget> {
         child: Container(
             decoration: BoxDecoration(
                 image: DecorationImage(
-                    image: NetworkImage(widget.game.icon), fit: BoxFit.cover)),
+                    image: CachedNetworkImageProvider(widget.game.icon),
+                    fit: BoxFit.cover)),
             child: Card(
                 child: Column(children: [
               StrokeText(

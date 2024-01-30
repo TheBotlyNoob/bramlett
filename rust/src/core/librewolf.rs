@@ -7,7 +7,7 @@ use crate::api::{
 use futures::StreamExt;
 use reqwest::Client;
 
-use super::dirs;
+use super::{dirs, download::download_with_progress};
 
 #[derive(serde::Deserialize, Clone, Debug)]
 struct ReleaseAsset {
@@ -41,22 +41,7 @@ pub async fn download_librewolf(progress: &Progress) -> Result<Vec<u8>> {
         .ok_or(Error::InvalidDownload)?
         .direct_asset_url;
 
-    let res = client.get(dl_url).send().await?;
-
-    let content_len = res.content_length().ok_or(Error::InvalidDownload)?;
-
-    progress.set_denominator(content_len);
-
-    let mut bytes = Vec::with_capacity(content_len as usize);
-    let mut byte_stream = res.bytes_stream();
-
-    while let Some(new) = byte_stream.next().await {
-        let chunk = new?;
-        bytes.extend_from_slice(&chunk);
-        progress.set_numerator(bytes.len() as u64);
-    }
-
-    Ok(bytes)
+    download_with_progress(&dl_url, progress, |_| {}).await
 }
 
 pub async fn extract_librewolf(bytes: Vec<u8>, progress: &Progress) -> Result<()> {

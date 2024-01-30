@@ -109,6 +109,15 @@
       "icon": "https://cdn2.steamgriddb.com/grid/9bc661e8362657d8cbbe4bb41d17c7f3.png",
       "uuid": "3450b39e-7ea9-4027-bb34-fd55d5a7ee61",
       "sha256": "1c5a654948430f020d5ac6f402de5599e13f11bd5858679a838a80018fa0f6c6"
+    },
+    {
+      "name": "Satisfactory",
+      "exe": "FactoryGame.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/3hCL8227-Satisfactory",
+      "icon": "https://cdn2.steamgriddb.com/grid/8966c43f9e5bdc2365f0b745971bf846.webp",
+      "uuid": "0ef0f242-cb74-4562-a04a-101e949226e1",
+      "sha256": "e9f1e18cf0400b73f61b0687674d7a2361ece879b87558e2018b21d1df0b25cf"
     }
   ]
 }
