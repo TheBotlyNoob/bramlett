@@ -7,17 +7,23 @@ use futures::StreamExt;
 use sha2::{Digest, Sha256};
 
 pub async fn download_game(game: Game, progress: &Progress) -> Result<Vec<u8>> {
-    let url = format!(
-        "https://qiwi.lol/{}.7z",
-        game.url.rsplit_once('/').ok_or(Error::InvalidDownload)?.1
-    );
+    let url = if game.url.starts_with("https://qiwi.gg") {
+        format!(
+            "https://qiwi.lol/{}.7z",
+            game.url.rsplit_once('/').ok_or(Error::InvalidDownload)?.1
+        )
+    } else {
+        game.url.clone()
+    };
 
     let mut hasher = Sha256::new();
 
     let downloaded = download_with_progress(&url, progress, |chunk| hasher.update(chunk)).await?;
 
     if let Ok(expected_sha) = hex::decode(&game.sha256) {
-        if *hasher.finalize() != expected_sha {
+        let final_sha = &*hasher.finalize();
+
+        if final_sha != expected_sha {
             log::error!("invalid checksum for game: {:#?}", game.name);
             return Err(Error::InvalidChecksum);
         }
@@ -25,7 +31,7 @@ pub async fn download_game(game: Game, progress: &Progress) -> Result<Vec<u8>> {
         log::error!("games db contains invalid SHA256 checksum.");
     };
 
-    Ok(downloaded.to_vec())
+    Ok(downloaded)
 }
 
 pub async fn download_with_progress(

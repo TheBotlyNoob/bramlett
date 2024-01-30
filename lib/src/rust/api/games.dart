@@ -9,7 +9,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 Future<List<Game>> fetchGames({dynamic hint}) =>
     RustLib.instance.api.fetchGames(hint: hint);
 
-Future<Uint8List> downloadGame(
+Future<OpaqueBytes> downloadGame(
         {required Game game, required Progress progress, dynamic hint}) =>
     RustLib.instance.api
         .downloadGame(game: game, progress: progress, hint: hint);
@@ -18,12 +18,31 @@ Future<void> runGame({required Game game, dynamic hint}) =>
     RustLib.instance.api.runGame(game: game, hint: hint);
 
 Future<void> extractZip(
-        {required List<int> bytes,
+        {required OpaqueBytes bytes,
         required Game game,
         required Progress progress,
         dynamic hint}) =>
     RustLib.instance.api
         .extractZip(bytes: bytes, game: game, progress: progress, hint: hint);
+
+// Rust type: RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<OpaqueBytes>>
+@sealed
+class OpaqueBytes extends RustOpaque {
+  OpaqueBytes.dcoDecode(List<dynamic> wire)
+      : super.dcoDecode(wire, _kStaticData);
+
+  OpaqueBytes.sseDecode(int ptr, int externalSizeOnNative)
+      : super.sseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_OpaqueBytes,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_OpaqueBytes,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_OpaqueBytesPtr,
+  );
+}
 
 // Rust type: RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<Progress>>
 @sealed

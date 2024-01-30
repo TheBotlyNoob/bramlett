@@ -91,10 +91,33 @@ impl CstDecode<flutter_rust_bridge::for_generated::anyhow::Error>
         unimplemented!()
     }
 }
+impl CstDecode<OpaqueBytes> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> OpaqueBytes {
+        CstDecode::<
+            RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<OpaqueBytes>>,
+        >::cst_decode(self)
+        .rust_auto_opaque_decode_owned()
+    }
+}
 impl CstDecode<Progress> for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue {
     // Codec=Cst (C-struct based), see doc to use other codecs
     fn cst_decode(self) -> Progress {
         CstDecode::<RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<Progress>>>::cst_decode(self).rust_auto_opaque_decode_owned()
+    }
+}
+impl CstDecode<RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<OpaqueBytes>>>
+    for flutter_rust_bridge::for_generated::wasm_bindgen::JsValue
+{
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(
+        self,
+    ) -> RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<OpaqueBytes>> {
+        #[cfg(target_pointer_width = "64")]
+        {
+            compile_error!("64-bit pointers are not supported.");
+        }
+        unsafe { decode_rust_opaque_nom((self.as_f64().unwrap() as usize) as _) }
     }
 }
 impl CstDecode<RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<Progress>>>
@@ -243,7 +266,7 @@ pub fn wire_download_game(
 #[wasm_bindgen]
 pub fn wire_extract_zip(
     port_: flutter_rust_bridge::for_generated::MessagePort,
-    bytes: Box<[u8]>,
+    bytes: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
     game: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
     progress: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
 ) {
@@ -266,6 +289,24 @@ pub fn wire_run_game(
     game: flutter_rust_bridge::for_generated::wasm_bindgen::JsValue,
 ) {
     wire_run_game_impl(port_, game)
+}
+
+#[wasm_bindgen]
+pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+    ptr: *const std::ffi::c_void,
+) {
+    unsafe {
+        StdArc::<flutter_rust_bridge::for_generated::rust_async::RwLock<OpaqueBytes>>::increment_strong_count(ptr as _);
+    }
+}
+
+#[wasm_bindgen]
+pub fn rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+    ptr: *const std::ffi::c_void,
+) {
+    unsafe {
+        StdArc::<flutter_rust_bridge::for_generated::rust_async::RwLock<OpaqueBytes>>::decrement_strong_count(ptr as _);
+    }
 }
 
 #[wasm_bindgen]

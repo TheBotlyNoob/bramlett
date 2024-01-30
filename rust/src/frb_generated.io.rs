@@ -23,10 +23,29 @@ impl CstDecode<flutter_rust_bridge::for_generated::anyhow::Error>
         unimplemented!()
     }
 }
+impl CstDecode<OpaqueBytes> for usize {
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(self) -> OpaqueBytes {
+        CstDecode::<
+            RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<OpaqueBytes>>,
+        >::cst_decode(self)
+        .rust_auto_opaque_decode_owned()
+    }
+}
 impl CstDecode<Progress> for usize {
     // Codec=Cst (C-struct based), see doc to use other codecs
     fn cst_decode(self) -> Progress {
         CstDecode::<RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<Progress>>>::cst_decode(self).rust_auto_opaque_decode_owned()
+    }
+}
+impl CstDecode<RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<OpaqueBytes>>>
+    for usize
+{
+    // Codec=Cst (C-struct based), see doc to use other codecs
+    fn cst_decode(
+        self,
+    ) -> RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<OpaqueBytes>> {
+        unsafe { decode_rust_opaque_nom(self as _) }
     }
 }
 impl CstDecode<RustOpaqueNom<flutter_rust_bridge::for_generated::rust_async::RwLock<Progress>>>
@@ -86,15 +105,6 @@ impl CstDecode<Vec<crate::api::games::Game>> for *mut wire_cst_list_game {
             flutter_rust_bridge::for_generated::vec_from_leak_ptr(wrap.ptr, wrap.len)
         };
         vec.into_iter().map(CstDecode::cst_decode).collect()
-    }
-}
-impl CstDecode<Vec<u8>> for *mut wire_cst_list_prim_u_8_loose {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    fn cst_decode(self) -> Vec<u8> {
-        unsafe {
-            let wrap = flutter_rust_bridge::for_generated::box_from_leak_ptr(self);
-            flutter_rust_bridge::for_generated::vec_from_leak_ptr(wrap.ptr, wrap.len)
-        }
     }
 }
 impl CstDecode<Vec<u8>> for *mut wire_cst_list_prim_u_8_strict {
@@ -202,7 +212,7 @@ pub extern "C" fn frbgen_bramletts_games_wire_download_game(
 #[no_mangle]
 pub extern "C" fn frbgen_bramletts_games_wire_extract_zip(
     port_: i64,
-    bytes: *mut wire_cst_list_prim_u_8_loose,
+    bytes: usize,
     game: *mut wire_cst_game,
     progress: usize,
 ) {
@@ -222,6 +232,24 @@ pub extern "C" fn frbgen_bramletts_games_wire_init_app(port_: i64) {
 #[no_mangle]
 pub extern "C" fn frbgen_bramletts_games_wire_run_game(port_: i64, game: *mut wire_cst_game) {
     wire_run_game_impl(port_, game)
+}
+
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+    ptr: *const std::ffi::c_void,
+) {
+    unsafe {
+        StdArc::<flutter_rust_bridge::for_generated::rust_async::RwLock<OpaqueBytes>>::increment_strong_count(ptr as _);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn frbgen_bramletts_games_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+    ptr: *const std::ffi::c_void,
+) {
+    unsafe {
+        StdArc::<flutter_rust_bridge::for_generated::rust_async::RwLock<OpaqueBytes>>::decrement_strong_count(ptr as _);
+    }
 }
 
 #[no_mangle]
@@ -274,17 +302,6 @@ pub extern "C" fn frbgen_bramletts_games_cst_new_list_game(len: i32) -> *mut wir
 }
 
 #[no_mangle]
-pub extern "C" fn frbgen_bramletts_games_cst_new_list_prim_u_8_loose(
-    len: i32,
-) -> *mut wire_cst_list_prim_u_8_loose {
-    let ans = wire_cst_list_prim_u_8_loose {
-        ptr: flutter_rust_bridge::for_generated::new_leak_vec_ptr(Default::default(), len),
-        len,
-    };
-    flutter_rust_bridge::for_generated::new_leak_box_ptr(ans)
-}
-
-#[no_mangle]
 pub extern "C" fn frbgen_bramletts_games_cst_new_list_prim_u_8_strict(
     len: i32,
 ) -> *mut wire_cst_list_prim_u_8_strict {
@@ -317,12 +334,6 @@ pub struct wire_cst_list_String {
 #[derive(Clone, Copy)]
 pub struct wire_cst_list_game {
     ptr: *mut wire_cst_game,
-    len: i32,
-}
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct wire_cst_list_prim_u_8_loose {
-    ptr: *mut u8,
     len: i32,
 }
 #[repr(C)]

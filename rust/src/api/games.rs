@@ -47,8 +47,11 @@ pub async fn fetch_games() -> Result<Vec<Game>> {
     game::fetch_games().await
 }
 
-pub async fn download_game(game: Game, progress: &Progress) -> Result<Vec<u8>> {
-    download::download_game(game, progress).await
+#[derive(Debug)]
+#[frb(opaque)]
+pub struct OpaqueBytes(pub Vec<u8>); // needed b/c when moving a huge vec into the gc, dart crashes
+pub async fn download_game(game: Game, progress: &Progress) -> Result<OpaqueBytes> {
+    Ok(OpaqueBytes(download::download_game(game, progress).await?))
 }
 
 pub async fn run_game(game: Game) -> Result<()> {
@@ -96,12 +99,13 @@ impl Progress {
     }
     #[frb(sync)]
     pub fn is_empty(&self) -> bool {
-        (self.get_numerator(), self.get_denominator()) == (0, 0)
+        [self.get_numerator(), self.get_denominator()].contains(&0)
     }
 }
 
-// #[frb(sync)]
-pub async fn extract_zip(bytes: Vec<u8>, game: Game, progress: &Progress) -> Result<()> {
+pub async fn extract_zip(bytes: OpaqueBytes, game: Game, progress: &Progress) -> Result<()> {
+    let bytes = bytes.0;
+
     log::info!("unzip {}", game.name);
 
     let progress = progress.clone();

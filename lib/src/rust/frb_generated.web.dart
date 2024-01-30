@@ -17,11 +17,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     required super.portManager,
   });
 
+  CrossPlatformFinalizerArg
+      get rust_arc_decrement_strong_count_OpaqueBytesPtr => wire
+          .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes;
+
   CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ProgressPtr => wire
       .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress;
 
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw);
+
+  @protected
+  OpaqueBytes
+      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+          dynamic raw);
 
   @protected
   Progress
@@ -31,6 +40,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   Progress
       dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
+          dynamic raw);
+
+  @protected
+  OpaqueBytes
+      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
           dynamic raw);
 
   @protected
@@ -63,9 +77,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Game> dco_decode_list_game(dynamic raw);
 
   @protected
-  List<int> dco_decode_list_prim_u_8_loose(dynamic raw);
-
-  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
@@ -84,6 +95,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
   @protected
+  OpaqueBytes
+      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+          SseDeserializer deserializer);
+
+  @protected
   Progress
       sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
           SseDeserializer deserializer);
@@ -91,6 +107,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   Progress
       sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
+          SseDeserializer deserializer);
+
+  @protected
+  OpaqueBytes
+      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
           SseDeserializer deserializer);
 
   @protected
@@ -121,9 +142,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<Game> sse_decode_list_game(SseDeserializer deserializer);
-
-  @protected
-  List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer);
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
@@ -186,12 +204,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
-  List<int> cst_encode_list_prim_u_8_loose(List<int> raw) {
-    // Codec=Cst (C-struct based), see doc to use other codecs
-    return raw;
-  }
-
-  @protected
   Uint8List cst_encode_list_prim_u_8_strict(Uint8List raw) {
     // Codec=Cst (C-struct based), see doc to use other codecs
     return raw;
@@ -204,12 +216,20 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   }
 
   @protected
+  int cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+      OpaqueBytes raw);
+
+  @protected
   int cst_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
       Progress raw);
 
   @protected
   int cst_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
       Progress raw);
+
+  @protected
+  int cst_encode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+      OpaqueBytes raw);
 
   @protected
   int cst_encode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
@@ -239,6 +259,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
+      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+          OpaqueBytes self, SseSerializer serializer);
+
+  @protected
+  void
       sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
           Progress self, SseSerializer serializer);
 
@@ -246,6 +271,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
       sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
           Progress self, SseSerializer serializer);
+
+  @protected
+  void
+      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+          OpaqueBytes self, SseSerializer serializer);
 
   @protected
   void
@@ -275,9 +305,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_game(List<Game> self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_list_prim_u_8_loose(List<int> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_prim_u_8_strict(
@@ -340,8 +367,8 @@ class RustLibWire implements BaseWire {
           NativePortType port_, List<dynamic> game, Object progress) =>
       wasmModule.wire_download_game(port_, game, progress);
 
-  void wire_extract_zip(NativePortType port_, List<int> bytes,
-          List<dynamic> game, Object progress) =>
+  void wire_extract_zip(NativePortType port_, Object bytes, List<dynamic> game,
+          Object progress) =>
       wasmModule.wire_extract_zip(port_, bytes, game, progress);
 
   void wire_fetch_games(NativePortType port_) =>
@@ -351,6 +378,18 @@ class RustLibWire implements BaseWire {
 
   void wire_run_game(NativePortType port_, List<dynamic> game) =>
       wasmModule.wire_run_game(port_, game);
+
+  void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+          dynamic ptr) =>
+      wasmModule
+          .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+              ptr);
+
+  void rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+          dynamic ptr) =>
+      wasmModule
+          .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+              ptr);
 
   void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
           dynamic ptr) =>
@@ -407,14 +446,22 @@ class RustLibWasmModule implements WasmModule {
   external void wire_download_game(
       NativePortType port_, List<dynamic> game, Object progress);
 
-  external void wire_extract_zip(NativePortType port_, List<int> bytes,
-      List<dynamic> game, Object progress);
+  external void wire_extract_zip(
+      NativePortType port_, Object bytes, List<dynamic> game, Object progress);
 
   external void wire_fetch_games(NativePortType port_);
 
   external void wire_init_app(NativePortType port_);
 
   external void wire_run_game(NativePortType port_, List<dynamic> game);
+
+  external void
+      rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+          dynamic ptr);
+
+  external void
+      rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockOpaqueBytes(
+          dynamic ptr);
 
   external void
       rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedrust_asyncRwLockProgress(
