@@ -4,13 +4,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  
-  
+
+
   <!-- CSS -->
-  <link href="https://unpkg.com/windows-ui-fabric@4.0.2/dist/config/app-config.css" rel="stylesheet" crossorigin="anonymous">
-  <link href="https://unpkg.com/windows-ui-fabric@4.0.2/dist/windows-ui.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://unpkg.com/windows-ui-fabric@4.0.2/dist/config/app-config.css" rel="stylesheet"
+    crossorigin="anonymous">
+  <link href="https://unpkg.com/windows-ui-fabric@4.0.2/dist/windows-ui.min.css" rel="stylesheet"
+    crossorigin="anonymous">
   <!-- Icons -->
-  <link href="https://unpkg.com/windows-ui-fabric@4.0.2/dist/icons/fonts/fonts.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://unpkg.com/windows-ui-fabric@4.0.2/dist/icons/fonts/fonts.min.css" rel="stylesheet"
+    crossorigin="anonymous">
   <!-- JS -->
   <script src="https://unpkg.com/windows-ui-fabric@4.0.2/dist/windows-ui.min.js" crossorigin="anonymous"></script>
 
@@ -57,11 +60,15 @@
       justify-content: center;
     }
 
-    details > summary::before {
+    .app-btn {
+      font-size: 18px;
+    }
+
+    details>summary::before {
       content: '▸';
     }
 
-    details[open] > summary::before {
+    details[open]>summary::before {
       content: '▾';
     }
 
@@ -70,12 +77,26 @@
       color: #2ecc71;
     }
 
-    .nes-table.is-dark::before {
-      display: none !important;
+    .game {
+      border-radius: 10px;
+      width: 225px;
+      display: inline-block;
+      margin: 10px;
+      background-color: black;
     }
 
-    #games > tr > td:first-child {
-      padding: 0;
+    .game>img {
+      border-radius: 10px 10px 0 0;
+    }
+
+    .game>span {
+      word-break: break-word;
+      margin-bottom: 5px;
+      padding: 0 5px;
+      font-weight: bold;
+      font-size: 18px;
+      display: block;
+      text-align: center;
     }
   </style>
   <script>
@@ -87,11 +108,14 @@
             for (const game of r.games) {
               // icons are always 600x900
               document.getElementById("games").innerHTML += `
-                <img
+                <div class="game"> 
+                  <img
                     src="${game.icon}"
                     alt="${game.name} icon"
-                    width="225"
-                />
+                    width=225
+                  />
+                  <span>${game.name}</span>
+                </div>
               `;
 
             }
@@ -129,7 +153,8 @@
       <details>
         <summary class="app-btn app-btn-outline-primary">Game List</summary>
 
-        <div id="games"></tbody>
+        <div id="games">
+          </tbody>
       </details>
     </main>
   </div>
