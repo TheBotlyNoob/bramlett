@@ -4,10 +4,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link href="https://unpkg.com/nes.css@latest/css/nes.min.css" rel="stylesheet" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+  
+  
+  <!-- CSS -->
+  <link href="https://unpkg.com/windows-ui-fabric@4.0.2/dist/config/app-config.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://unpkg.com/windows-ui-fabric@4.0.2/dist/windows-ui.min.css" rel="stylesheet" crossorigin="anonymous">
+  <!-- Icons -->
+  <link href="https://unpkg.com/windows-ui-fabric@4.0.2/dist/icons/fonts/fonts.min.css" rel="stylesheet" crossorigin="anonymous">
+  <!-- JS -->
+  <script src="https://unpkg.com/windows-ui-fabric@4.0.2/dist/windows-ui.min.js" crossorigin="anonymous"></script>
+
+  <script src="https://unpkg.com/@glidejs/glide@3.6.0/dist/glide.min.js" crossorigin="anonymous"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&display=swap" rel="stylesheet">
+
   <style>
     body,
     html {
@@ -17,7 +29,7 @@
       height: 100%;
       padding: 0;
       margin: 0;
-      font-family: "Press Start 2P", "Lucida Sans",
+      font-family: "Dosis", "Lucida Sans",
         "Lucida Sans Regular", "Lucida Grande",
         "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
     }
@@ -45,6 +57,14 @@
       justify-content: center;
     }
 
+    details > summary::before {
+      content: '▸';
+    }
+
+    details[open] > summary::before {
+      content: '▾';
+    }
+
     mark {
       background-color: #212529;
       color: #2ecc71;
@@ -54,7 +74,7 @@
       display: none !important;
     }
 
-    #games>tr>td:first-child {
+    #games > tr > td:first-child {
       padding: 0;
     }
   </style>
@@ -67,18 +87,21 @@
             for (const game of r.games) {
               // icons are always 600x900
               document.getElementById("games").innerHTML += `
-                                <tr>
-                                    <td>
-                                        <img
-                                            src="${game.icon}"
-                                            alt="${game.name} icon"
-                                            width="225"
-                                        />
-                                    </td>
-                                    <td style="text-align: center;">${game.name}</td>
-                                </tr>
-                                `;
+                <img
+                    src="${game.icon}"
+                    alt="${game.name} icon"
+                    width="225"
+                />
+              `;
+
             }
+
+            let glide = new Glide("#games", {
+              type: "carousel",
+              perView: 3
+            });
+
+            glide.mount();
           };
           if (document.readyState === "loading") {
             document.addEventListener(
@@ -90,6 +113,7 @@
           }
         });
     })();
+
   </script>
 </head>
 
@@ -97,37 +121,17 @@
   <div class="container">
     <main>
       <h1>Bramlett's Game Launcher</h1>
-      <p>
-        the ultimate game library
-        <mark style="text-decoration: underline">for school</mark>.
-      </p>
       <a href="https://github.com/TheBotlyNoob/bramletts-games/releases/latest/download/bramlett-x86_64-pc-windows-msvc.zip"
-        class="nes-btn is-primary">Download for Windows</a>
+        class="app-btn app-btn-primary" style="margin-bottom: 5px;">Download for Windows</a>
       <a href="https://github.com/TheBotlyNoob/bramletts-games/releases/latest"
         style="font-size: 14px; margin-bottom: 25px" class="nes-text is-success">Download for Others</a>
 
       <details>
-        <summary class="nes-btn">Game List</summary>
+        <summary class="app-btn app-btn-outline-primary">Game List</summary>
 
-        <div class="nes-table-responsive">
-          <table class="nes-table is-bordered is-dark">
-            <thead>
-              <tr>
-                <th style="text-align: center">Icon</th>
-                <th style="text-align: center">Name</th>
-              </tr>
-            </thead>
-            <tbody id="games"></tbody>
-          </table>
-        </div>
+        <div id="games"></tbody>
       </details>
     </main>
-
-    <footer>
-      <p>
-        made with <i class="nes-icon heart"></i> by Jay (<mark>the smart one</mark>)
-      </p>
-    </footer>
   </div>
 </body>
 
