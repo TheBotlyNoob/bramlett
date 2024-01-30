@@ -127,6 +127,51 @@
       "icon": "https://cdn2.steamgriddb.com/grid/c6586990d48305701847ebd8bcc02ece.png",
       "uuid": "d6bd08c8-7f30-48c5-b041-04f613e25263",
       "sha256": "5da340b3eb5d4e1c0b24a614af7919bbca4bf9560d52222bad76a464a8df2378"
+    },
+    {
+      "name": "Firewatch",
+      "exe": "Firewatch.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/ooWR5666-Firewatch",
+      "icon": "https://cdn2.steamgriddb.com/grid/aa9264d85b7225106a396c7816efc645.png",
+      "uuid": "77281459-f88f-4250-8c38-c5ba1124c2b6",
+      "sha256": "2d6c8dd9227ab2482d978651021de4a73dbe7a50e98a7b5eaf1e69efe7404a58"
+    },
+    {
+      "name": "Five Nights at Freddy's",
+      "exe": "FiveNightsatFreddys.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/tb6g9642-FNAF",
+      "icon": "https://cdn2.steamgriddb.com/grid/9a9d53c38badba2284af0da4ef86b358.png",
+      "uuid": "320ade36-c616-400f-b82e-9895fd65b132",
+      "sha256": "862cd7ab7c81b20a4e848888bc2493dda0181759c39958a42cc5c3d02dfb195a"
+    },
+    {
+      "name": "Five Nights at Freddy's 2",
+      "exe": "FiveNightsatFreddys2.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/8jhz3680-FNAF2",
+      "icon": "https://cdn2.steamgriddb.com/grid/c4ad72391c45de1c5ffd124705a5fc74.png",
+      "uuid": "0beb7ee9-a638-4ae7-b87d-db4431e8274f",
+      "sha256": "4eda7dccbe524518919b832826aab620dac75dc63a38dfb07023f538b02b2c2d"
+    },
+    {
+      "name": "Five Nights at Freddy's 3",
+      "exe": "FiveNightsatFreddys3.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/ktno1218-FNAF3",
+      "icon": "https://cdn2.steamgriddb.com/grid/d007beaadee2cf8a702432f742825e70.png",
+      "uuid": "a1cebc91-2f54-483a-89c7-98e67ccdcc22",
+      "sha256": "02366ffde5b5047d5a0d6fc90af20136032577498f9a6b9c1c466ab99f9d7764"
+    },
+    {
+      "name": "Five Nights at Freddy's 4",
+      "exe": "FiveNightsatFreddys4.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/biwf8911-FNAF4",
+      "icon": "https://cdn2.steamgriddb.com/grid/12cc97842f39de60ed91cd3740d551b2.png",
+      "uuid": "c5a67d51-dad7-45cd-9cf7-bc61fb3b3fd8",
+      "sha256": "105da0b382f2254b95d7518c0f89c3540ffde582c96594090ff7eddedc727cff"
     }
   ]
 }
