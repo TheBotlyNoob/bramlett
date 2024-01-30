@@ -82,6 +82,33 @@
       "icon": "https://cdn2.steamgriddb.com/grid/5b26487c96a94e4c4a7565b28cd27b16.png",
       "uuid": "67ceeeda-6c71-4f8f-9b9a-a594078201d8",
       "sha256": "49570ef760795d3bf671a76e1ff54ce300e3654d6708b6dae778c5119761b83e"
+    },
+    {
+      "name": "PolyMC (Minecraft)",
+      "exe": "polymc.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/v4T17823-PolyMC",
+      "icon": "https://cdn2.steamgriddb.com/grid/0ed5055450adbd836945761a6fa43ee0.jpg",
+      "uuid": "a0e5a09c-e5c4-46b8-b890-b28fd89e1743",
+      "sha256": "fa53b55b818c1a8507467317423618a9552ab74d9d674827cdcc2e65a3b13579"
+    },
+    {
+      "name": "Getting Over It",
+      "exe": "GettingOverIt.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/pVaL2331-GettingOverIt",
+      "icon": "https://cdn2.steamgriddb.com/grid/2157b6d660df50a65047393f125c07ab.png",
+      "uuid": "d7068261-b063-4af9-af50-5632a39a4c54",
+      "sha256": "d56823aa5922a82da7e41a31dee7d354a0a57176d5b467f302e9245283f62abf"
+    },
+    {
+      "name": "Terraria",
+      "exe": "Terraria.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/cvgq3896-Terraria",
+      "icon": "https://cdn2.steamgriddb.com/grid/9bc661e8362657d8cbbe4bb41d17c7f3.png",
+      "uuid": "3450b39e-7ea9-4027-bb34-fd55d5a7ee61",
+      "sha256": "1c5a654948430f020d5ac6f402de5599e13f11bd5858679a838a80018fa0f6c6"
     }
   ]
 }
