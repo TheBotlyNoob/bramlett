@@ -118,6 +118,15 @@
       "icon": "https://cdn2.steamgriddb.com/grid/8966c43f9e5bdc2365f0b745971bf846.webp",
       "uuid": "0ef0f242-cb74-4562-a04a-101e949226e1",
       "sha256": "e9f1e18cf0400b73f61b0687674d7a2361ece879b87558e2018b21d1df0b25cf"
+    },
+    {
+      "name": "Borderlands",
+      "exe": "Binaries/Borderlands.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/cek76374-Borderlands",
+      "icon": "https://cdn2.steamgriddb.com/grid/c6586990d48305701847ebd8bcc02ece.png",
+      "uuid": "d6bd08c8-7f30-48c5-b041-04f613e25263",
+      "sha256": "5da340b3eb5d4e1c0b24a614af7919bbca4bf9560d52222bad76a464a8df2378"
     }
   ]
 }
