@@ -172,6 +172,24 @@
       "icon": "https://cdn2.steamgriddb.com/grid/12cc97842f39de60ed91cd3740d551b2.png",
       "uuid": "c5a67d51-dad7-45cd-9cf7-bc61fb3b3fd8",
       "sha256": "105da0b382f2254b95d7518c0f89c3540ffde582c96594090ff7eddedc727cff"
+    },
+    {
+      "name": "Overcooked! 2",
+      "exe": "Overcooked2.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/597G5294-OverCooked2",
+      "icon": "https://cdn2.steamgriddb.com/grid/c147cc04c5ac79a251a3f999dcb910ae.png",
+      "uuid": "df3049d4-419d-42d2-8b4c-eccf3c4ed03e.",
+      "sha256": "9f296a37f177c16657dcad3ae689d57120e970758bc5d39a115cade214d9c144"
+    },
+    {
+      "name": "Buckshot Roulette",
+      "exe": "Buckshot Roulette.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/5T6L6390-BuckshotRoulette",
+      "icon": "https://cdn2.steamgriddb.com/grid/1455600bccd634650e5f10f363f34df0.png",
+      "uuid": "cba9db31-4ed2-4b52-a6f4-3581c436233b",
+      "sha256": "9dc9001b570965b3f486a8e5a4094adafeb5c7b1fc76dc3c4b735162d5d52e74"
     }
   ]
 }
