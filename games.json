@@ -190,6 +190,78 @@
       "icon": "https://cdn2.steamgriddb.com/grid/1455600bccd634650e5f10f363f34df0.png",
       "uuid": "cba9db31-4ed2-4b52-a6f4-3581c436233b",
       "sha256": "9dc9001b570965b3f486a8e5a4094adafeb5c7b1fc76dc3c4b735162d5d52e74"
+    },
+    {
+      "name": "The Binding of Isaac",
+      "exe": "Isaac.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/3v7C1936-TheBindingOfIsaac",
+      "icon": "https://cdn2.steamgriddb.com/grid/3df344993c62fa87f02408bfbf3916a7.png",
+      "uuid": "f50b234c-210e-4c1e-8e93-cfd6a26127a8",
+      "sha256": "5a064e24ef9ca97472d0d8d5006e5a8661e7796fc1cfb6e5861af5aa27a6b0dc"
+    },
+    {
+      "name": "The Binding of Isaac: Rebirth",
+      "exe": "isaac-ng.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/qip22283-TheBindingOfIsaacRebirth",
+      "icon": "https://cdn2.steamgriddb.com/grid/a98ddb21a23d6eecaf3ee511bd2a0f62.png",
+      "uuid": "f0257a39-1e93-4f73-aeee-94a276e2f709",
+      "sha256": "dc5d7c47ef22908a9beaf08cab7bba26cc66116a100fe2f0d478616f470acf34"
+    },
+    {
+      "name": "Halo: Combat Evolved",
+      "exe": "halo.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/4jW20004-HaloCE",
+      "icon": "https://cdn2.steamgriddb.com/grid/477aaa93492109be31a9c22df598c952.png",
+      "uuid": "29d6145f-0a5f-4c8f-929d-abcd8ad35a79",
+      "sha256": "3915093c75b1914c675a1865f1234cad513a30c9b646233688df47d690452b42"
+    },
+    {
+      "name": "Halo 2",
+      "exe": "halo2.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/mkUD7034-Halo2",
+      "icon": "https://cdn2.steamgriddb.com/grid/ff2d9e29dce3a287da608e021c2b81a5.png",
+      "uuid": "4cdb349d-45c4-4450-9ba0-a01bb83a01be",
+      "sha256": "4d7d5d5fba4b56f77c088269f7c244e1432b24d2408851ac4372d7dde8e307eb"
+    },
+    {
+      "name": "Call of Duty",
+      "exe": "CoDSP.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/coYT8376-COD",
+      "icon": "https://cdn2.steamgriddb.com/grid/d50024a382b0bbae0ba02d1ef479b927.jpg",
+      "uuid": "c19fc1ed-6077-476e-b83c-cef772e50801",
+      "sha256": "b776ac3a332344b53f7b85cfd458b21f83e4bcc8e386a6b94b310405ab45d2ed"
+    },
+    {
+      "name": "Call of Duty 2",
+      "exe": "CoD2SP_s.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/8QVE5480-CallOfDuty2",
+      "icon": "https://cdn2.steamgriddb.com/grid/e7e72b6b01f17cf0fa3aca49a21fa724.png",
+      "uuid": "eaa6df74-f146-4c66-9600-88ca6e6e7351",
+      "sha256": "75a83fd7904b58ac6974b0fb7b7ca79bbbf2b279ea0f4d4ed82a441a20bf9b39"
+    },
+    {
+      "name": "Rainbow Six: Vegas",
+      "exe": "Binaries/R6Vegas_Game.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/7vJs7615-RainbowSixVegas",
+      "icon": "https://cdn2.steamgriddb.com/grid/6385db535c50d5bfe89bee1e5dd7cedb.png",
+      "uuid": "578a1a58-19e5-4f12-b6c2-96fa4cc657d8",
+      "sha256": "64e347cc0cd111987f6030f46a6c8097a12636020aef7e70efa86cfbc991ee51"
+    },
+    {
+      "name": "Rainbow Six: Vegas 2",
+      "exe": "Binaries/R6Vegas2_Game.exe",
+      "args": [],
+      "url": "https://qiwi.gg/file/pxD97027-RainbowSixVegas2",
+      "icon": "https://cdn2.steamgriddb.com/grid/1bebc4f67cbeda086e5ac2d8d0eea72f.png",
+      "uuid": "6bf09152-085c-4175-a6d7-60fce52529f2",
+      "sha256": "f6c581ad0f5f005521aa4220b47d59524a17470f5a72fccddec4db1e74bdeb54"
     }
   ]
 }
